@@ -7,6 +7,66 @@
 @using Nop.Web.Extensions;
 @using Nop.Web.Controllers;
 
+@functions
+{
+    public List<ProductOverviewModel> GetProducts(dynamic itemset)
+    {
+        if (itemset == null)
+            return new List<ProductOverviewModel>();
+
+        object[] ids = (object[])itemset;
+        var productService = EngineContext.Current.Resolve<Nop.Services.Catalog.IProductService>();
+
+        var products = productService.GetProductsByIds(ids.Cast<string>().Select(id => int.Parse(id)).ToArray());
+        
+        var controller = EngineContext.Current.Resolve<ProductController>();
+        return controller.PrepareProductOverviewModels(
+            EngineContext.Current.Resolve<IWorkContext>(),
+            EngineContext.Current.Resolve<IStoreContext>(),
+            EngineContext.Current.Resolve<Nop.Services.Catalog.ICategoryService>(),
+            productService,
+            EngineContext.Current.Resolve<Nop.Services.Catalog.ISpecificationAttributeService>(),
+            EngineContext.Current.Resolve<Nop.Services.Catalog.IPriceCalculationService>(),
+            EngineContext.Current.Resolve<Nop.Services.Catalog.IPriceFormatter>(),
+            EngineContext.Current.Resolve<Nop.Services.Security.IPermissionService>(),
+            EngineContext.Current.Resolve<ILocalizationService>(),
+            EngineContext.Current.Resolve<Nop.Services.Tax.ITaxService>(),
+            EngineContext.Current.Resolve<Nop.Services.Directory.ICurrencyService>(),
+            EngineContext.Current.Resolve<Nop.Services.Media.IPictureService>(),
+            EngineContext.Current.Resolve<IWebHelper>(),
+            EngineContext.Current.Resolve<Nop.Core.Caching.ICacheManager>(),
+            EngineContext.Current.Resolve<Nop.Core.Domain.Catalog.CatalogSettings>(),
+            EngineContext.Current.Resolve<Nop.Core.Domain.Media.MediaSettings>(),
+            products, true, true, null, false, false).ToList<ProductOverviewModel>();
+    }
+    
+    public dynamic GetJsonObject(string uri, string userName, string password)
+    {
+        var request = WebRequest.Create(uri);
+        request.ContentType = "application/json";
+        request.Method = "GET";
+        request.Credentials = new NetworkCredential(userName, password);
+
+        try
+        { 
+            var response = request.GetResponse();
+
+            if (response.ContentLength > 0)
+            {
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+                var data = reader.ReadToEnd();
+                return Json.Decode(data);
+            }
+        }
+        catch
+        {
+            // just return null when errors occur
+        }
+
+        return null;
+    }
+}
+
 @{
     Layout = "~/Views/Shared/_ColumnsTwo.cshtml";
 
@@ -47,6 +107,9 @@
         Html.AddHeadCustomParts("<meta property=\"twitter:image\" content=\"" + Model.DefaultPictureModel.ImageUrl + "\" />");
         Html.AddHeadCustomParts("<meta property=\"twitter:url\" content=\"" + Request.Url.AbsoluteUri + "\" />");
     }
+
+    // for code clarity
+    var Product = Model;
 }
         <!--product breadcrumb-->
         @Html.Partial("_ProductBreadcrumb", Model.Breadcrumb)
@@ -124,6 +187,21 @@
                             @Html.Partial("_ProductTierPrices", Model.TierPrices)
                             @Html.Partial("_ProductSpecifications", Model.ProductSpecifications)
                             @Html.Partial("_ProductTags", Model.ProductTags)
+
+                                                        
+                            @{
+                                // Call the Marketplace api to get the Frequently Bought Together products for this product
+                                var prediction = GetJsonObject("https://api.datamarket.azure.com/data.ashx/amla/mba/v1/Score?Id=<YOUR_MODEL_NAME>&Item=" + Product.Id,
+                                   "AccountKey", "<YOUR_API_KEY>");
+
+                                // Get the product information from the Database
+                                List<ProductOverviewModel> boughtTogether = GetProducts(prediction.ItemSet);
+                            }
+
+                            <!-- Apply HTML template for the Frequently Bought Together Products -->
+                            @Html.Partial("FrequentlyBoughtTogether", boughtTogether)
+                            
+
                             @Html.Action("ProductsAlsoPurchased", "Product", new { productId = Model.Id })
                             @Html.Action("RelatedProducts", "Product", new { productId = Model.Id })
                     </div>
