@@ -1,0 +1,67 @@
+﻿@model IList<ProductOverviewModel>
+@using Nop.Web.Models.Catalog;
+@if (Model.Count > 0)
+{
+    <div class="also-purchased-products-grid product-grid" style="box-sizing: border-box;">
+        <div class="title">
+            <strong>Frequently Bought Together</strong>
+        </div>
+        <div>
+        <table class="bxgyBundle">
+            <tbody>
+                <tr>
+                    <td id="fbt_x_img">
+                        <table class="bxgyBundle">
+                            <tbody>
+                                <tr>
+                                @{ double total = 0; }
+                                @for( int i =0; i < Model.Count; i++)
+                                        {
+                                            var product = Model[i];
+                                            total += double.Parse(product.ProductPrice.Price.Substring(product.ProductPrice.Price.IndexOf('$') + 1));
+                                    <td id="fbt_x_img">
+                                        <div class="product-picture">
+                                            <a href="@Url.RouteUrl("Product", new { SeName = product.SeName })" title="@product.DefaultPictureModel.Title">
+                                                <img width="75" height="75" alt="@product.DefaultPictureModel.AlternateText" src="@product.DefaultPictureModel.ImageUrl" title="@product.DefaultPictureModel.Title" />
+                                            </a>
+                                        </div>
+                                    </td>
+                                    if (i < Model.Count - 1)
+                                    { 
+                                        <td class="plus" id="fbt_y_plus" style="display: table-cell;">+ </td>
+                                    }
+                                }
+    
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td class="plus" id="fbt_y_plus" style="display: table-cell; padding-left: 8px;">
+                        <div >Price together: <span class="price" style="color: #b80709;">$@string.Format("{0:0.00}", total)</span></div>
+
+                        <input type="button" value="Add all to Cart" class="button-2 product-box-add-to-cart-button" style="float: left;" />
+                    </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var product = Model[i];
+                <div style="text-align: left;">
+                    <input type="checkbox" checked="checked"></input>
+                    @if (i > 0)
+                    {
+                        <a href="@Url.RouteUrl("Product", new { SeName = product.SeName })" class="product-name" style="font-size: 12px;">@product.Name</a>
+                    }
+                    else
+                    {
+                        <span><b>This item:</b> @product.Name</span>
+                    }
+                    <span class="price" style="color: #b80709;">  @product.ProductPrice.Price</span>
+                </div>
+            }
+        </div>
+        </div>
+
+}
