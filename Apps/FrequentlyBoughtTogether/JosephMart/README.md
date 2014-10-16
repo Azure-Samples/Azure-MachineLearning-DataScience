@@ -14,7 +14,7 @@ You can use WebMatrix to quickly deploy a retail website directly to Azure in ju
 Historical transactions for the demo website data that can be used to train a model can be found in the [JosephMartTransactions.csv](./JosephMartTransactions.csv).
 
 ## Integrating Frequently Bought Together recommendations into the website
-Code for all the changes made to the default website are in this folder.  You can see the specific changes by reviewing [ChangeSet 19722cd](/Azure/Azure-MachineLearning-DataScience/commit/19722cd86d1d6de0ffda4ed11d0d152488e2436f).  Notably the 3 lines added that enable this feature are:
+Code for all the changes made to the default website are in this folder.  You can see the specific changes by reviewing [ChangeSet 19722cd](https://github.com/Azure/Azure-MachineLearning-DataScience/commit/19722cd86d1d6de0ffda4ed11d0d152488e2436f).  Notably the 3 lines added that enable this feature are:
 
 	@{
     // Call the Marketplace api to get the Frequently Bought Together products for this product
