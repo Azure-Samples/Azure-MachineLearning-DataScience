@@ -36,14 +36,20 @@ DownloadRawFromGitWithFileList()
     # Download the list so we can iterate over it.
     url="${base_url}${file_list_name}"
     curl -O $url
-    #dos2unix $file_list_name
+
     echo "" >> $file_list_name # on a single line file it seems to miss the last line
 
-    echo "Attempting to Read Lines of File"
+    echo "Downloading Files..."
     while read curLine
     do 
-        echo $curLine
-        curl -O "${base_url}${curLine}"
+        if [ ! -z "$curLine" ]; then
+            # URL Encode line from file using python.
+            encoded_curLine=$(python -c "import urllib; print urllib.quote('''$curLine''')")
+            url="${base_url}${encoded_curLine}"
+            echo $url
+
+            curl -O "${url}"
+        fi
     done < $file_list_name
 
     # remove list since we don't need it.
