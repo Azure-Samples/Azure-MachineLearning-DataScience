@@ -63,3 +63,9 @@ InstallAnacondaAndPythonDependencies
 
 # Gets entire git repo
 # GetGitRepoToLocalFolder -GithubZipFile "https://github.com/Azure/Azure-MachineLearning-DataScience" -LocalFolder "$sysDrive\Git"
+
+# In order to set the path from the Hive Queries we need to restart the nodemanager service
+if ((Get-WMIObject win32_service | Where-Object {$_.name -eq "nodemanager"})) 
+{
+    Restart-Service nodemanager;
+}
