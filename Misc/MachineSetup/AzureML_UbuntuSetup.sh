@@ -44,7 +44,7 @@ DownloadRawFromGitWithFileList()
     do 
         if [ ! -z "$curLine" ]; then
             # URL Encode line from file using python.
-            encoded_curLine=$(python -c "import urllib; print urllib.quote('''$curLine''')")
+            encoded_curLine=$(python -c "import urllib; print urllib.quote('$curLine')")
             url="${base_url}${encoded_curLine}"
             echo $url
 
