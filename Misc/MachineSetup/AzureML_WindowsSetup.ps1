@@ -32,7 +32,7 @@ function InstallAnacondaAndPythonDependencies
 {
     if (-Not $(Test-Path $pathToAnaconda))
     {
-        Write-Output "Anaconda Not Installed.  Installing..."
+        Write-Output "Anaconda Not Installed.  Installing... (This may take a while)"
         ##### Install Anaconda #####
         #Downloading And Install Anaconda
         $anaconda_url = "http://09c8d0b2229f813c1b93-c95ac804525aac4b6dba79b00b39d1d3.r79.cf1.rackcdn.com/Anaconda-2.1.0-Windows-x86_64.exe"
@@ -90,7 +90,6 @@ function SetupIPythonNotebookService
         -Profile Any `
         -Protocol TCP `
         -LocalPort 9999
-
     InstallOpenSSL
 
     $opensslInstallDir = Join-Path $Env:ProgramFiles 'OpenSSL'
@@ -112,7 +111,9 @@ function SetupIPythonNotebookService
         $passwordHash = iex "$(Join-Path $pathToAnaconda python.exe) -c 'import IPython;print IPython.lib.passwd()'" | Tee-Object -Variable passwordHash
         if($passwordHash -is [system.array]){ $passwordHash = $passwordHash[-1] }
 
-        mkdir $notebook_dir
+        if (!(Test-Path $notebook_dir)) {
+            mkdir $notebook_dir
+        }
 
         $PathToConfigFile = "ipython_notebook_config.py"
         Write-Output "Generating the $PathToConfigFile file."  
@@ -140,14 +141,39 @@ function SetupIPythonNotebookService
         )
         $file | Out-File $PathToConfigFile -Append -Encoding UTF8
     }
+}
 
-    Write-Output "Starting the IPython Notebook Service"
-    iex "$(Join-Path $pathToAnaconda "scripts\ipython.exe") notebook --profile=nbserver"
+function ScheduleAndStartIPython(){
+    Write-Output "Scheduling Startup Task for the IPython Notebook Service"
+
+    $ipython_dir = Join-Path $env:userprofile ".ipython"
+
+    $taskName = "Start_IPython_Notebook"
+    $argument = "/c `"cd $ipython_dir & C:\Anaconda\scripts\ipython.exe notebook --profile=nbserver`""
+    $action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument $argument -WorkingDirectory $ipython_dir
+    $trigger = New-ScheduledTaskTrigger -AtStartup
+    # Don't stop the task and let it run forever
+    $settings = New-ScheduledTaskSettingsSet -DontStopOnIdleEnd -ExecutionTimeLimit ([TimeSpan]::Zero)
+    
+    # Register Task.  Get password and null out as soon as done.
+    $username = [Environment]::UserName
+    Write-Output "In order to start IPython each time the machine starts we need the password for your current account ($username)"
+    $SecurePassword = Read-Host -Prompt "Enter the password for account '$username'" -AsSecureString 
+    $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $SecurePassword 
+    $PlainPassword = $Credentials.GetNetworkCredential().Password 
+    Register-ScheduledTask $taskName -Action $action -Trigger $trigger -Settings $settings -User $username -Password $PlainPassword    
+    $PlainPassword = $null
+
+    # If the user wants to stop the auto restart of IPython run 'Unregister-ScheduledTask Start_IPython_Notebook'
+    Write-Output "Starting IPython Notebook Service"
+    Start-ScheduledTask -TaskName $taskName
 }
 
 function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination_dir)
 {   
-    mkdir $destination_dir
+    if (!(Test-Path $destination_dir)) {
+        mkdir $destination_dir
+    }
 
     # Download the list so we can iterate over it.
     $tempPath = [IO.Path]::GetTempFileName()
@@ -186,6 +212,7 @@ Write-Host "Other OS Versions may work but are not officially supported."
 
 InstallAnacondaAndPythonDependencies
 GetSampleNotebooksFromGit
-SetupIPythonNotebookService # Make sure this is last in the script as this start IPython Notebook Service
+SetupIPythonNotebookService
+ScheduleAndStartIPython
 
 cd $previous_pwd

@@ -19,9 +19,11 @@ notebook_dir="${HOME}/ipython_notebooks"
 
 UpdateSystem()
 {
-    echo "Updating Apt"
+    echo "Updating Apt and Packages"
     sudo apt-get -y update
     sudo apt-get -y install curl
+    # Super needed to run setuid on system startup of IPython
+    sudo apt-get install super
 }
 
 DownloadRawFromGitWithFileList()
@@ -131,13 +133,23 @@ SetupIPythonNotebookService()
             echo $i >> ~/.ipython/profile_nbserver/ipython_notebook_config.py
         done
     fi
+}
+
+StartIPythonNotebookService()
+{
+    echo "cd ${HOME};setuid ${USER} nohup /anaconda/bin/ipython notebook --profile=nbserver > t.log 2>&1 < /dev/null &" > start_ipython
+    sudo mv start_ipython /etc/init.d/start_ipython
+    sudo chmod +x /etc/init.d/start_ipython 
+    sudo update-rc.d start_ipython defaults
 
     # Notes: 
     # To kill the process (if something goes wrong) use 'pkill nohup;pkill ipython'
     # If you run just '/anaconda/bin/ipython notebook --profile=nbserver' you will be able
     # to see the failure causes.  You can also 'cat t.log'
+    # If you want to stop this script from running at startup, run: sudo update-rc.d -f start_ipython remove
     echo "Starting the IPython Notebook Service"
-    nohup /anaconda/bin/ipython notebook --profile=nbserver > t.log 2>&1 < /dev/null &
+    cd /etc/init.d
+    sudo ./start_ipython
 }
 
 ###################### End of Functions / Start of Script ######################
@@ -148,5 +160,5 @@ UpdateSystem
 InstallAnacondaAndPythonDependencies
 GetSampleNotebooksFromGit
 SetupIPythonNotebookService # Make sure this is last in the script as this start IPython Notebook Service
-
+StartIPythonNotebookService
 cd $prev_dir
