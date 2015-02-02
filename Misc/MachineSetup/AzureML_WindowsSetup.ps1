@@ -42,17 +42,17 @@ function InstallAnacondaAndPythonDependencies
         #Anaconda adds itself to the path, but unfortunately after the python2.7 install.  We override this by setting the path here.
         $addToPath =  $pathToAnaconda+ ";"  + $pathToAnaconda + "\Scripts;" + $sysDrive + "\python27;" 
         [Environment]::SetEnvironmentVariable("Path", $addToPath + $env:Path, "Machine")
-
-        # TODO: We might want to be updating each time?
-        Write-Output "Updating Pandas"
-        Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
-
-        Write-Output "pip install azure"
-        Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azure" -Wait
-
-        Write-Output "pip install azureml"
-        Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azureml" -Wait
     }
+
+    # TODO: We might want to be updating each time?
+    Write-Output "Updating Pandas"
+    Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
+
+    Write-Output "pip install azure"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azure" -Wait
+
+    Write-Output "pip install azureml"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azureml" -Wait
 }
 
 function InstallOpenSSL
