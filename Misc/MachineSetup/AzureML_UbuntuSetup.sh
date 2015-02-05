@@ -81,12 +81,11 @@ InstallAnacondaAndPythonDependencies()
     
     # Install Azure and AzureML API SDKs
     sudo apt-get -y install python-pip
-    sudo pip install --install-option="--prefix=/anaconda/" azure
-    sudo pip install --install-option="--prefix=/anaconda/" azureml
 
     # Update the packages on every run (just in case they have changed since the user first ran this script)
-    sudo pip install --upgrade --install-option="--prefix=/anaconda/" azure
-    sudo pip install --upgrade --install-option="--prefix=/anaconda/" azureml
+    sudo pip install -U --install-option="--prefix=/anaconda/" azure
+    sudo pip install -U --install-option="--prefix=/anaconda/" azureml
+    sudo pip install -U --install-option="--prefix=/anaconda/" https://pyodbc.googlecode.com/files/pyodbc-3.0.7.zip
 }
 
 SetupIPythonNotebookService()

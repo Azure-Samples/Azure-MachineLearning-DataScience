@@ -48,12 +48,16 @@ function InstallAnacondaAndPythonDependencies
     Write-Output "Updating Pandas"
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
 
-    Write-Output "pip install azure"
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azure" -Wait
+    Write-Output "pip install/upgrade azure"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azure" -Wait
 
-    Write-Output "pip install azureml"
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azureml" -Wait
+    Write-Output "pip install/upgrade azureml"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
+
+    Write-Output "pip install/upgrade pyodbc"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U https://pyodbc.googlecode.com/files/pyodbc-3.0.7.zip" -Wait
 }
+
 
 function InstallOpenSSL
 {
