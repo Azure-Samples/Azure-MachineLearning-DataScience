@@ -20,9 +20,9 @@ $web_client = new-object System.Net.WebClient
 $pathToAnaconda=  $sysDrive + "\Anaconda"
 $notebook_dir =  $env:userprofile + "\ipython_notebooks"
 
-function DownloadAndInstall($DownloadPath, $ArgsForInstall)
+function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
 {
-    $LocalPath = [IO.Path]::GetTempFileName() + ".exe"
+    $LocalPath = [IO.Path]::GetTempFileName() + "." + $DownloadFileType
     $web_client.DownloadFile($DownloadPath, $LocalPath)
 
     Start-Process -FilePath $LocalPath -ArgumentList $ArgsForInstall -Wait
@@ -44,15 +44,17 @@ function InstallAnacondaAndPythonDependencies
         [Environment]::SetEnvironmentVariable("Path", $addToPath + $env:Path, "Machine")
     }
 
-    # TODO: We might want to be updating each time?
     Write-Output "Updating Pandas"
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
 
-    Write-Output "pip install azure"
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azure" -Wait
+    Write-Output "pip install/upgrade azure"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azure" -Wait
 
-    Write-Output "pip install azureml"
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azureml" -Wait
+    Write-Output "pip install/upgrade azureml"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
+
+    Write-Output "pip install/upgrade pyodbc"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U https://pyodbc.googlecode.com/files/pyodbc-3.0.7.zip" -Wait
 }
 
 function InstallOpenSSL
@@ -97,7 +99,6 @@ function SetupIPythonNotebookService
 
     if(-Not $(Test-Path $IPythonProfile))
     {
-        # TODO TODO TODOInstall OpenSSL 
         # set config and IPython
         Write-Output "Creating NBServer"
         Start-Process -FilePath "$pathToAnaconda\scripts\ipython.exe" -ArgumentList "profile create nbserver" -Wait
@@ -199,6 +200,7 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
 }
 
 function GetSampleNotebooksFromGit(){
+    Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
     $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/iPythonNotebooks/"
     $notebook_list_name = "Notebook_List.txt"
     $destination_dir = Join-Path $notebook_dir "AzureMLSamples"
@@ -206,12 +208,32 @@ function GetSampleNotebooksFromGit(){
     DownloadRawFromGitWithFileList $base_url $notebook_list_name $destination_dir
 }
 
+function InstallAzureUtilities(){
+    # Install AzCopy
+    Write-Output "Install Azure Utilities: AzCopy"
+    DownloadAndInstall "http://aka.ms/downloadazcopy" "/quiet" "msi"
+    [Environment]::SetEnvironmentVariable("Path", "${env:ProgramFiles(x86)}\Microsoft SDKs\Azure\AzCopy;" + $env:Path, "Machine")
+
+    # Install Azure Storage Explorer
+    Write-Output "Install Azure Utilities: Azure Storage Explorer"
+    $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
+    $web_client.DownloadFile("http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=azurestorageexplorer&DownloadId=891668&FileTime=130530255103730000&Build=20959", $LocalPath)
+    # Unzip to get the exe, then install...
+    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+    $ExtractDirectory = [IO.Path]::GetTempFileName() # makes file, delete file and mkdir
+    rm $ExtractDirectory
+    mkdir $ExtractDirectory
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($LocalPath, $ExtractDirectory)
+    Start-Process -FilePath "${ExtractDirectory}\AzureStorageExplorer3Preview1.exe" -ArgumentList "/S /v/qn"
+}
+
 ###################### End of Functions / Start of Script ######################
-Write-Host "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
-Write-Host "Other OS Versions may work but are not officially supported."
+Write-Output "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
+Write-Output "Other OS Versions may work but are not officially supported."
 
 InstallAnacondaAndPythonDependencies
 GetSampleNotebooksFromGit
+InstallAzureUtilities
 SetupIPythonNotebookService
 ScheduleAndStartIPython
 

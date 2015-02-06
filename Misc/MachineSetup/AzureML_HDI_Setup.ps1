@@ -38,11 +38,14 @@ function InstallAnacondaAndPythonDependencies
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
 
     # Install Azure
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azure" -Wait
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azure" -Wait
 
     # Install AzureML
     # Note: this isn't available yet so is currently a noop
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azureml" -Wait
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
+
+    # Install pyodbc
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U https://pyodbc.googlecode.com/files/pyodbc-3.0.7.zip" -Wait
 }
 
 function UnzipFile($File, $Destination)
