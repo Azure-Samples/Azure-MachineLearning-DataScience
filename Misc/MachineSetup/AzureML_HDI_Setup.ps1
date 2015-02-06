@@ -44,8 +44,8 @@ function InstallAnacondaAndPythonDependencies
     # Note: this isn't available yet so is currently a noop
     Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
 
-    # Install pyodbc
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U https://pyodbc.googlecode.com/files/pyodbc-3.0.7.zip" -Wait
+    Write-Output "easy_install pyodbc"
+    Start-Process -FilePath "$pathToAnaconda\scripts\easy_install" -ArgumentList "https://pyodbc.googlecode.com/files/pyodbc-3.0.7.win-amd64-py2.7.exe" -Wait
 }
 
 function UnzipFile($File, $Destination)
