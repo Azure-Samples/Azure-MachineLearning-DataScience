@@ -76,7 +76,8 @@ InstallAnacondaAndPythonDependencies()
         mkdir -p $HOME/anaconda
         cd $HOME/anaconda;curl -O http://09c8d0b2229f813c1b93-c95ac804525aac4b6dba79b00b39d1d3.r79.cf1.rackcdn.com/Anaconda-2.1.0-Linux-x86_64.sh
         cd $HOME/anaconda;sudo bash Anaconda-2.1.0-Linux-x86_64.sh -b -f -p /anaconda
-        cd /anaconda/bin;./conda update -f ipython --yes
+        sudo /anaconda/bin/conda update -f ipython --yes
+        sudo /anaconda/bin/conda update -f pandas --yes
     fi
     
     # Install Azure and AzureML API SDKs
