@@ -200,6 +200,7 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
 }
 
 function GetSampleNotebooksFromGit(){
+    Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
     $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/iPythonNotebooks/"
     $notebook_list_name = "Notebook_List.txt"
     $destination_dir = Join-Path $notebook_dir "AzureMLSamples"
@@ -209,10 +210,12 @@ function GetSampleNotebooksFromGit(){
 
 function InstallAzureUtilities(){
     # Install AzCopy
+    Write-Output "Install Azure Utilities: AzCopy"
     DownloadAndInstall "http://aka.ms/downloadazcopy" "/quiet" "msi"
     [Environment]::SetEnvironmentVariable("Path", "${env:ProgramFiles(x86)}\Microsoft SDKs\Azure\AzCopy;" + $env:Path, "Machine")
 
     # Install Azure Storage Explorer
+    Write-Output "Install Azure Utilities: Azure Storage Explorer"
     $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
     $web_client.DownloadFile("http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=azurestorageexplorer&DownloadId=891668&FileTime=130530255103730000&Build=20959", $LocalPath)
     # Unzip to get the exe, then install...
@@ -225,8 +228,8 @@ function InstallAzureUtilities(){
 }
 
 ###################### End of Functions / Start of Script ######################
-Write-Host "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
-Write-Host "Other OS Versions may work but are not officially supported."
+Write-Output "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
+Write-Output "Other OS Versions may work but are not officially supported."
 
 InstallAnacondaAndPythonDependencies
 GetSampleNotebooksFromGit
