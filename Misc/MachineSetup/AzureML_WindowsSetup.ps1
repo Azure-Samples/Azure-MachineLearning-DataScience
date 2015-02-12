@@ -13,11 +13,12 @@
 #    permissions and limitations under the License.
 #
 ################################################################################
+param([string]$IPythonPassword, [string]$AccountPassword)
 $previous_pwd = $pwd
 
 $sysDrive = (Get-ChildItem env:SYSTEMDRIVE).Value
 $web_client = new-object System.Net.WebClient
-$pathToAnaconda=  $sysDrive + "\Anaconda"
+$pathToAnaconda =  $sysDrive + "\Anaconda"
 $notebook_dir =  $env:userprofile + "\ipython_notebooks"
 
 function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
@@ -110,10 +111,16 @@ function SetupIPythonNotebookService
         Write-Output "Creating Certificate for IPython"
         iex "OpenSSL req -x509 -nodes -days 365 -subj '/C=US/ST=WA/L=Redmond/CN=cloudapp.net' -newkey rsa:1024 -keyout mycert.pem -out mycert.pem"
 
-        # NOTE: THIS PROMPTS THE USER
-        Write-Output "We need you to create a password for your Notebook...  PLEASE ENTER IN A PASSWORD BELOW..."
-        $passwordHash = iex "$(Join-Path $pathToAnaconda python.exe) -c 'import IPython;print IPython.lib.passwd()'" | Tee-Object -Variable passwordHash
-        if($passwordHash -is [system.array]){ $passwordHash = $passwordHash[-1] }
+        if ($IPythonPassword) {
+            Write-Output "Using supplied password for your Notebook"
+            $passwordHash = iex "$(Join-Path $pathToAnaconda python.exe) -c 'import IPython;print IPython.lib.passwd(''$IPythonPassword'')'" | Tee-Object -Variable passwordHash
+        }
+        else {
+            # NOTE: THIS PROMPTS THE USER
+            Write-Output "We need you to create a password for your Notebook...  PLEASE ENTER IN A PASSWORD BELOW..."
+            $passwordHash = iex "$(Join-Path $pathToAnaconda python.exe) -c 'import IPython;print IPython.lib.passwd()'" | Tee-Object -Variable passwordHash
+            if($passwordHash -is [system.array]){ $passwordHash = $passwordHash[-1] }
+        }
 
         if (!(Test-Path $notebook_dir)) {
             mkdir $notebook_dir
@@ -161,16 +168,34 @@ function ScheduleAndStartIPython(){
     
     # Register Task.  Get password and null out as soon as done.
     $username = [Environment]::UserName
-    Write-Output "In order to start IPython each time the machine starts we need the password for your current account ($username)"
-    $SecurePassword = Read-Host -Prompt "Enter the password for account '$username'" -AsSecureString 
-    $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $SecurePassword 
-    $PlainPassword = $Credentials.GetNetworkCredential().Password 
-    Register-ScheduledTask $taskName -Action $action -Trigger $trigger -Settings $settings -User $username -Password $PlainPassword    
-    $PlainPassword = $null
+    if ($AccountPassword) {
+        Write-Output "Using supplied account password"
+    }
+    else {
+        Write-Output "In order to start IPython each time the machine starts we need the password for your current account ($username)"
+        $SecureAccountPassword = Read-Host -Prompt "Enter the password for account '$username'" -AsSecureString
+        $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $SecureAccountPassword 
+        $AccountPassword = $Credentials.GetNetworkCredential().Password 
+    } 
+    Register-ScheduledTask $taskName -Action $action -Trigger $trigger -Settings $settings -User $username -Password $AccountPassword    
+    $AccountPassword = $null
 
     # If the user wants to stop the auto restart of IPython run 'Unregister-ScheduledTask Start_IPython_Notebook'
     Write-Output "Starting IPython Notebook Service"
     Start-ScheduledTask -TaskName $taskName
+}
+
+function SetupSQLServerAccess
+{
+    Write-Output "Open port on firewall for SQL Server"
+    Import-Module NetSecurity
+    New-NetFirewallRule -Action Allow `
+        -Name Allow_SQL_Server `
+        -DisplayName "Allow SQL Server" `
+        -Description "Local 1433 Port for SQL Server Traffic" `
+        -Profile Any `
+        -Protocol TCP `
+        -LocalPort 1433
 }
 
 function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination_dir)
@@ -239,5 +264,6 @@ GetSampleNotebooksFromGit
 InstallAzureUtilities
 SetupIPythonNotebookService
 ScheduleAndStartIPython
+SetupSQLServerAccess
 
 cd $previous_pwd
