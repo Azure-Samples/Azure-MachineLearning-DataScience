@@ -17,15 +17,23 @@ param(
     [string]$AccountPassword,
     [string]$IPythonPassword
 )
+$logfile = [IO.Path]::GetTempFileName() + ".txt"
 $previous_pwd = $pwd
 
 $sysDrive = (Get-ChildItem env:SYSTEMDRIVE).Value
 $web_client = new-object System.Net.WebClient
-$pathToAnaconda=  $sysDrive + "\Anaconda"
+$pathToAnaconda =  $sysDrive + "\Anaconda"
 $notebook_dir =  $env:userprofile + "\ipython_notebooks"
+
+echo "sysDrive:$sysDrive" >> $logfile
+echo "pathToAnaconda:$pathToAnaconda" >> $logfile
+echo "notebook_dir:$notebook_dir" >> $logfile
+echo "AccountPassword:$AccountPassword" >> $logfile
+echo "IPythonPassword:$IPythonPassword" >> $logfile
 
 function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
 {
+    echo "1" >> $logfile
     $LocalPath = [IO.Path]::GetTempFileName() + "." + $DownloadFileType
     $web_client.DownloadFile($DownloadPath, $LocalPath)
 
@@ -34,6 +42,7 @@ function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = 
 
 function InstallAnacondaAndPythonDependencies
 {
+    echo "2" >> $logfile
     if (-Not $(Test-Path $pathToAnaconda))
     {
         Write-Output "Anaconda Not Installed.  Installing... (This may take a while)"
@@ -41,31 +50,42 @@ function InstallAnacondaAndPythonDependencies
         #Downloading And Install Anaconda
         $anaconda_url = "http://09c8d0b2229f813c1b93-c95ac804525aac4b6dba79b00b39d1d3.r79.cf1.rackcdn.com/Anaconda-2.1.0-Windows-x86_64.exe"
         $argumentList = "/S /D="+ $pathToAnaconda
+        echo "2.1" >> $logfile
+        echo "pathToAnaconda:$pathToAnaconda" >> $logfile
         DownloadAndInstall -DownloadPath $anaconda_url -ArgsForInstall $argumentList
+        echo "2.2" >> $logfile
 
         #Anaconda adds itself to the path, but unfortunately after the python2.7 install.  We override this by setting the path here.
         $addToPath =  $pathToAnaconda+ ";"  + $pathToAnaconda + "\Scripts;" + $sysDrive + "\python27;" 
+        echo "2.3" >> $logfile
         [Environment]::SetEnvironmentVariable("Path", $addToPath + $env:Path, "Machine")
+        echo "2.4" >> $logfile
     }
 
+    echo "2.5" >> $logfile
     Write-Output "Updating IPython"
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes ipython" -Wait
 
+    echo "2.6" >> $logfile
     Write-Output "Updating Pandas"
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
 
+    echo "2.7" >> $logfile
     Write-Output "pip install/upgrade azure"
     Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azure" -Wait
 
+    echo "2.8" >> $logfile
     Write-Output "pip install/upgrade azureml"
     Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
 
+    echo "2.9" >> $logfile
     Write-Output "easy_install pyodbc"
     Start-Process -FilePath "$pathToAnaconda\scripts\easy_install" -ArgumentList "https://pyodbc.googlecode.com/files/pyodbc-3.0.7.win-amd64-py2.7.exe" -Wait
 }
 
 function InstallOpenSSL
 {
+    echo "3" >> $logfile
     $opensslInstallDir = Join-Path $Env:ProgramFiles 'OpenSSL'
     if(-Not $(Test-Path $opensslInstallDir))
     {
@@ -90,6 +110,7 @@ function InstallOpenSSL
 
 function SetupIPythonNotebookService
 {
+    echo "4" >> $logfile
     Write-Output "Open port on firewall for IPython"
     Import-Module NetSecurity
     New-NetFirewallRule -Action Allow `
@@ -158,6 +179,7 @@ function SetupIPythonNotebookService
 }
 
 function ScheduleAndStartIPython(){
+    echo "5" >> $logfile
     Write-Output "Scheduling Startup Task for the IPython Notebook Service"
 
     $ipython_dir = Join-Path $env:userprofile ".ipython"
@@ -190,6 +212,7 @@ function ScheduleAndStartIPython(){
 
 function SetupSQLServerAccess
 {
+    echo "6" >> $logfile
     Write-Output "Open port on firewall for SQL Server"
     Import-Module NetSecurity
     New-NetFirewallRule -Action Allow `
@@ -203,6 +226,7 @@ function SetupSQLServerAccess
 
 function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination_dir)
 {   
+    echo "7" >> $logfile
     if (!(Test-Path $destination_dir)) {
         mkdir $destination_dir
     }
@@ -231,6 +255,7 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
 }
 
 function GetSampleNotebooksFromGit(){
+    echo "8" >> $logfile
     Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
     $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/iPythonNotebooks/"
     $notebook_list_name = "Notebook_List.txt"
@@ -240,6 +265,7 @@ function GetSampleNotebooksFromGit(){
 }
 
 function InstallAzureUtilities(){
+    echo "9" >> $logfile
     # Install AzCopy
     Write-Output "Install Azure Utilities: AzCopy"
     DownloadAndInstall "http://aka.ms/downloadazcopy" "/quiet" "msi"
