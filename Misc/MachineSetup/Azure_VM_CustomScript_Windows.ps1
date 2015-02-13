@@ -34,7 +34,7 @@ $web_client.DownloadFile($url, $ps1Path)
 $SecureAccountPassword = ConvertTo-SecureString $AccountPassword -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential("${env:COMPUTERNAME}\${AccountName}", $SecureAccountPassword)
 Enable-PSRemoting -Force
-Invoke-Command -FilePath $ps1Path -Credential $credential -ComputerName $env:COMPUTERNAME -ArgumentList $AccountPassword, $IPythonPassword
+Invoke-Command -FilePath $ps1Path -Credential $credential -ComputerName $env:COMPUTERNAME -ArgumentList "${AccountPassword}", "${IPythonPassword}"
 Disable-PSRemoting -Force
 echo "Ending CustomScript process"
 
