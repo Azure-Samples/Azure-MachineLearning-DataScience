@@ -39,4 +39,4 @@ Disable-PSRemoting -Force
 echo "Ending CustomScript process"
 
 # Log that this script was run so we have usage numbers.
-$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?Azure_VM_CustomScript_Windows.ps1") | Out-Null
+$web_client.DownloadString("http://go.microsoft.com/fwlink/?LinkId=526227") | Out-Null
