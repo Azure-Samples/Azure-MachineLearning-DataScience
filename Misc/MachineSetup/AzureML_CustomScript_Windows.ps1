@@ -19,27 +19,24 @@ param(
     [string]$IPythonPassword = $(throw "-IPythonPassword is required.")
 )
 
-echo "Starting bootstrap process using the following parameters:"
+echo "Starting CustomScript process using the following parameters:"
 echo "AccountName:$AccountName"
 echo "AccountPassword:$AccountPassword"
 echo "IPythonPassword:$IPythonPassword"
 
 # Download the AzureML Windows setup script
 $web_client = new-object System.Net.WebClient
-#$url="https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/MachineSetup/rbaAzureML_WindowsSetup.ps1"
-$url = "http://azuremlscripts.blob.core.windows.net/scripts/rbaAzureML_WindowsSetup.ps1"
+$url="https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/MachineSetup/AzureML_WindowsSetup.ps1"
 $ps1Path = [IO.Path]::GetTempFileName() + ".ps1"
 $web_client.DownloadFile($url, $ps1Path)
 
-echo "PS1 Path:$ps1Path"
-
 # Run the setup script as the account user
 $SecureAccountPassword = ConvertTo-SecureString $AccountPassword -AsPlainText -Force
-$credential = New-Object System.Management.Automation.PSCredential($env:COMPUTERNAME + "\" + $AccountName, $SecureAccountPassword)
+$credential = New-Object System.Management.Automation.PSCredential("${env:COMPUTERNAME}\${AccountName}", $SecureAccountPassword)
 Enable-PSRemoting -Force
 Invoke-Command -FilePath $ps1Path -Credential $credential -ComputerName $env:COMPUTERNAME -ArgumentList $AccountPassword, $IPythonPassword
 Disable-PSRemoting -Force
-echo "Ending bootstrap process"
+echo "Ending CustomScript process"
 
 # Log that this script was run so we have usage numbers.
 $web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?AzureML_WindowsSetup.ps1") | Out-Null
