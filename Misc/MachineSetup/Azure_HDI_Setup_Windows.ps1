@@ -38,11 +38,14 @@ function InstallAnacondaAndPythonDependencies
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
 
     # Install Azure
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azure" -Wait
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azure" -Wait
 
     # Install AzureML
     # Note: this isn't available yet so is currently a noop
-    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azureml" -Wait
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
+
+    Write-Output "easy_install pyodbc"
+    Start-Process -FilePath "$pathToAnaconda\scripts\easy_install" -ArgumentList "https://pyodbc.googlecode.com/files/pyodbc-3.0.7.win-amd64-py2.7.exe" -Wait
 }
 
 function UnzipFile($File, $Destination)
@@ -69,3 +72,7 @@ if ((Get-WMIObject win32_service | Where-Object {$_.name -eq "nodemanager"}))
 {
     Restart-Service nodemanager;
 }
+
+
+# Log that this script was run so we have usage numbers.
+$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?Azure_HDI_Setup_Windows.ps1") | Out-Null

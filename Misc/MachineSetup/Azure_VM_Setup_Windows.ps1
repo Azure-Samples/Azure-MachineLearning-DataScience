@@ -13,16 +13,17 @@
 #    permissions and limitations under the License.
 #
 ################################################################################
+param([string]$IPythonPassword, [string]$AccountPassword)
 $previous_pwd = $pwd
 
 $sysDrive = (Get-ChildItem env:SYSTEMDRIVE).Value
 $web_client = new-object System.Net.WebClient
-$pathToAnaconda=  $sysDrive + "\Anaconda"
+$pathToAnaconda =  $sysDrive + "\Anaconda"
 $notebook_dir =  $env:userprofile + "\ipython_notebooks"
 
-function DownloadAndInstall($DownloadPath, $ArgsForInstall)
+function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
 {
-    $LocalPath = [IO.Path]::GetTempFileName() + ".exe"
+    $LocalPath = [IO.Path]::GetTempFileName() + "." + $DownloadFileType
     $web_client.DownloadFile($DownloadPath, $LocalPath)
 
     Start-Process -FilePath $LocalPath -ArgumentList $ArgsForInstall -Wait
@@ -42,17 +43,22 @@ function InstallAnacondaAndPythonDependencies
         #Anaconda adds itself to the path, but unfortunately after the python2.7 install.  We override this by setting the path here.
         $addToPath =  $pathToAnaconda+ ";"  + $pathToAnaconda + "\Scripts;" + $sysDrive + "\python27;" 
         [Environment]::SetEnvironmentVariable("Path", $addToPath + $env:Path, "Machine")
-
-        # TODO: We might want to be updating each time?
-        Write-Output "Updating Pandas"
-        Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
-
-        Write-Output "pip install azure"
-        Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azure" -Wait
-
-        Write-Output "pip install azureml"
-        Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install azureml" -Wait
     }
+
+    Write-Output "Updating IPython"
+    Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes ipython" -Wait
+
+    Write-Output "Updating Pandas"
+    Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
+
+    Write-Output "pip install/upgrade azure"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azure" -Wait
+
+    Write-Output "pip install/upgrade azureml"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
+
+    Write-Output "easy_install pyodbc"
+    Start-Process -FilePath "$pathToAnaconda\scripts\easy_install" -ArgumentList "https://pyodbc.googlecode.com/files/pyodbc-3.0.7.win-amd64-py2.7.exe" -Wait
 }
 
 function InstallOpenSSL
@@ -97,7 +103,6 @@ function SetupIPythonNotebookService
 
     if(-Not $(Test-Path $IPythonProfile))
     {
-        # TODO TODO TODOInstall OpenSSL 
         # set config and IPython
         Write-Output "Creating NBServer"
         Start-Process -FilePath "$pathToAnaconda\scripts\ipython.exe" -ArgumentList "profile create nbserver" -Wait
@@ -106,10 +111,16 @@ function SetupIPythonNotebookService
         Write-Output "Creating Certificate for IPython"
         iex "OpenSSL req -x509 -nodes -days 365 -subj '/C=US/ST=WA/L=Redmond/CN=cloudapp.net' -newkey rsa:1024 -keyout mycert.pem -out mycert.pem"
 
-        # NOTE: THIS PROMPTS THE USER
-        Write-Output "We need you to create a password for your Notebook...  PLEASE ENTER IN A PASSWORD BELOW..."
-        $passwordHash = iex "$(Join-Path $pathToAnaconda python.exe) -c 'import IPython;print IPython.lib.passwd()'" | Tee-Object -Variable passwordHash
-        if($passwordHash -is [system.array]){ $passwordHash = $passwordHash[-1] }
+        if ($IPythonPassword) {
+            Write-Output "Using supplied password for your Notebook"
+            $passwordHash = iex "$(Join-Path $pathToAnaconda python.exe) -c 'import IPython;print IPython.lib.passwd(''$IPythonPassword'')'" | Tee-Object -Variable passwordHash
+        }
+        else {
+            # NOTE: THIS PROMPTS THE USER
+            Write-Output "We need you to create a password for your Notebook...  PLEASE ENTER IN A PASSWORD BELOW..."
+            $passwordHash = iex "$(Join-Path $pathToAnaconda python.exe) -c 'import IPython;print IPython.lib.passwd()'" | Tee-Object -Variable passwordHash
+            if($passwordHash -is [system.array]){ $passwordHash = $passwordHash[-1] }
+        }
 
         if (!(Test-Path $notebook_dir)) {
             mkdir $notebook_dir
@@ -157,16 +168,34 @@ function ScheduleAndStartIPython(){
     
     # Register Task.  Get password and null out as soon as done.
     $username = [Environment]::UserName
-    Write-Output "In order to start IPython each time the machine starts we need the password for your current account ($username)"
-    $SecurePassword = Read-Host -Prompt "Enter the password for account '$username'" -AsSecureString 
-    $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $SecurePassword 
-    $PlainPassword = $Credentials.GetNetworkCredential().Password 
-    Register-ScheduledTask $taskName -Action $action -Trigger $trigger -Settings $settings -User $username -Password $PlainPassword    
-    $PlainPassword = $null
+    if ($AccountPassword) {
+        Write-Output "Using supplied account password"
+    }
+    else {
+        Write-Output "In order to start IPython each time the machine starts we need the password for your current account ($username)"
+        $SecureAccountPassword = Read-Host -Prompt "Enter the password for account '$username'" -AsSecureString
+        $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $SecureAccountPassword 
+        $AccountPassword = $Credentials.GetNetworkCredential().Password 
+    } 
+    Register-ScheduledTask $taskName -Action $action -Trigger $trigger -Settings $settings -User $username -Password $AccountPassword    
+    $AccountPassword = $null
 
     # If the user wants to stop the auto restart of IPython run 'Unregister-ScheduledTask Start_IPython_Notebook'
     Write-Output "Starting IPython Notebook Service"
     Start-ScheduledTask -TaskName $taskName
+}
+
+function SetupSQLServerAccess
+{
+    Write-Output "Open port on firewall for SQL Server"
+    Import-Module NetSecurity
+    New-NetFirewallRule -Action Allow `
+        -Name Allow_SQL_Server `
+        -DisplayName "Allow SQL Server" `
+        -Description "Local 1433 Port for SQL Server Traffic" `
+        -Profile Any `
+        -Protocol TCP `
+        -LocalPort 1433
 }
 
 function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination_dir)
@@ -199,6 +228,7 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
 }
 
 function GetSampleNotebooksFromGit(){
+    Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
     $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/iPythonNotebooks/"
     $notebook_list_name = "Notebook_List.txt"
     $destination_dir = Join-Path $notebook_dir "AzureMLSamples"
@@ -206,13 +236,37 @@ function GetSampleNotebooksFromGit(){
     DownloadRawFromGitWithFileList $base_url $notebook_list_name $destination_dir
 }
 
+function InstallAzureUtilities(){
+    # Install AzCopy
+    Write-Output "Install Azure Utilities: AzCopy"
+    DownloadAndInstall "http://aka.ms/downloadazcopy" "/quiet" "msi"
+    [Environment]::SetEnvironmentVariable("Path", "${env:ProgramFiles(x86)}\Microsoft SDKs\Azure\AzCopy;" + $env:Path, "Machine")
+
+    # Install Azure Storage Explorer
+    Write-Output "Install Azure Utilities: Azure Storage Explorer"
+    $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
+    $web_client.DownloadFile("http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=azurestorageexplorer&DownloadId=891668&FileTime=130530255103730000&Build=20959", $LocalPath)
+    # Unzip to get the exe, then install...
+    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+    $ExtractDirectory = [IO.Path]::GetTempFileName() # makes file, delete file and mkdir
+    rm $ExtractDirectory
+    mkdir $ExtractDirectory
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($LocalPath, $ExtractDirectory)
+    Start-Process -FilePath "${ExtractDirectory}\AzureStorageExplorer3Preview1.exe" -ArgumentList "/S /v/qn"
+}
+
 ###################### End of Functions / Start of Script ######################
-Write-Host "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
-Write-Host "Other OS Versions may work but are not officially supported."
+Write-Output "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
+Write-Output "Other OS Versions may work but are not officially supported."
 
 InstallAnacondaAndPythonDependencies
 GetSampleNotebooksFromGit
+InstallAzureUtilities
 SetupIPythonNotebookService
 ScheduleAndStartIPython
+SetupSQLServerAccess
+
+# Log that this script was run so we have usage numbers.
+$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?Azure_VM_Setup_Windows.ps1") | Out-Null
 
 cd $previous_pwd

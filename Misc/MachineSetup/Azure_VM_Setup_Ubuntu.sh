@@ -76,17 +76,20 @@ InstallAnacondaAndPythonDependencies()
         mkdir -p $HOME/anaconda
         cd $HOME/anaconda;curl -O http://09c8d0b2229f813c1b93-c95ac804525aac4b6dba79b00b39d1d3.r79.cf1.rackcdn.com/Anaconda-2.1.0-Linux-x86_64.sh
         cd $HOME/anaconda;sudo bash Anaconda-2.1.0-Linux-x86_64.sh -b -f -p /anaconda
-        cd /anaconda/bin;./conda update -f ipython --yes
-
-        # Install Azure and AzureML API SDKs
-        sudo apt-get -y install python-pip
-        sudo pip install --install-option="--prefix=/anaconda/" azure
-        sudo pip install --install-option="--prefix=/anaconda/" azureml
+        sudo /anaconda/bin/conda update -f ipython --yes
+        sudo /anaconda/bin/conda update -f pandas --yes
     fi
+    
+    # Install Azure and AzureML API SDKs
+    sudo apt-get -y install python-pip
 
     # Update the packages on every run (just in case they have changed since the user first ran this script)
-    sudo pip install --upgrade --install-option="--prefix=/anaconda/" azure
-    sudo pip install --upgrade --install-option="--prefix=/anaconda/" azureml
+    sudo pip install -U --install-option="--prefix=/anaconda/" azure
+    sudo pip install -U --install-option="--prefix=/anaconda/" azureml
+
+    sudo apt-get -y install python-dev
+    sudo apt-get -y install unixodbc-dev
+    sudo pip install -U --install-option="--prefix=/anaconda/" https://pyodbc.googlecode.com/files/pyodbc-3.0.7.zip
 }
 
 SetupIPythonNotebookService()
@@ -161,4 +164,8 @@ InstallAnacondaAndPythonDependencies
 GetSampleNotebooksFromGit
 SetupIPythonNotebookService # Make sure this is last in the script as this start IPython Notebook Service
 StartIPythonNotebookService
+
+# Log that this script was run so we have usage numbers.
+curl -o /dev/null "http://pageviews.azurewebsites.net/pageview?Azure_VM_Setup_Ubuntu.sh"
+
 cd $prev_dir
