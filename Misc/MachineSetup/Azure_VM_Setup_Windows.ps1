@@ -13,7 +13,7 @@
 #    permissions and limitations under the License.
 #
 ################################################################################
-param([string]$IPythonPassword, [string]$AccountPassword)
+param([string]$AccountPassword, [string]$IPythonPassword)
 $previous_pwd = $pwd
 
 $sysDrive = (Get-ChildItem env:SYSTEMDRIVE).Value
@@ -177,7 +177,7 @@ function ScheduleAndStartIPython(){
         $Credentials = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $SecureAccountPassword 
         $AccountPassword = $Credentials.GetNetworkCredential().Password 
     } 
-    Register-ScheduledTask $taskName -Action $action -Trigger $trigger -Settings $settings -User $username -Password $AccountPassword    
+    Register-ScheduledTask $taskName -Action $action -Trigger $trigger -Settings $settings -User "${username}" -Password "${AccountPassword}"
     $AccountPassword = $null
 
     # If the user wants to stop the auto restart of IPython run 'Unregister-ScheduledTask Start_IPython_Notebook'
