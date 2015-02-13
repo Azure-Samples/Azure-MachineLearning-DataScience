@@ -72,3 +72,7 @@ if ((Get-WMIObject win32_service | Where-Object {$_.name -eq "nodemanager"}))
 {
     Restart-Service nodemanager;
 }
+
+
+# Log that this script was run so we have usage numbers.
+$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?AzureML_HDI_Setup.ps1") | Out-Null

@@ -266,4 +266,7 @@ SetupIPythonNotebookService
 ScheduleAndStartIPython
 SetupSQLServerAccess
 
+# Log that this script was run so we have usage numbers.
+$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?AzureML_WindowsSetup.ps1") | Out-Null
+
 cd $previous_pwd
