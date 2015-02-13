@@ -26,7 +26,7 @@ echo "IPythonPassword:$IPythonPassword"
 
 # Download the AzureML Windows setup script
 $web_client = new-object System.Net.WebClient
-$url="https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/MachineSetup/AzureML_WindowsSetup.ps1"
+$url="https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/MachineSetup/Azure_VM_Setup_Windows.ps1"
 $ps1Path = [IO.Path]::GetTempFileName() + ".ps1"
 $web_client.DownloadFile($url, $ps1Path)
 
@@ -39,4 +39,4 @@ Disable-PSRemoting -Force
 echo "Ending CustomScript process"
 
 # Log that this script was run so we have usage numbers.
-$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?AzureML_WindowsSetup.ps1") | Out-Null
+$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?Azure_VM_CustomScript_Windows.ps1") | Out-Null
