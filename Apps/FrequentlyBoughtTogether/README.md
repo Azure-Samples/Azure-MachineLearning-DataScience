@@ -12,3 +12,6 @@ Here you will find 2 working code samples that demonstrate how to use the API.
 **[JosephMart](./JosephMart)** - Deploy a fully featured retail website and customize it with Frequently Bought Together Recommendations in a just few minutes.
 
 **[Model Manager Web App](./ModelManager)** - Single page web application demonstrates creating, training, and scoring Frequently Bought Together models using client side HTML5 and jquery.
+
+**[Model Explorer Web App](./ModelExplorer)** - Single page web application demonstrates exploring FBT and Recommendation models using client side HTML5 and jquery.
+
