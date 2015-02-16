@@ -19,7 +19,8 @@ $previous_pwd = $pwd
 $sysDrive = (Get-ChildItem env:SYSTEMDRIVE).Value
 $web_client = new-object System.Net.WebClient
 $pathToAnaconda =  $sysDrive + "\Anaconda"
-$notebook_dir =  $env:userprofile + "\ipython_notebooks"
+$notebook_dir =  $env:userprofile + "\Documents\IPython Notebooks"
+$script_dir = $env:userprofile + "\Documents\Data Science Scripts"
 
 function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
 {
@@ -236,6 +237,15 @@ function GetSampleNotebooksFromGit(){
     DownloadRawFromGitWithFileList $base_url $notebook_list_name $destination_dir
 }
 
+function GetSampleScriptsFromGit(){
+    Write-Output "Getting Sample Scripts from Azure-MachineLearning-DataScience Git Repository"
+    $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/DataScienceScripts/"
+    $script_list_name = "Script_List.txt"
+    $destination_dir = $script_dir
+
+    DownloadRawFromGitWithFileList $base_url $script_list_name $destination_dir
+}
+
 function InstallAzureUtilities(){
     # Install AzCopy
     Write-Output "Install Azure Utilities: AzCopy"
@@ -256,11 +266,12 @@ function InstallAzureUtilities(){
 }
 
 ###################### End of Functions / Start of Script ######################
-Write-Output "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
+Write-Output "This script has been tested against the Azure Virtual Machine Images for 'Windows Server 2012 R2 Datacenter' and 'SQL Server 2012'"
 Write-Output "Other OS Versions may work but are not officially supported."
 
 InstallAnacondaAndPythonDependencies
 GetSampleNotebooksFromGit
+GetSampleScriptsFromGit
 InstallAzureUtilities
 SetupIPythonNotebookService
 ScheduleAndStartIPython
