@@ -229,10 +229,9 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
     }
 }
 
-function GetSampleFilesFromGit($base_url, $list_name, $destination_dir){
+function GetSampleFilesFromGit($gitdir_name, $list_name, $destination_dir){
     #Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
-    $file_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/" + $base_url + "/"
-    
+    $file_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/" + $gitdir_name + "/"
     DownloadRawFromGitWithFileList $file_url $list_name $destination_dir
 }
 
