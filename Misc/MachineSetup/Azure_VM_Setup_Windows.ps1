@@ -236,14 +236,6 @@ function GetSampleFilesFromGit($base_url, $list_name, $destination_dir){
     DownloadRawFromGitWithFileList $file_url $list_name $destination_dir
 }
 
-function GetSampleScriptsFromGit(){
-    Write-Output "Getting Sample Scripts from Azure-MachineLearning-DataScience Git Repository"
-    $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/DataScienceScripts/"
-    $script_list_name = "Script_List.txt"
-    $destination_dir = $script_dir
-
-    DownloadRawFromGitWithFileList $base_url $script_list_name $destination_dir
-}
 
 function InstallAzureUtilities(){
     # Install AzCopy
