@@ -1,1 +1,8 @@
-Dummy Script.ps1
+LICENSE.txt
+bcp_parallel_generic.ps1
+bcp_parallel_nyctaxi.ps1
+change_auth.sql
+create_db_default.sql
+create_partitioned_index.sql
+create_partitioned_table.sql
+sample_queries.sql
