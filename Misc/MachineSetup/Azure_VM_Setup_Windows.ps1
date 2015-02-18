@@ -44,6 +44,7 @@ function InstallAnacondaAndPythonDependencies
         #Anaconda adds itself to the path, but unfortunately after the python2.7 install.  We override this by setting the path here.
         $addToPath =  $pathToAnaconda+ ";"  + $pathToAnaconda + "\Scripts;" + $sysDrive + "\python27;" 
         [Environment]::SetEnvironmentVariable("Path", $addToPath + $env:Path, "Machine")
+        $env:Path=[System.Environment]::GetEnvironmentVariable("Path","Machine")
     }
 
     Write-Output "Updating IPython"
@@ -228,23 +229,12 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
     }
 }
 
-function GetSampleNotebooksFromGit(){
-    Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
-    $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/iPythonNotebooks/"
-    $notebook_list_name = "Notebook_List.txt"
-    $destination_dir = Join-Path $notebook_dir "AzureMLSamples"
-
-    DownloadRawFromGitWithFileList $base_url $notebook_list_name $destination_dir
+function GetSampleFilesFromGit($gitdir_name, $list_name, $destination_dir){
+    #Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
+    $file_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/" + $gitdir_name + "/"
+    DownloadRawFromGitWithFileList $file_url $list_name $destination_dir
 }
 
-function GetSampleScriptsFromGit(){
-    Write-Output "Getting Sample Scripts from Azure-MachineLearning-DataScience Git Repository"
-    $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/DataScienceScripts/"
-    $script_list_name = "Script_List.txt"
-    $destination_dir = $script_dir
-
-    DownloadRawFromGitWithFileList $base_url $script_list_name $destination_dir
-}
 
 function InstallAzureUtilities(){
     # Install AzCopy
@@ -270,8 +260,14 @@ Write-Output "This script has been tested against the Azure Virtual Machine Imag
 Write-Output "Other OS Versions may work but are not officially supported."
 
 InstallAnacondaAndPythonDependencies
-GetSampleNotebooksFromGit
-GetSampleScriptsFromGit
+#GetSampleNotebooksFromGit
+#GetSampleScriptsFromGit
+Write-Output "Fetching the sample IPython Notebooks..."
+$dest_dir = $notebook_dir + "\DataScienceSamples"
+GetSampleFilesFromGit "iPythonNotebooks" "Notebook_List.txt" $dest_dir
+Write-Output "Fetching the sample script files..."
+$dest_dir = $script_dir
+GetSampleFilesFromGit "DataScienceScripts" "Script_List.txt" $dest_dir
 InstallAzureUtilities
 SetupIPythonNotebookService
 ScheduleAndStartIPython

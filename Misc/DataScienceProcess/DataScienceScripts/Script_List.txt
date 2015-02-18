@@ -6,3 +6,5 @@ create_db_default.sql
 create_partitioned_index.sql
 create_partitioned_table.sql
 sample_queries.sql
+nyctaxi_trip.xml
+nyctaxi_fare.xml
