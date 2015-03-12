@@ -47,8 +47,8 @@ function InstallAnacondaAndPythonDependencies
         $env:Path=[System.Environment]::GetEnvironmentVariable("Path","Machine")
     }
 
-    Write-Output "Updating IPython"
-    Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes ipython" -Wait
+    #Write-Output "Updating IPython"
+    #Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes ipython" -Wait
 
     Write-Output "Updating Pandas"
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
