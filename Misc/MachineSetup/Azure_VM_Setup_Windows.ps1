@@ -75,7 +75,7 @@ function InstallOpenSSL
         DownloadAndInstall -DownloadPath "http://download.microsoft.com/download/1/1/1/1116b75a-9ec3-481a-a3c8-1777b5381140/vcredist_x86.exe" -ArgsForInstall "/Q ADDEPLOY=1"
         Write-Output "Install OpenSSL Light"
         $silentArgs = '/silent /verysilent /sp- /suppressmsgboxes /DIR="' + $opensslInstallDir + '"'
-        DownloadAndInstall -DownloadPath "http://slproweb.com/download/Win32OpenSSL_Light-1_0_1L.exe" -ArgsForInstall $silentArgs
+        DownloadAndInstall -DownloadPath "http://slproweb.com/download/Win32OpenSSL_Light-1_0_2a.exe" -ArgsForInstall $silentArgs
 
         # Add Config to the path.
         $env:Path = $env:path + ";$opensslInstallDir\bin"
