@@ -1,3 +1,6 @@
+    set R=3959;
+    set pi=radians(180);
+
     select
         t.medallion, 
         t.hack_license,
@@ -16,6 +19,7 @@
         t.pickup_latitude,
         t.dropoff_longitude,
         t.dropoff_latitude,
+	t.direct_distance,
         f.payment_type, 
         f.fare_amount, 
         f.surcharge, 
@@ -44,12 +48,18 @@
             pickup_latitude,
             dropoff_longitude,
             dropoff_latitude,
+	    ${hiveconf:R}*2*2*atan((1-sqrt(1-pow(sin((dropoff_latitude-pickup_latitude)
+        	*${hiveconf:pi}/180/2),2)-cos(pickup_latitude*${hiveconf:pi}/180)
+        	*cos(dropoff_latitude*${hiveconf:pi}/180)*pow(sin((dropoff_longitude-pickup_longitude)*${hiveconf:pi}/180/2),2)))
+        	/sqrt(pow(sin((dropoff_latitude-pickup_latitude)*${hiveconf:pi}/180/2),2)
+        	+cos(pickup_latitude*${hiveconf:pi}/180)*cos(dropoff_latitude*${hiveconf:pi}/180)*
+        	pow(sin((dropoff_longitude-pickup_longitude)*${hiveconf:pi}/180/2),2))) as direct_distance,
             rand() as sample_key 
         from nyctaxidb.trip
-        where pickup_latitude between 30 and 60
-            and pickup_longitude between -90 and -60
-            and dropoff_latitude between 30 and 60
-            and dropoff_longitude between -90 and -60
+        where pickup_latitude between 30 and 90
+            and pickup_longitude between -90 and -30
+            and dropoff_latitude between 30 and 90
+            and dropoff_longitude between -90 and -30
     )t
     join
     (
