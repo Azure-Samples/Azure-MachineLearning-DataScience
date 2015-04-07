@@ -1,7 +1,7 @@
 set R = 3959;
 set pi=radians(180);
 
-create table if not exists nyctaxidb.nyctaxi_downsampled_data (
+create table if not exists nyctaxidb.nyctaxi_downsampled_dataset (
 
         medallion string,
         hack_license string,
