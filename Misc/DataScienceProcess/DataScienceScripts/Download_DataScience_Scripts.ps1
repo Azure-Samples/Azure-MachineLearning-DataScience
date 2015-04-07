@@ -58,3 +58,9 @@ $url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScienc
 $file = "c:\temp\sample_hive_prepare_for_aml.hql"
     
 $clnt.DownloadFile($url,$file)
+
+$url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/DataScienceScripts/sample_hive_prepare_for_aml_full.hql"
+    	
+$file = "c:\temp\sample_hive_prepare_for_aml_full.hql"
+    
+$clnt.DownloadFile($url,$file)
