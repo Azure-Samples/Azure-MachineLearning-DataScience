@@ -1,0 +1,1 @@
+SELECT COUNT(DISTINCT(Col15)) AS num_uniques FROM criteo.criteo_train;
