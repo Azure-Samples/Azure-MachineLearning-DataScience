@@ -248,7 +248,7 @@ function InstallAzureUtilities(){
     # Install Azure Storage Explorer
     Write-Output "Install Azure Utilities: Azure Storage Explorer"
     $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
-    $web_client.DownloadFile("http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=azurestorageexplorer&DownloadId=891668&FileTime=130530255103730000&Build=20959", $LocalPath)
+    $web_client.DownloadFile("http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=azurestorageexplorer&DownloadId=891668&FileTime=130530255103730000&Build=21018", $LocalPath)
     # Unzip to get the exe, then install...
     [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
     $ExtractDirectory = [IO.Path]::GetTempFileName() # makes file, delete file and mkdir
