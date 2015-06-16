@@ -19,7 +19,8 @@ $previous_pwd = $pwd
 $sysDrive = (Get-ChildItem env:SYSTEMDRIVE).Value
 $web_client = new-object System.Net.WebClient
 $pathToAnaconda =  $sysDrive + "\Anaconda"
-$notebook_dir =  $env:userprofile + "\ipython_notebooks"
+$notebook_dir =  $env:userprofile + "\Documents\IPython Notebooks"
+$script_dir = $env:userprofile + "\Documents\Data Science Scripts"
 
 function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
 {
@@ -43,10 +44,14 @@ function InstallAnacondaAndPythonDependencies
         #Anaconda adds itself to the path, but unfortunately after the python2.7 install.  We override this by setting the path here.
         $addToPath =  $pathToAnaconda+ ";"  + $pathToAnaconda + "\Scripts;" + $sysDrive + "\python27;" 
         [Environment]::SetEnvironmentVariable("Path", $addToPath + $env:Path, "Machine")
+        $env:Path=[System.Environment]::GetEnvironmentVariable("Path","Machine")
     }
 
+    Write-Output "Install jsonschema"
+    Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install jsonschema" -Wait
+
     Write-Output "Updating IPython"
-    Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes ipython" -Wait
+    Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes ipython=3.0" -Wait
 
     Write-Output "Updating Pandas"
     Start-Process -FilePath "$pathToAnaconda\scripts\conda.exe" -ArgumentList "update --yes pandas" -Wait
@@ -70,7 +75,7 @@ function InstallOpenSSL
         DownloadAndInstall -DownloadPath "http://download.microsoft.com/download/1/1/1/1116b75a-9ec3-481a-a3c8-1777b5381140/vcredist_x86.exe" -ArgsForInstall "/Q ADDEPLOY=1"
         Write-Output "Install OpenSSL Light"
         $silentArgs = '/silent /verysilent /sp- /suppressmsgboxes /DIR="' + $opensslInstallDir + '"'
-        DownloadAndInstall -DownloadPath "http://slproweb.com/download/Win32OpenSSL_Light-1_0_1L.exe" -ArgsForInstall $silentArgs
+        DownloadAndInstall -DownloadPath "http://slproweb.com/download/Win32OpenSSL_Light-1_0_2a.exe" -ArgsForInstall $silentArgs
 
         # Add Config to the path.
         $env:Path = $env:path + ";$opensslInstallDir\bin"
@@ -227,14 +232,12 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
     }
 }
 
-function GetSampleNotebooksFromGit(){
-    Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
-    $base_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/iPythonNotebooks/"
-    $notebook_list_name = "Notebook_List.txt"
-    $destination_dir = Join-Path $notebook_dir "AzureMLSamples"
-
-    DownloadRawFromGitWithFileList $base_url $notebook_list_name $destination_dir
+function GetSampleFilesFromGit($gitdir_name, $list_name, $destination_dir){
+    #Write-Output "Getting Sample Notebooks from Azure-MachineLearning-DataScience Git Repository"
+    $file_url = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/DataScienceProcess/" + $gitdir_name + "/"
+    DownloadRawFromGitWithFileList $file_url $list_name $destination_dir
 }
+
 
 function InstallAzureUtilities(){
     # Install AzCopy
@@ -256,11 +259,18 @@ function InstallAzureUtilities(){
 }
 
 ###################### End of Functions / Start of Script ######################
-Write-Output "This script has been tested against the Azure Virtual Machine Image for 'Windows Server 2012 R2 Datacenter'"
+Write-Output "This script has been tested against the Azure Virtual Machine Images for 'Windows Server 2012 R2 Datacenter' and 'SQL Server 2012'"
 Write-Output "Other OS Versions may work but are not officially supported."
 
 InstallAnacondaAndPythonDependencies
-GetSampleNotebooksFromGit
+#GetSampleNotebooksFromGit
+#GetSampleScriptsFromGit
+Write-Output "Fetching the sample IPython Notebooks..."
+$dest_dir = $notebook_dir + "\DataScienceSamples"
+GetSampleFilesFromGit "iPythonNotebooks" "Notebook_List.txt" $dest_dir
+Write-Output "Fetching the sample script files..."
+$dest_dir = $script_dir
+GetSampleFilesFromGit "DataScienceScripts" "Script_List.txt" $dest_dir
 InstallAzureUtilities
 SetupIPythonNotebookService
 ScheduleAndStartIPython

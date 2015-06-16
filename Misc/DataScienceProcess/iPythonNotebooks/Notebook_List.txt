@@ -1,1 +1,3 @@
-Dummy Notebook.ipynb
+LICENSE.txt
+machine-Learning-data-science-process-sql-walkthrough.ipynb
+machine-Learning-data-science-process-blob-walkthrough.ipynb

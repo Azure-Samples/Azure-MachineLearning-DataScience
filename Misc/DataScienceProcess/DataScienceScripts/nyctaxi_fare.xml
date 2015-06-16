@@ -1,0 +1,29 @@
+﻿<?xml version="1.0"?>
+<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <RECORD>
+  <FIELD ID="1" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="50" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="2" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="50" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="3" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="3" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="4" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="24"/>
+  <FIELD ID="5" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="3" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="6" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="7" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="8" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="9" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="10" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="11" xsi:type="CharTerm" TERMINATOR="\r\n" MAX_LENGTH="30"/>
+ </RECORD>
+ <ROW>
+  <COLUMN SOURCE="1" NAME="medallion" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="2" NAME="hack_license" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="3" NAME="vendor_id" xsi:type="SQLCHAR"/>
+  <COLUMN SOURCE="4" NAME="pickup_datetime" xsi:type="SQLDATETIME"/>
+  <COLUMN SOURCE="5" NAME="payment_type" xsi:type="SQLCHAR"/>
+  <COLUMN SOURCE="6" NAME="fare_amount" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="7" NAME="surcharge" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="8" NAME="mta_tax" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="9" NAME="tip_amount" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="10" NAME="tolls_amount" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="11" NAME="total_amount" xsi:type="SQLFLT8"/>
+ </ROW>
+</BCPFORMAT>

@@ -1,0 +1,426 @@
+﻿
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Azure Machine Learning - Basket Market Analysis</title>
+        <link href="marketbasket.css" rel="stylesheet" />
+        
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="//ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <!-- Bootstrap -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    </head>
+
+    <body>
+        <header>
+            <div class="title-bar">
+                <div class="content-wrapper">
+                    <div class="float-left">
+                        <p class="site-title">
+                            Microsoft Azure <span class="site-title-2">Machine Learning</span>
+                        </p>
+                    </div>
+                    <div class="float-right">
+                        <section id="login"></section>
+                        <nav>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div id="body">    
+            <section class="featured">
+                <div class="content-wrapper">
+                    <h2>Market Basket Analysis Service</h2>
+                </div>
+            </section>
+            <section class="content-wrapper main-content clear-fix">
+                
+                <form role="form">
+                    <div class="form-group">
+                        <label for="apiKey">Account Key</label>
+                        <input type="password" class="form-control" id="appIdKeyId"  placeholder="">
+                        <p class="help-block">Microsoft Azure Marketplace Account Key. <a href="https://datamarket.azure.com/account" target="_blank" > Account Information</a></p>
+                    </div>
+                    <button type="button" id="testConnectionBtn" class="btn btn-primary" onclick="testConnection()">Validate Connection</button>
+                    <td><span id="connectionError" style="font-size:Medium;color: red" hidden>Failed. Please make sure that you are using the correct account key.</span></td>
+                    <td><span id="connectionSucceeded" style="font-size:Medium;color: green" hidden>Succeeded.</span></td>
+                </form>
+                <hr/>
+                <h3>Create & Train New Model:</h3>
+                <form role="form">
+                    <div class="form-group">
+                        <label for="modelIdLabel">Model Name</label>
+                        <input type="text" class="form-control" id="modelId" placeholder="">
+                        <p class="help-block">Identifier to refer to the model.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="minOccurrenceLabel">Minimum Occurrences</label>
+                        <input type="number" class="form-control" id="minOccurrences" placeholder="">
+                        <p class="help-block">Minimum Number of Occurences a item needs to be seen to be considered frequent.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="maximunItemsLabel">Maximum Frequent Set Size</label>
+                        <select class="form-control" id="maxItemsSetSize">
+                            <option>2</option>
+                            <option>3</option>
+                        </select>
+                        
+                        <p class="help-block">Maximum Items in a Frequent Set.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputFile">Training File</label>
+                        <input type="file" id="uploadBtn">
+                        <p class="help-block">A comma-separated value (CSV) file. Each row consists of transaction id and item id pairs. <a href="transactions.csv"> View Sample Input File</a></p>
+                    </div>
+                    <button type="button" id="createModelBtn" class="btn btn-primary" onclick="createModelFlow()">Submit</button>
+                    
+                                       
+                </form>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-success progress-bar-striped" id="progressBarId" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                        
+                    </div>
+                </div>
+                <td><span id="modelCreationStatus" style="font-size:Medium; color: green"></span></td>
+                
+
+                <hr />
+                <h3>Test Model:</h3>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="modelIdLabel" class="col-sm-2 control-label">Model Name</label>
+                        <div class="col-sm-4" >
+                            <select class="form-control" id="modelsCombo"></select>
+                        </div>
+                        <div >
+                            <button type="button" class="btn btn-default" onclick="listModels()">
+                                <span class="glyphicon glyphicon-refresh"></span> 
+                            </button>
+                        </div>
+                        </div>
+                    <div class="form-group">
+                        <label for="itemIdLabel" class="col-sm-2 control-label">Item Id</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="itemId" placeholder="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="button" id="sumitScore" class="btn btn-primary" onclick="score()">Submit</button>
+                        </div>
+                    </div>  
+                </form>
+                <h4>Output:</h4>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="basketItemsLabel" class="col-sm-2 control-label">Basket Items</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="basketItems" style="cursor: text; background-color: white;" placeholder="" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="scoreLabel" class="col-sm-2 control-label">Score</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="score" style="cursor: text; background-color: white;" placeholder="" readonly>
+                        </div>
+                    </div>
+                </form>
+                <td><span id="scoreError" style="font-size:Medium;color: red" hidden>Failed. Please make sure that the model is in valid state.</span></td>
+                <hr />
+                <h3 hidden>Models:</h3>
+                <table hidden class="table" id="my-table">
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+        
+        <script> 
+
+            // to call via the marketplace this line would be:
+            // var serviceBasePath = "https://api.datamarket.azure.com/data.ashx/PUBLISHER_NAME/OFFER_NAME/v1";
+            var serviceBasePath = "/odata";
+            
+            function testConnection() {
+                document.getElementById("testConnectionBtn").disabled = true;
+                document.getElementById("connectionError").hidden = true;
+                document.getElementById("connectionSucceeded").hidden = true;
+                $.ajax({
+                    url: serviceBasePath + "/List",
+                    type: "GET",
+                    dataType: "json",
+                    success: function () {
+                        document.getElementById("testConnectionBtn").disabled = false;
+                        document.getElementById("connectionError").hidden = true;
+                        document.getElementById("connectionSucceeded").hidden = false;
+                        listModels();
+                    },
+                    error: function () {
+                        document.getElementById("testConnectionBtn").disabled = false;
+                        document.getElementById("connectionError").hidden = false;
+                        document.getElementById("connectionSucceeded").hidden = true;
+
+                    },
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", getAuthorizationHeaderValue());
+                    }
+                });
+            };
+
+            function score() {
+                var combo = document.getElementById("modelsCombo");
+                var modelId = combo.options[combo.selectedIndex].text;
+                var itemId = document.getElementById("itemId").value;
+                document.getElementById("basketItems").value = "";
+                document.getElementById("score").value = "";
+                document.getElementById("basketItems").value = "";
+                document.getElementById("sumitScore").disabled = true;
+                document.getElementById("scoreError").hidden = true;
+
+                $.ajax({
+                    url: serviceBasePath + "/Score?Id=" + modelId + "&Item=" + itemId,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (json) {
+                        if (json.ItemSet != undefined) {
+                            document.getElementById("basketItems").value = json.ItemSet;
+                        } else {
+                            document.getElementById("basketItems").value = "None";
+                        }
+                        if (json.Score != undefined) {
+                            document.getElementById("score").value = json.Score;
+                        } else {
+                            document.getElementById("score").value = "N/A";
+                        }
+
+                        document.getElementById("sumitScore").disabled = false;
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                        document.getElementById("sumitScore").disabled = false;
+                        document.getElementById("scoreError").hidden = false;
+                    },
+
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", getAuthorizationHeaderValue());
+                    }
+                });
+            };
+
+            function listModels() {
+                $.ajax({
+                    url: serviceBasePath + "/List",
+                    type: "GET",
+                    dataType: "json",
+                    success: function (json) {
+                        var combo = document.getElementById("modelsCombo");
+                        var selectedIndex = combo.selectedIndex;
+                        var combo = "<select>";
+                        var table = "<table><thead><tr><th>Model Name </th><th>Status</th></thead><tbody>";
+                        $.each(json.value, function (i, item) {
+                            table += "<tr><td>" + item.Name + "</td>" + "<td>" + item.Status + "</td></tr>";
+                            if (item.ReadyForScoring) {
+                                combo += "<option value=\"" + item.Name + "\">" + item.Name + "</option>";
+                            }
+                        });
+                        table += "</tbody></table>";
+                        $("#my-table").html(table);
+                        combo += "</select>";
+                        $("#modelsCombo").html(combo);
+                        combo = document.getElementById("modelsCombo");
+                        combo.selectedIndex = selectedIndex;
+                    },
+
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", getAuthorizationHeaderValue());
+                    }
+                });
+            };
+
+            function createModelFlow() {
+                var modelId = document.getElementById("modelId").value;
+                var minOccurrences = document.getElementById("minOccurrences").value;
+                var maxItemsSetSize = document.getElementById("maxItemsSetSize").value;
+                updateProgressUIControls(0, "", false);
+                var callback = function () {
+                    createModel(modelId, minOccurrences, maxItemsSetSize);
+                };
+                sleep(500, callback);
+            }
+
+            function createModel(modelId, minOccurrences, maxItemsSetSize) {
+                var progress;
+                $.ajax({
+                    url: serviceBasePath + "/Create?Id=" + modelId + "&MinumumOccurrences=" + minOccurrences + "&maxItemsSetSize=" + maxItemsSetSize,
+                    type: "GET",
+                    dataType: "json",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", getAuthorizationHeaderValue());
+                    },
+                    success: function (json) {
+                        if (json.Success == false) {
+                            progress = 0;
+                            updateProgressUIControls(progress, "Failed. " + json.Message, true);
+                        } else {
+                            progress = 10;
+                            updateProgressUIControls(progress, "Model Created", false);
+                            uploadFile(modelId);
+                        }
+                    },
+                    error: function () {
+                        progress = 0;
+                        updateProgressUIControls(progress, "Failed. Couldn't create the model.", true);
+                    }
+                });
+            };
+
+            function uploadFile(modelId) {
+                var data = new FormData();
+
+                var files = $("#uploadBtn").get(0).files;
+
+                // Add the uploaded image content to the form data collection
+                if (files.length > 0) {
+                    data.append("UploadedData", files[0]);
+                }
+
+                // Make Ajax request with the contentType = false, and procesDate = false
+                $.ajax({
+                    type: "POST",
+                    url: serviceBasePath + "/Upload?Id=" + modelId,
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", getAuthorizationHeaderValue());
+                    },
+                    success: function () {
+                        console.log("upload file completed successfully");
+                        var progress = 20;
+                        updateProgressUIControls(progress, "Training File Uploaded", false);
+                        buildModel(modelId);
+                    },
+                    error: function () {
+                        var progress = 0;
+                        updateProgressUIControls(progress, "Failed. Couldn't upload training file.", true);
+                    }
+                });
+            };
+
+            function buildModel(modelId) {
+                $.ajax({
+                    url: serviceBasePath + "/Train?Id=" + modelId,
+                    type: "GET",
+                    dataType: "json",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", getAuthorizationHeaderValue());
+                    },
+                    success: function () {
+                        var progress = 30;
+                        updateProgressUIControls(progress, "Training Request Submitted", false);
+                        console.log("model build submitted");
+                        updateModelCreationProgress(modelId);
+                    },
+                    error: function () {
+                        var progress = 0;
+                        updateProgressUIControls(progress, "Failed. Couldn't submit training request.", true);
+                    }
+                });
+            };
+
+            function updateModelCreationProgress(modelId) {
+
+                $.ajax({
+                    url: serviceBasePath + "/Get?Id=" + modelId,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (json) {
+                        var progress = 30;
+                        var isError = false;
+                        switch (json.value[0].Status) {
+                            case "Data is Upload":
+                                break;
+                            case "Preparing the Model":
+                                progress = 40;
+                                break;
+                            case "Training the Model":
+                                progress = 50;
+                                break;
+                            case "Publishing Web Service":
+                                progress = 90;
+                                break;
+                            case "Deploying Web Service":
+                                progress = 95;
+                                break;
+                            case "Ready":
+                                progress = 100;
+                                break;
+                            default:
+                                isError = true;
+                                progress = 0;
+                                break;
+                        }
+                        updateProgressUIControls(progress, json.value[0].Status, isError);
+
+                        if (progress != 100 && !isError) {
+                            var callback = function() {
+                                updateModelCreationProgress(modelId);
+                            };
+                            sleep(4000, callback);
+                        };
+                    },
+
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("Authorization", getAuthorizationHeaderValue());
+                    }
+                });
+            };
+
+            function updateProgressUIControls(progress, status, isError) {
+                $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+                var elem = document.getElementById("modelCreationStatus");
+                elem.textContent = status;                                
+                if (isError == true) {
+                    elem.style.color = "red";
+                } else {
+                    elem.style.color = "green";
+                }
+                var button = document.getElementById("createModelBtn");
+                if (isError == false && progress != 100) {
+                    button.disabled = true;
+                } else {
+                    button.disabled = false;
+                    listModels();
+                }
+            };
+
+            function sleep(millis, callback) {
+                setTimeout(function ()
+                { callback(); }
+                , millis);
+            }
+
+            function getAuthorizationHeaderValue() {
+                apiKey = document.getElementById("appIdKeyId").value;
+
+                // to call via the marketplace this line would be:
+                // return "Basic " + window.btoa(apiKey + ":" + apiKey);
+
+                return "Basic " + window.btoa(apiKey + ":YOUR_SITE_SECRET");
+            }
+
+            $(document).ready(function () {
+                listModels();
+            });
+
+        </script> 
+    </body>
+</html>
+
+

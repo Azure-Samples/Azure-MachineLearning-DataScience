@@ -1,0 +1,197 @@
+﻿
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Recommendations Model Explorer</title>
+
+        <link href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.1/css/bootstrap.css" rel="stylesheet">
+        <link href="ModelExplorer.css" rel="stylesheet" />
+    </head>
+
+<body>
+    <header>
+        <div class="title-bar">
+            <div class="content-wrapper">
+                <div class="float-left">
+                    <p class="site-title">
+                        Microsoft Azure <span class="site-title-2">Machine Learning</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div>
+
+        <!-- Top Carousel of items -->
+        <section class="content-wrapper clear-fix" style="max-width: 880px;">
+            <h2>Products</h2>
+            <div data-bind="template: { name: 'SlicedData_Carousel' , data:topItems, params: {cols: 9, rows: 3, addToCart: true, thumb: 'small'} }"></div>
+        </section>
+
+        <!-- Product page Window -->
+        <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="max-width:910px; width: 100%; margin-top: 40px;">
+                <div class="modal-content">
+                    <button type="button" class="close" data-dismiss="modal" style="position: relative; z-index: 500;"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <div class="modal-body" data-bind="with: selectedItem">
+                        <div class="padded padded-top" data-bind="template: { name: 'MetaProduct_Preview' }"></div>
+
+                        <!-- ko if: $parent.models.fbt -->
+                        <h2>Frequently bought together</h2>
+                        <div data-bind="template: { name: 'FBT_Prediction' , data: $parent.models.fbt().scoreItems($data, numScoreItems) }"></div>
+                        <!-- /ko -->
+                        <!-- ko if: $parent.models.purchased -->
+                        <h2>People who purchased this also purchased</h2>
+                        <div data-bind="template: { name: 'SlicedData_Carousel' , data: $parent.models.purchased().scoreItems($data, numScoreItems)  }"></div>
+                        <!-- /ko -->
+                        <!-- ko if: $parent.models.viewed -->
+                        <h2>People who viewed this also viewed</h2>
+                        <div data-bind="template: { name: 'SlicedData_Carousel' , data: $parent.models.viewed().scoreItems($data, numScoreItems) }"></div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping Cart -->
+        <div style="width:100%; background-color: #f3f3f4; min-height: 180px; padding-bottom:20px;">
+            <section class="content-wrapper clear-fix" style="max-width: 800px; background-color: #f3f3f4;">
+                <hr />
+                <h2 style="margin-left: 0px;">Shopping cart</h2>
+                <!--input type="text" data-bind="value: GetCartIds(cart())" /-->
+                <div data-bind="foreach: cart">
+                    <div style="display: inline-block;">
+                        <div data-bind="template: { name: 'MetaProduct_Thumbnail', params: { removeFromCart: true } }"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Cart recommendations-->
+        <!-- ko if: cart().length > 0 -->
+        <section class="content-wrapper clear-fix" style="max-width: 880px;">
+            <!-- ko if: models.purchased -->
+            <h2>People who purchased these also purchased</h2>
+            <div data-bind="template: { name: 'SlicedData_Carousel' , data: models.purchased().scoreItems(cart(), numScoreItems), params: { addToCart: true } }"></div>
+            <!-- /ko -->
+            <!-- ko if: models.viewed -->
+            <h2>People who viewed these also viewed</h2>
+            <div data-bind="template: { name: 'SlicedData_Carousel' , data: models.viewed().scoreItems(cart(), numScoreItems), params: { addToCart: true } }"></div>
+            <!-- /ko -->
+        </section>
+        <!-- /ko -->
+
+    </div>
+
+    <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.3.js"></script>
+    <script src="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.1/bootstrap.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-debug.js"></script>
+    <script src="/Scripts/KnockoutExtentions.js"></script>
+    <script src="/Scripts/ViewModel.js"></script>
+
+    <script>
+        
+        //TODO: You need to specify your api Key and one or more model name
+        var apiKey = "";
+        var purchasedModelName = "";
+        var viewedModelName = "";
+        var fbtModelName = "";
+        var numScoreItems = 100;  // number of items to return from each recomendation scoring call
+        
+        // create the services
+        var recomendationsService = new MLModels(RecommendationsApi, apiKey);   // sign up at https://datamarket.azure.com/dataset/amla/recommendations
+        var fbtService = new MLModels(FBTApi, apiKey);                          // sign up at https://datamarket.azure.com/dataset/amla/mba
+
+        // create the viewmodel
+        var mainViewModel = new ViewModel();
+
+        // models you want to explore
+        mainViewModel.models = {
+            viewed: ko.pureComputed(function () { return recomendationsService.model(viewedModelName); }),
+            purchased: ko.pureComputed(function () { return recomendationsService.model(purchasedModelName); }),
+            fbt: ko.pureComputed(function () { return fbtService.model(fbtModelName); }),
+        }
+
+        //TODO: provide a list of items for the top Carousel
+        mainViewModel.topItems = ko.pureComputed(function ()
+        {
+            // load the items from the purchased model
+            if (mainViewModel.models.purchased())
+            {
+                // you can use the top n items from one of your models catalog
+                return mainViewModel.models.purchased().getCatalogProducts(600);
+
+                // or you can use recomendations for an item (replace ITEM_ID_TO_SCORE)
+                return mainViewModel.models.purchased().scoreItemsAsync("ITEM_ID_TO_SCORE", 600);
+
+                // or you can just provide a list of items
+                return MetaProduct.fromIds("item1,item2,item3");
+            }
+        }).extend({async: null});
+
+        //TODO: override the metadata provider to get info from your catalog
+        MetaItemProvider.Default.getMetadataAsync = function(productId)
+        {
+            // you can just return metadata for an object
+            return {
+                ProductId: productId,
+                Name: "This is the name",
+                Description: "Description of the product",
+                ImageUrl: "http://yoursite.com/image.jpg",
+                Url: "http://yoursite.com/location/of/product/page",
+                Price: "$199.98",
+                PriceValue: "199.98"
+            }
+
+            // or return a async call to fetch the metadata for the object
+            return $.getJSON("http://yoursite.com/getmetadata", { productId: productId })
+                .then(function (data)
+                {
+                    // map your object to a metadata object
+                    return {
+                        ProductId: data.property,
+                        Name: data.property,
+                        Description: data.property,
+                        ImageUrl: data.property,
+                        Url: data.property,
+                        Price: data.property,
+                        PriceValue: data.property
+                    };
+                });
+        };
+
+
+
+        // Load html templates
+        loadTemplates("/templates.html", "templates");
+
+        // show the product details as a modal when an item is selected
+        mainViewModel.selectedItem.subscribe(function (data)
+        {
+            if (data)
+                $('#myModal').modal('show');
+        });
+
+        // redirect the addToCart UI calls to dismiss the model dialog
+        var baseUiAddToCart = uiAddToCart;
+        uiAddToCart = function (data, event)
+        {
+            baseUiAddToCart(data, event);
+
+            // hide the modal window if the button is within the modal
+            $(event.currentTarget).parents('#myModal').modal('hide');
+        }
+
+        // data bind the view model to the UI
+        ko.applyBindings(mainViewModel);
+
+    </script>
+</body>
+
+
+
+</html>
+
+

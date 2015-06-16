@@ -1,0 +1,155 @@
+﻿<script type="text/html" id="titlebar">
+    <header>
+        <div class="title-bar">
+            <div class="content-wrapper">
+                <div class="float-left">
+                    <p class="site-title">
+                        Microsoft Azure <span class="site-title-2">Machine Learning</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+</script>
+<script type="text/html" id="SlicedData_Carousel">
+    <!-- ko with: new SlicedData($rawData, $context.params.cols || 7, $context.params.rows || 1) -->
+    <div class="carousel slide padded-small" style="min-height:120px; display: table-row;" data-interval="false" data-bind="uniqueId: 'carousel', event: { 'slide.bs.carousel': nextSlice }">
+        <a data-slide="prev" href="" data-bind="attr: { href: '#' + $element.parentNode.id }" class="prev" style="display: table-cell; vertical-align: middle;"><img src="/Images/left_arrow.png" alt="<" tabindex="-1" /></a>
+        <!-- ko if: data -->
+        <div class="carousel-inner" data-bind="foreach: slices" style="display: table-cell;">
+            <div class="item" data-bind="attr: { class: condition($index() == 0, 'item active', 'item')}">
+                <!-- ko foreach: rows -->
+                <div style="padding-top: 7px; padding-bottom: 7px;">
+                    <div data-bind="template: { name: 'MetaProduct_Thumbnail', foreach: values }"></div>
+                </div>
+                <!-- /ko -->
+                <!-- ko if: rows.inProgress -->
+                <div class="center-container">
+                    <span class="center-helper"></span>
+                    <img class="center-img" src="/Images/loading.gif" />&nbsp;
+                </div>
+                <!-- /ko -->
+            </div>
+        </div>
+        <!-- /ko -->
+        <!-- ko ifnot: data -->
+        <div class="carousel-inner" style="display: table-cell; text-align: center; vertical-align: middle;" data-bind="if: data.inProgress">
+            <img src="/Images/loading.gif" />
+        </div>
+        <!-- /ko -->
+
+        <a data-slide="next" href="" data-bind="attr: { href: '#' + $element.parentNode.id }" class="next" style="display: table-cell; vertical-align: middle;"><img src="/Images/right_arrow.png" alt=">" tabindex="-1" /></a>
+    </div>
+    <!-- /ko -->
+</script>
+
+<script type="text/html" id="MetaProduct_Preview">
+    <!-- ko if: metadata -->
+    <div style="display: inline-block;">
+        <div class="product-image center-container thumb-large">
+            <img tabindex="-1" class="center-img fill" data-bind="attr: { src: metadata().ImageUrl, alt: productId }"><span class="center-helper"></span>
+        </div>
+    </div>
+
+    <div class="padded" style="display: inline-block; vertical-align: top; font-size: 10pt; width: 550px; max-height: 264px; overflow: hidden;">
+        <div data-bind="text: metadata().Name" style="font-size: 14pt;"></div>
+        <a data-bind="attr: { href: metadata().Url }, text: metadata().Url" href="" target="ProductDetails" style="font-size: 10pt;"></a>
+        <p class="padded-top" style="font-size: 10pt; max-height: 130px; overflow: hidden;" data-bind="text: metadata().Description"></p>
+        <div style="padding-top: 10px; float: right;">
+            <button type="button" class="padded" data-bind="click: uiAddToCart" style="background-color: #8ab745; font-size: 14pt; box-sizing: content-box;">Add to cart</button>
+        </div>
+    </div>
+    <!-- /ko -->
+</script>
+
+
+<script type="text/html" id="FBT_Prediction">
+    <!-- ko if: $rawData.success() && $data-->
+    <div class="table">
+        <!-- ko foreach: items-->
+        <div style="display: table-cell; vertical-align: middle; font-size: 16pt;" data-bind="if: $index() != 0"> + </div>
+        <div style="display: table-cell; vertical-align: top;" data-bind="template: { name: 'MetaProduct_Thumbnail' }"></div>
+        <!-- /ko -->
+        <div style="display: table-cell; padding-left: 8px; font-size: 16pt;">
+            <div data-bind="if: totalPrice() > 0"><span style="padding-right: 20px;">Total</span> $<span data-bind="text: totalPrice"></span></div>
+            <div style="padding-top: 10px;">
+                <button type="button" class="padded" data-bind="click: uiAddToCart" style="background-color: #8ab745; font-size: 14pt; box-sizing: content-box;">Add all to cart</button>
+            </div>
+        </div>
+    </div>
+    <div class="container padded" style="text-align: left; margin-left: 10px;" data-bind="foreach: items">
+        <div class="row" data-bind="if: metadata">
+            <input type="checkbox" checked="checked" style="vertical-align: top;" />
+            <b data-bind="if: $index() == 0">This item: </b>
+            <a data-bind="attr: { href: metadata().Url }, text: metadata().Name" href="" target="ProductDetails" style="font-size: 12px;"></a>
+            <span data-bind="text: metadata().Price"></span>
+        </div>
+    </div>
+    <!-- /ko -->
+    <!-- ko if: $rawData.inProgress -->
+    <div style="height: 195px; width: 100%; text-align: center; line-height: 119px; vertical-align: middle;">
+        &nbsp;<img src="/Images/loading.gif" />&nbsp;
+    </div>
+    <!-- /ko -->
+</script>
+
+
+<script type="text/html" id="MetaProduct_Thumbnail">
+    <div class="margined" style="display: inline-block;">
+        <div>
+            <div data-bind="attr: {class: 'hover-parent product-image center-container thumb-' + ($context.params.thumb || 'medium')}">
+                <!-- ko if: metadata -->
+            
+                <!-- ko if: $context.params.addToCart --><i class="glyphicon glyphicon-shopping-cart hover-child" style="cursor: pointer; position: relative; float: right;" data-bind="event: { mousedown: uiAddToCart }"></i><!-- /ko -->
+                <!-- ko if: $context.params.removeFromCart --><i class="glyphicon glyphicon-remove hover-child" style="cursor: pointer; position: relative; float: right;" data-bind="event: { mousedown: removeFromCart }"></i><!-- /ko -->
+                <a href="#" data-bind="click: uiItemClick"><img tabindex="-1" data-bind="attr: { class: condition(metadata().ImageUrl, 'fill center-img', 'full-fill center-img'), src: metadata().ImageUrl, alt: productId, title: metadata().Name + ' [' + productId + ']' + ' - Sore: ' + ($data.Rating || '') + ' - ' + ($data.Reasoning || '') }"></a><span class="center-helper"></span>
+                <!-- /ko -->
+                <!-- ko if: !metadata() -->
+                <span class="center-helper"></span>
+                <!-- ko if: metadata.inProgress --><img src="/Images/loading.gif" /><!-- /ko -->
+                <span data-bind="text: productId"></span>
+                <!-- /ko -->
+            </div>
+            <!-- ko if: $context.params.showName -->
+            <div data-bind="attr: {class: 'thumb-' + ($context.params.thumb || 'medium')}" style="height: 60px; overflow: hidden;">
+                <!-- ko if: metadata -->
+                <span data-bind="text: metadata().Name" style="height: 50px; overflow: hidden;"></span>
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+        </div>
+
+    </div>
+</script>
+
+
+<script type="text/html" id="Deferred_InputStatus">
+    <div class="form-control-feedback" style="display: table;">
+        <div style="display: table-cell; vertical-align: middle;">
+            <div data-bind="if: $rawData.inProgress"><img style="vertical-align: middle;" src="/Images/loading.gif" /></div>
+            <div class="has-success" data-bind="if: $rawData.success"><span class="glyphicon glyphicon-ok  form-control-feedback"></span></div>
+            <div class="has-error" data-bind="if: $rawData.fail"><div class="glyphicon glyphicon-remove form-control-feedback"></div></div>
+        </div>
+    </div>
+</script>
+
+<script>
+
+    // binding helper function
+    function condition(value, trueValue, falseValue)
+    {
+        if (value)
+            return trueValue;
+        return falseValue;
+    }
+
+    var uiItemClick = function (data, event)
+    {
+        data.scoreThisItem();
+    }
+
+    var uiAddToCart = function (data, event)
+    {
+        data.addToCart();
+    }
+</script>

@@ -1,0 +1,1 @@
+SELECT Col1, COUNT(*) AS CT FROM criteo.criteo_train GROUP BY Col1;
