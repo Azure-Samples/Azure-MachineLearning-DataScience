@@ -238,6 +238,60 @@ function GetSampleFilesFromGit($gitdir_name, $list_name, $destination_dir){
     DownloadRawFromGitWithFileList $file_url $list_name $destination_dir
 }
 
+function InstallAzureStorageExplorer(){
+    # Downloading from CodePlex involves a few steps.  They use cookies and redirect to get the download.
+    $fileId = 891668
+    $azureStorageExplorerDownload = 'http://azurestorageexplorer.codeplex.com/downloads/get/' + $fileId
+
+    # Step 1: Get RequestVerificationToken from Page
+    $url = $azureStorageExplorerDownload
+    $CookieContainer = New-Object System.Net.CookieContainer
+    $request = [System.Net.WebRequest]::Create($url)
+    $request.Method="GET"
+    $request.CookieContainer = $CookieContainer
+    $response = $request.GetResponse()
+    $requestStream = $response.GetResponseStream()
+    $readStream = New-Object System.IO.StreamReader $requestStream
+    $pageContent=$readStream.ReadToEnd()
+
+    $pageContent -match '<input name="__RequestVerificationToken" type="hidden" value="([a-zA-Z0-9-_]+)"'
+    $requestVerificationToken = $($matches[1])
+
+    $pageContent -match '<input name="__RequestVerificationToken2" type="hidden" value="([a-zA-Z0-9-_]+)"'
+    $requestVerificationToken2 = $($matches[1])
+
+    # Step 2: Use RequestVerificationToken to get RedirectURL
+    $body = 'fileId=' + $fileId + '&clickOncePath=&allowRedirectToAds=false&__RequestVerificationToken=' + $requestVerificationToken + '&__RequestVerificationToken2='+ $requestVerificationToken2
+    $body_bytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+
+    $captureDownloadUrl = "http://azurestorageexplorer.codeplex.com/releases/captureDownload"
+    $req2 = [System.Net.WebRequest]::Create($captureDownloadUrl)
+    $req2.CookieContainer = $request.CookieContainer
+    $req2.Method = "POST"
+    $req2.ContentType = "application/x-www-form-urlencoded"
+    $req2.ContentLength = $body_bytes.Length
+
+    $stream = $req2.GetRequestStream()
+    $stream.Write($body_bytes, 0, $body_bytes.Length)
+
+    $response = $req2.GetResponse()
+    $reader =  New-Object IO.StreamReader($response.GetResponseStream())
+    $json = $reader.ReadToEnd()
+
+    $json -match '"RedirectUrl":"(.*)"}'
+    $RedirectUrl = $($matches[1])
+
+    # Step 3: Download from RedirectURL
+    $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
+    $web_client.DownloadFile($RedirectUrl, $LocalPath)
+    # Unzip to get the exe, then install...
+    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+    $ExtractDirectory = [IO.Path]::GetTempFileName() # makes file, delete file and mkdir
+    rm $ExtractDirectory
+    mkdir $ExtractDirectory
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($LocalPath, $ExtractDirectory)
+    Start-Process -FilePath "${ExtractDirectory}\AzureStorageExplorer3Preview1.exe" -ArgumentList "/S /v/qn"
+}
 
 function InstallAzureUtilities(){
     # Install AzCopy
@@ -247,15 +301,7 @@ function InstallAzureUtilities(){
 
     # Install Azure Storage Explorer
     Write-Output "Install Azure Utilities: Azure Storage Explorer"
-    $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
-    $web_client.DownloadFile("http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=azurestorageexplorer&DownloadId=891668&FileTime=130530255103730000&Build=21018", $LocalPath)
-    # Unzip to get the exe, then install...
-    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
-    $ExtractDirectory = [IO.Path]::GetTempFileName() # makes file, delete file and mkdir
-    rm $ExtractDirectory
-    mkdir $ExtractDirectory
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($LocalPath, $ExtractDirectory)
-    Start-Process -FilePath "${ExtractDirectory}\AzureStorageExplorer3Preview1.exe" -ArgumentList "/S /v/qn"
+    InstallAzureStorageExplorer   
 }
 
 ###################### End of Functions / Start of Script ######################
