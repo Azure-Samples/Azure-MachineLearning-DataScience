@@ -238,6 +238,21 @@ function GetSampleFilesFromGit($gitdir_name, $list_name, $destination_dir){
     DownloadRawFromGitWithFileList $file_url $list_name $destination_dir
 }
 
+function InstallAzureStorageExplorer(){
+    # Download Storage Explorer in .zip
+    $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
+    Invoke-WebRequest 'http://azurestorageexplorer.codeplex.com/downloads/get/891668' -OutFile $LocalPath
+
+    # Unzip to get the exe.
+    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+    $ExtractDirectory = [IO.Path]::GetTempFileName() # makes file, delete file and mkdir
+    rm $ExtractDirectory
+    mkdir $ExtractDirectory
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($LocalPath, $ExtractDirectory)
+
+    # Run installer with args
+    Start-Process -FilePath "${ExtractDirectory}\AzureStorageExplorer3Preview1.exe" -ArgumentList "/S /v/qn"
+}
 
 function InstallAzureUtilities(){
     # Install AzCopy
@@ -247,15 +262,7 @@ function InstallAzureUtilities(){
 
     # Install Azure Storage Explorer
     Write-Output "Install Azure Utilities: Azure Storage Explorer"
-    $LocalPath = [IO.Path]::GetTempFileName() + ".zip"
-    $web_client.DownloadFile("http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=azurestorageexplorer&DownloadId=891668&FileTime=130530255103730000&Build=20959", $LocalPath)
-    # Unzip to get the exe, then install...
-    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
-    $ExtractDirectory = [IO.Path]::GetTempFileName() # makes file, delete file and mkdir
-    rm $ExtractDirectory
-    mkdir $ExtractDirectory
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($LocalPath, $ExtractDirectory)
-    Start-Process -FilePath "${ExtractDirectory}\AzureStorageExplorer3Preview1.exe" -ArgumentList "/S /v/qn"
+    InstallAzureStorageExplorer   
 }
 
 ###################### End of Functions / Start of Script ######################
@@ -277,6 +284,6 @@ ScheduleAndStartIPython
 SetupSQLServerAccess
 
 # Log that this script was run so we have usage numbers.
-$web_client.DownloadString("http://pageviews.azurewebsites.net/pageview?Azure_VM_Setup_Windows.ps1") | Out-Null
+$web_client.DownloadString("http://go.microsoft.com/fwlink/?LinkId=526230") | Out-Null
 
 cd $previous_pwd
