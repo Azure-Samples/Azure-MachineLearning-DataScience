@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "Sentiment Chat";
+}
+<label for="name">Name:</label><input type="text" name="name" id="name" /><br />
+<label for="message">Message:</label><input type="text" name="message" id="message" maxlength="100" />
+<div id="chatWindow" style="width: 100%; height: 300px; overflow: scroll; border: 1px solid grey"></div>
+
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/SignalR")
+<script src="/signalr/hubs" type="text/javascript"></script>
+
+<script type="text/javascript">
+    $(function ()
+    {
+        var chatHub = $.connection.chat;
+
+        chatHub.publishMessage = function (name, msg)
+        {
+            var chatWin = $("#chatWindow");
+            chatWin.html(chatWin.html() + "<b>" + name + "</b>: " + msg + "<br />");
+        };
+
+       
+        $.connection.hub.start();
+
+        $(document).keypress(function (e)
+        {
+            if (e.which == 13)
+            {
+                chatHub.sendMessage($("#name").val(), $("#message").val());
+                $("#message").val("");
+            }
+        });
+    });
+</script>
