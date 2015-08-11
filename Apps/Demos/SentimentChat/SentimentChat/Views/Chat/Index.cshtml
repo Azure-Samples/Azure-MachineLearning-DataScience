@@ -14,13 +14,20 @@
     {
         var chatHub = $.connection.chat;
 
-        chatHub.publishMessage = function (name, msg)
+        chatHub.publishMessage = function (name, msg, id)
         {
             var chatWin = $("#chatWindow");
-            chatWin.html(chatWin.html() + "<b>" + name + "</b>: " + msg + "<br />");
+
+            // show the message with a loading icon for sentiment
+            chatWin.html(chatWin.html() + "<img id='" + id + "' src='/images/loading.gif'> <b>" + name + "</b>: " + msg + "<br />");
         };
 
-       
+        chatHub.publishSentiment = function (sentiment, id)
+        {
+            // Change the loading image to be the correct emoji
+            $("#" + id).attr({ src: "/images/" + sentiment + ".jpg" });
+        };
+
         $.connection.hub.start();
 
         $(document).keypress(function (e)
