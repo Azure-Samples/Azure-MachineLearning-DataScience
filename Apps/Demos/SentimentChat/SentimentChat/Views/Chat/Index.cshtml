@@ -4,39 +4,131 @@
 <label for="name">Name:</label><input type="text" name="name" id="name" /><br />
 <label for="message">Message:</label><input type="text" name="message" id="message" maxlength="100" />
 <div id="chatWindow" style="width: 100%; height: 300px; overflow: scroll; border: 1px solid grey"></div>
+<canvas id="myChart" width="800" height="400"></canvas>
+<div id="legend"></div>
 
 @Scripts.Render("~/bundles/jquery")
 @Scripts.Render("~/bundles/SignalR")
 <script src="/signalr/hubs" type="text/javascript"></script>
+<script src="/scripts/Chart.js" type="text/javascript"></script>
+<script src="/scripts/Chart.Scatter.js" type="text/javascript"></script>
 
 <script type="text/javascript">
     $(function ()
     {
+
+        var userCount = 2;
+        var userIndex = {};
+        var msgCount = 0;
+        var totalSentiment = 0;
+
         var chatHub = $.connection.chat;
-
-        chatHub.publishMessage = function (name, msg, id)
-        {
+        chatHub.publishMessage = function (name, msg, id) {
             var chatWin = $("#chatWindow");
-
+            
+            if (!(name in userIndex))
+            {
+                chart.datasets[userCount].label = name;
+                userIndex[name] = userCount;
+                userCount++;
+                $("#legend").html(chart.generateLegend());
+            }
+            
             // show the message with a loading icon for sentiment
-            chatWin.html(chatWin.html() + "<img id='" + id + "' src='/images/loading.gif'> <b>" + name + "</b>: " + msg + "<br />");
+            chatWin.html(chatWin.html() + '&nbsp;<b style="color: ' + chart.datasets[userIndex[name]].strokeColor + ';">' + name + "</b>: " + '<img id="' + id + '" src="/images/loading.gif"> &nbsp;' + msg + "<br />");
         };
 
-        chatHub.publishSentiment = function (sentiment, id)
+        chatHub.publishSentiment = function (sentiment, id, score, name, time, message)
         {
-            // Change the loading image to be the correct emoji
-            $("#" + id).attr({ src: "/images/" + sentiment + ".jpg" });
+            $("#" + id).attr({ src: "/images/" + sentiment + ".jpg", title: score });
+
+            chart.datasets[userIndex[name]].addPoint(new Date(time), score);
+            chart.datasets[userIndex[name]].points[chart.datasets[userIndex[name]].points.length - 1].valueLabel = message;
+
+            msgCount++;
+            totalSentiment += score;
+            chart.datasets[1].addPoint(new Date(time), totalSentiment / msgCount);
+
+            chart.update();
         };
 
         $.connection.hub.start();
-
-        $(document).keypress(function (e)
-        {
-            if (e.which == 13)
-            {
+        $(document).keypress(function (e) {
+            if (e.which == 13) {
                 chatHub.sendMessage($("#name").val(), $("#message").val());
                 $("#message").val("");
             }
         });
+
     });
+
+    var data = [
+         { strokeColor: '#FFFFFF', data: [{ x: new Date(), y: 2 }, { x: new Date(new Date().getTime() + 2 * 60000), y: 2 }] },
+         { strokeColor: '#666666', data: [], label: "Combined Average" },
+         { strokeColor: '#F16220', data: [] },
+         { strokeColor: '#007ACC', data: [] },
+         { strokeColor: '#F1CB22', data: [] },
+         { strokeColor: '#48F122', data: [] },
+         { strokeColor: '#B800CC', data: [] },
+         { strokeColor: '#00CC52', data: [] },
+         { strokeColor: '#CC007A', data: [] },
+         { strokeColor: '#00CCB8', data: [] },
+         { strokeColor: '#B800CC', data: [] },
+    ];
+
+    var options = {
+        animation: false,
+        scaleOverride: true,
+        scaleSteps: 10,
+        scaleStepWidth: .1,
+        scaleStartValue: 0,
+        scaleShowHorizontalLines: true,
+        scaleShowVerticalLines: false,
+
+        scaleType: "date",
+        useUtc: false,
+        scaleDateFormat: "mmm d",
+        scaleTimeFormat: "h:MM",
+        //scaleDateTimeFormat: "h:MM",
+        //scaleLabel: "<%=parseFloat(value).toFixed(1)%>",
+        scaleShowLabels: false,
+
+        legendTemplate: "<div class=\"<%=name.toLowerCase()%>-legend\"><%for(var i=0;i<datasets.length;i++){%><%if (datasets[i].label){%><div><span class=\"legend-marker\" style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%=datasets[i].label%></div><%}%><%}%></div>"
+    }
+
+
+    Chart.types.Scatter.prototype.clear = function ()
+    {
+        context.rect(0, 0, canvas.width, canvas.height);
+        var grd = context.createLinearGradient(0, 0, 0, canvas.height);
+
+        grd.addColorStop(.8, '#FEE2E3');
+        grd.addColorStop(.55, '#FFFCE3');
+        grd.addColorStop(.45, '#FFFCE3');
+        grd.addColorStop(.2, '#D1EAD0');
+
+        context.fillStyle = grd;
+        context.fill();
+
+        return this;
+    }
+
+    var canvas = document.getElementById("myChart");
+    var context = canvas.getContext("2d")
+    var chart = new Chart(context).Scatter(data, options);
+
+    
+
+
 </script>
+
+<style>
+    .legend-marker {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 2px;
+    }
+
+</style>

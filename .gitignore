@@ -187,3 +187,6 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/Apps/Demos/SentimentChat/SentimentChat/Scripts/Chart.js
+/Apps/Demos/SentimentChat/SentimentChat/Scripts/Chart.min.js
+/Apps/Demos/SentimentChat/SentimentChat/Scripts/Chart.Scatter.js

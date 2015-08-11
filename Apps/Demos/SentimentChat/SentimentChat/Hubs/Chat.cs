@@ -28,6 +28,7 @@ namespace SignalRChat.Hubs
         public async Task SendMessage(string name, string message)
         {
             // publish the message
+            DateTime msgTime = DateTime.UtcNow;
             string id = Guid.NewGuid().ToString();
             Clients.PublishMessage(name, message, id);
 
@@ -48,7 +49,7 @@ namespace SignalRChat.Hubs
                     sentiment = "positive";
 
                 // Send the sentiment
-                Clients.PublishSentiment(sentiment, id);
+                Clients.PublishSentiment(sentiment, id, score, name, msgTime.ToString() + " UTC", message);
             }
         }
     }
