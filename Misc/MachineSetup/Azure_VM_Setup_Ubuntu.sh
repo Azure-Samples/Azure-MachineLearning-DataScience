@@ -166,6 +166,6 @@ SetupIPythonNotebookService # Make sure this is last in the script as this start
 StartIPythonNotebookService
 
 # Log that this script was run so we have usage numbers.
-curl -o /dev/null "http://pageviews.azurewebsites.net/pageview?Azure_VM_Setup_Ubuntu.sh"
+curl -o /dev/null "http://go.microsoft.com/fwlink/?LinkId=526229"
 
 cd $prev_dir
