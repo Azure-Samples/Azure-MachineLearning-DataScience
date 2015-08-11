@@ -1,6 +1,6 @@
 # Intelligent Mall Kiosk Demo
 ![Screenshot][1]
-[1]: ./screenshot.jpg
+[1]: ./screenshot.png
 
 ### Requirements
 1. Install Visual Studio 2013.
