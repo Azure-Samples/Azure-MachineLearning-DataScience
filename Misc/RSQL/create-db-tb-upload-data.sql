@@ -1,11 +1,9 @@
 DECLARE @db_name varchar(255), @tb_name varchar(255), @path_to_data varchar(255)
 DECLARE @create_db_template varchar(max), @create_tb_template varchar(max), @upload_data_template varchar(max)
 DECLARE @sql_script varchar(max)
-SET @db_name = '<database name>' --Please plug in the database name you want to create
-
-SET @tb_name = '<table name>' --Please plug in the table name you want to create
-
-SET @path_to_data = '<path to the downloaded data file>' --Please plug in the path to the data file to be loaded on the server
+SET @db_name = 'TaxiNYC_Sample' 
+SET @tb_name = 'nyctaxi_joined_1_percent' 
+SET @path_to_data = 'C:\temp\nyctaxi1pct.csv' --Please change the path to the data file based on where it is in your SQL Server
 SET @create_db_template = 'create database {db_name}'
 SET @create_tb_template = '
 use {db_name}
