@@ -25,14 +25,14 @@ CREATE TABLE {tb_name}
        dropoff_longitude varchar(30),
        dropoff_latitude varchar(30),
        payment_type char(3),
-	 fare_amount float,
-	 surcharge float,
-	 mta_tax float,
-	 tolls_amount float,
-	 total_amount float,
-	 tip_amount float,
-	 tipped int,
-	 tip_class int
+       fare_amount float,
+       surcharge float,
+       mta_tax float,
+       tolls_amount float,
+       total_amount float,
+       tip_amount float,
+       tipped int,
+       tip_class int
 )
 CREATE COLUMNSTORE INDEX med_hack_pickup
 ON {tb_name} (medallion, hack_license, pickup_datetime)
@@ -48,7 +48,7 @@ EXECUTE(@sql_script)
 
 SET @sql_script = REPLACE(@create_tb_template, '{db_name}', @db_name)
 SET @sql_script = REPLACE(@sql_script, '{tb_name}', @tb_name)
-EXECUTE(@sql_script)*/
+EXECUTE(@sql_script)
 
 SET @sql_script = REPLACE(@upload_data_template, '{db_name}', @db_name)
 SET @sql_script = REPLACE(@sql_script, '{tb_name}', @tb_name)
