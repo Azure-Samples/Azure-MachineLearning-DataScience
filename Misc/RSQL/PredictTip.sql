@@ -9,14 +9,9 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 
-CREATE PROCEDURE [dbo].[PredictTip]
+CREATE PROCEDURE [dbo].[PredictTip] @inquery nvarchar(max)
 AS
 BEGIN
-
-  DECLARE @inquery nvarchar(max) = N'
-	select top 100 passenger_count,trip_time_in_secs,trip_distance,  
-	dropoff_datetime, dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude,dropoff_longitude) as direct_distance from nyctaxi_joined_1_percent
-'
 
   DECLARE @lmodel2 varbinary(max) = (SELECT TOP 1
     model
@@ -38,4 +33,3 @@ print(OutputDataSet)
 END
 
 GO
-

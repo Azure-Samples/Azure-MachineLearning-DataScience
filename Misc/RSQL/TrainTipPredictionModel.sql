@@ -14,8 +14,11 @@ CREATE PROCEDURE [dbo].[TrainTipPredictionModel]
 AS
 BEGIN
   DECLARE @inquery nvarchar(max) = N'
-	select top 1000 tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
-    pickup_datetime, dropoff_datetime, dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance from nyctaxi_joined_1_percent
+	select tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
+    pickup_datetime, dropoff_datetime, 
+    dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance
+    from nyctaxi_joined_1_percent
+    tablesample (70 percent) repeatable (98052)
 '
   -- Insert the trained model into a database table
   INSERT INTO nyc_taxi_models
