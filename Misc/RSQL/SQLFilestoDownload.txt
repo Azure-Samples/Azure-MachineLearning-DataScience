@@ -7,3 +7,4 @@ fnCalculateDistance.sql
 fnEngineerFeatures.sql
 CallPredictTipStoredProcedure.sql
 PlotInOutputFiles.sql
+ExcelPowerQueryConsumePredict.xlsx
