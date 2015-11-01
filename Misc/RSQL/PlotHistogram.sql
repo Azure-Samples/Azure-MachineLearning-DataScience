@@ -8,6 +8,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'PlotHistogram')
+  DROP PROCEDURE PlotHistogram
+GO
+
 
 CREATE PROCEDURE [dbo].[PlotHistogram]
 AS

@@ -8,6 +8,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'PlotInOutputFiles')
+  DROP PROCEDURE PlotInOutputFiles
+GO
+
 
 CREATE PROCEDURE [dbo].[PlotInOutputFiles]
 AS

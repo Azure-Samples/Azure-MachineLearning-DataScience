@@ -8,6 +8,9 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+IF EXISTS (SELECT * FROM sys.objects WHERE type IN ('FN', 'IF') AND name = 'fnEngineerFeatures')
+  DROP FUNCTION fnEngineerFeatures
+GO
 
 CREATE FUNCTION [dbo].[fnEngineerFeatures] (
 @passenger_count int = 0,
