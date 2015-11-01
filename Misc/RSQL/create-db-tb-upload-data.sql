@@ -1,5 +1,5 @@
 DECLARE @db_name varchar(255), @tb_name varchar(255), @path_to_data varchar(255)
-DECLARE @create_db_template varchar(max), @create_tb_template varchar(max), @upload_data_template varchar(max)
+DECLARE @create_db_template varchar(max), @create_tb_template varchar(max), @create_tb_template2 varchar(max), @upload_data_template varchar(max)
 DECLARE @sql_script varchar(max)
 SET @db_name = 'TaxiNYC_Sample' 
 SET @tb_name = 'nyctaxi_joined_1_percent' 
@@ -38,6 +38,14 @@ CREATE COLUMNSTORE INDEX med_hack_pickup
 ON {tb_name} (medallion, hack_license, pickup_datetime)
 '
 
+SET @create_tb_template2 = '
+use {db_name}
+CREATE TABLE nyc_taxi_models
+(
+	model varbinary(max) not null
+)
+'
+
 SET @upload_data_template = 'BULK INSERT {db_name}.dbo.{tb_name} 
    	FROM ''{path_to_data}''
    	WITH ( FIELDTERMINATOR ='','', FIRSTROW = 2, ROWTERMINATOR = ''\n'' )
@@ -59,7 +67,6 @@ SET @sql_script = REPLACE(@sql_script, '{path_to_data}', @path_to_data)
 EXECUTE(@sql_script)
 
 -- Create the table to persist the trained model
-CREATE TABLE nyc_taxi_models
-(
-	model varbinary(max) not null
-)
+SET @sql_script = REPLACE(@create_tb_template2, '{db_name}', @db_name)
+EXECUTE(@sql_script)
+GO
