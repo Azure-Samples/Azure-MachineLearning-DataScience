@@ -8,8 +8,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-DROP PROCEDURE [dbo].[PredictTipSingleMode]
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'PredictTipSingleMode')
+  DROP PROCEDURE PredictTipSingleMode
 GO
+
 
 CREATE PROCEDURE [dbo].[PredictTipSingleMode] @passenger_count int = 0,
 @trip_distance float = 0,
