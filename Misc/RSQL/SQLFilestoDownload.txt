@@ -1,6 +1,6 @@
 PlotHistogram.sql
 PredictTip.sql
-PredictTipWithPassedInValues.sql
+PredictTipSingleMode.sql 
 TrainTipPredictionModel.sql
 create-db-tb-upload-data.sql
 fnCalculateDistance.sql
