@@ -1,34 +1,33 @@
 ﻿<#-------------------------------------------------------------------------- 
 .SYNOPSIS 
 Script for  running T-SQL files in MS SQL Server 
-Andy Mishechkin 
+Hang Zhang
+Built on a post by Andy Mishechkin at https://gallery.technet.microsoft.com/scriptcenter/The-PowerShell-script-for-2a2456c4
  
 .DESCRIPTION 
-runsql.ps1 has a next command prompt format: 
-.\runsql.ps1 -server MSSQLServerInstance -dbname 
-ExecContextDB -file MyTSQL.sql [-go] [-u SQLUser] [-p SQLPassword] 
+
+.\runsql.ps1 -server dbserver_name.domain_name -dbname taxinyc_sample -csvfilepath C:\temp\nyctaxi1pct.csv [-u SQLUser] [-p SQLPassword] 
+
  
 Mandatory parameters: 
 -server - name of Microsoft SQL Server instance  
--dbname - database name for  T-SQL execution context (use the '-dbname master' for  creation of new database) 
--file - name of .sql file, which contain T-SQL code for  execution 
+-dbname - database name that you want to create and use in this walkthrough 
+-csvfilepath - path and name of the .csv file on the SQL Server to be loaded to the database 
  
 Optional parameters: 
--go - parameter-switch, which must be, if  T-SQL code is contains 'GO'  statements. If you will use the -go switch for T-SQL script, which is not contains 'GO'-statements - this  script will not execute 
--u - the user name if  using Microsoft SQL Server authentication 
--p - the password  if  using Microsoft SQL Server authentication 
+-u - the user name if using Microsoft SQL Server authentication 
+-p - the password  if using Microsoft SQL Server authentication 
  
 Examples. 
  
 1) Execute on local SQL Server the script CreateDB.sql, which is placed in  C:\MyTSQLScripts\ and contains 'GO'  statements, using 
  
 Windows credentials of current user: 
-.\runsql.ps1 -server local -dbname master -file C:\MyTSQLScripts\CreateDB.sql -go 
+.\runsql.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv
+
  
 2) Execute on remote SQL Server Express with   
-machine name 'SQLSrvr'  the script CreateDB.sql, which is placed in C:\MyTSQLScripts\ and  
-contains 'GO' statements, using SQL Server user name 'sa' and password 'S@Passw0rd': 
-.\runsql.ps1 -server SQLSrvr\SQLEXPRESS -dbname master -file C:\MyTSQLScripts\CreateDB.sql -go -u sa -p S@Passw0rd 
+.\runsql.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv -u SQLUserName -p SQLUserPassword
  
 ---------------------------------------------------------------------------#> 
 #Script parameters 
@@ -53,12 +52,6 @@ param(
         [String] 
         [ValidateNotNullOrEmpty()] 
         $csvfilepath = $(throw "path to the example csv file is required."), 
- 
-        #The GO switch. Must be specified if T-SQL code is contain the GO instructions 
-        [parameter(Mandatory=$false,Position=3)] 
-        [Switch] 
-        [AllowEmptyString()] 
-        $go, 
  
         #MS SQL Server user name 
         [parameter(Mandatory=$false,Position=4)] 
