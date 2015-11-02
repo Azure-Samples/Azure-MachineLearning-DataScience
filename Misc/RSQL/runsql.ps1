@@ -197,7 +197,7 @@ ExecuteSQLFile $PWD"\TrainTipPredictionModel.sql" 1
 ExecuteSQLFile $PWD"\PlotHistogram.sql" 1
 ExecuteSQLFile $PWD"\PlotInOutputFiles.sql" 1
 ExecuteSQLFile $PWD"\PredictTip.sql" 1
-ExecuteSQLFile $PWD"\PredictTipWithPassedInValues.sql" 1
+ExecuteSQLFile $PWD"\PredictTipSingleMode.sql" 1
 Write-Host "Completed registering all functions and stored procedures used in this walkthrough."
 $end_time = Get-Date
 $time_span = $end_time - $start_time
