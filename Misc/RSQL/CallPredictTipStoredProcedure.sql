@@ -20,4 +20,4 @@ tablesample (70 percent) repeatable (98052)
 on a.medallion=b.medallion and a.hack_license=b.hack_license and a.pickup_datetime=b.pickup_datetime
 where b.medallion is null
 '
-EXEC [dbo].[PredictTipNew] @inquery = @query_string;
+EXEC [dbo].[PredictTip] @inquery = @query_string;
