@@ -24,7 +24,7 @@ AS
 BEGIN
 
   DECLARE @inquery nvarchar(max) = N'
-  SELECT * FROM [TaxiNYC_Sample].[dbo].[fnEngineerFeatures]( 
+  SELECT * FROM [dbo].[fnEngineerFeatures]( 
   @passenger_count,
 @trip_distance,
 @trip_time_in_secs,

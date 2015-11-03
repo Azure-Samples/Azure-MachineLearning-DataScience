@@ -18,7 +18,11 @@ AS
 BEGIN
   SET NOCOUNT ON;
   DECLARE @query nvarchar(max) =
+<<<<<<< HEAD
   N'SELECT cast(tipped as int) as tipped, tip_amount, fare_amount FROM [TaxiNYC_Sample].[dbo].[nyctaxi_joined_1_percent]'
+=======
+  N'SELECT tipped, tip_amount, fare_amount FROM [dbo].[nyctaxi_joined_1_percent]'
+>>>>>>> dce5478a714067e5bf445247f13e94df7805c625
   EXECUTE sp_execute_external_script @language = N'R',
                                      @script = N'
 
