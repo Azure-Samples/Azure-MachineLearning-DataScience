@@ -9,3 +9,4 @@ CallPredictTipStoredProcedure.sql
 PlotInOutputFiles.sql
 ExcelPowerQueryConsumePredict.xlsx
 runsql.ps1
+varbinplot.fmt
