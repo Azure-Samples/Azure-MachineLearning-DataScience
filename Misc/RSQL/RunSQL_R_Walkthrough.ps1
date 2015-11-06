@@ -191,5 +191,17 @@ Write-Host "Completed registering all stored procedures used in this walkthrough
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)
-Write-Host "This step (registering all functions and stored procedures) takes $total_seconds seconds."
+Write-Host "This step (registering all stored procedures) takes $total_seconds seconds."
 $SQLConnection.Close()
+Write-Host "Plug in the database server name, database name, user name and password into the R script file"
+$start_time = Get-Date
+(gc RSQL_R_Walkthrough.R).replace('<your_server_name.somedomain.com>', $server) | sc RSQL_R_Walkthrough.R
+(gc RSQL_R_Walkthrough.R).replace('<Your_Database_Name>', $dbname) | sc RSQL_R_Walkthrough.R
+(gc RSQL_R_Walkthrough.R).replace('<Your_User_Name>', $u) | sc RSQL_R_Walkthrough.R
+(gc RSQL_R_Walkthrough.R).replace('<Your_Password>', $p) | sc RSQL_R_Walkthrough.R
+$end_time = Get-Date
+$time_span = $end_time - $start_time
+$total_seconds = [math]::Round($time_span.TotalSeconds,2)
+Write-Host "This step (plugging in database information) takes $total_seconds seconds."
+
+
