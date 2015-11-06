@@ -3,30 +3,23 @@
 Script for  running T-SQL files in MS SQL Server 
 Hang Zhang
 Built on a post by Andy Mishechkin at https://gallery.technet.microsoft.com/scriptcenter/The-PowerShell-script-for-2a2456c4
+This script has been tested on PowerShell V3, and not tested on older versions.
  
 .DESCRIPTION 
 
-.\RunSQL_R_Walkthrough.ps1 -server dbserver_name.domain_name -dbname taxinyc_sample -csvfilepath C:\temp\nyctaxi1pct.csv [-u SQLUser] [-p SQLPassword] 
+.\RunSQL_R_Walkthrough.ps1 -server dbserver_name.domain_name -dbname taxinyc_sample -csvfilepath C:\temp\nyctaxi1pct.csv -u SQLUser -p SQLPassword 
 
  
 Mandatory parameters: 
 -server - name of Microsoft SQL Server instance  
 -dbname - database name that you want to create and use in this walkthrough 
 -csvfilepath - path and name of the .csv file on the SQL Server to be loaded to the database 
- 
-Optional parameters: 
--u - the user name if using Microsoft SQL Server authentication 
--p - the password  if using Microsoft SQL Server authentication 
+-u - user name which has the previliges of creating database, tables, stored procedures, and uploading data to tables
+-p - password of users
  
 Examples. 
  
-1) Execute on local SQL Server the script CreateDB.sql, which is placed in  C:\MyTSQLScripts\ and contains 'GO'  statements, using 
- 
-Windows credentials of current user: 
-.\RunSQL_R_Walkthrough.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv
-
- 
-2) Execute on remote SQL Server Express with   
+Execute on remote SQL Server Express with   
 .\RunSQL_R_Walkthrough.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv -u SQLUserName -p SQLUserPassword
  
 ---------------------------------------------------------------------------#> 
@@ -195,10 +188,20 @@ Write-Host "This step (registering all stored procedures) takes $total_seconds s
 $SQLConnection.Close()
 Write-Host "Plug in the database server name, database name, user name and password into the R script file"
 $start_time = Get-Date
-(gc RSQL_R_Walkthrough.R).replace('<your_server_name.somedomain.com>', $server) | sc RSQL_R_Walkthrough.R
-(gc RSQL_R_Walkthrough.R).replace('<Your_Database_Name>', $dbname) | sc RSQL_R_Walkthrough.R
-(gc RSQL_R_Walkthrough.R).replace('<Your_User_Name>', $u) | sc RSQL_R_Walkthrough.R
-(gc RSQL_R_Walkthrough.R).replace('<Your_Password>', $p) | sc RSQL_R_Walkthrough.R
+if($PSVersionTable.WSManStackVersion.Major -ge 3)
+{
+    (gc RSQL_R_Walkthrough.R).replace('<your_server_name.somedomain.com>', $server) | sc RSQL_R_Walkthrough.R
+    (gc RSQL_R_Walkthrough.R).replace('<Your_Database_Name>', $dbname) | sc RSQL_R_Walkthrough.R
+    (gc RSQL_R_Walkthrough.R).replace('<Your_User_Name>', $u) | sc RSQL_R_Walkthrough.R
+    (gc RSQL_R_Walkthrough.R).replace('<Your_Password>', $p) | sc RSQL_R_Walkthrough.R
+}
+else
+{
+    (gc RSQL_R_Walkthrough.R) -replace '<your_server_name.somedomain.com>', $server
+    (gc RSQL_R_Walkthrough.R) -replace '<Your_Database_Name>', $dbname
+    (gc RSQL_R_Walkthrough.R) -replace '<Your_User_Name>', $u
+    (gc RSQL_R_Walkthrough.R) -replace '<Your_Password>', $p
+}
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)
