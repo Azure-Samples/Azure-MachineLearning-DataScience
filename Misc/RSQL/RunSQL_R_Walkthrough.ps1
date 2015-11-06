@@ -6,7 +6,7 @@ Built on a post by Andy Mishechkin at https://gallery.technet.microsoft.com/scri
  
 .DESCRIPTION 
 
-.\runsql.ps1 -server dbserver_name.domain_name -dbname taxinyc_sample -csvfilepath C:\temp\nyctaxi1pct.csv [-u SQLUser] [-p SQLPassword] 
+.\RunSQL_R_Walkthrough.ps1 -server dbserver_name.domain_name -dbname taxinyc_sample -csvfilepath C:\temp\nyctaxi1pct.csv [-u SQLUser] [-p SQLPassword] 
 
  
 Mandatory parameters: 
@@ -23,11 +23,11 @@ Examples.
 1) Execute on local SQL Server the script CreateDB.sql, which is placed in  C:\MyTSQLScripts\ and contains 'GO'  statements, using 
  
 Windows credentials of current user: 
-.\runsql.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv
+.\RunSQL_R_Walkthrough.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv
 
  
 2) Execute on remote SQL Server Express with   
-.\runsql.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv -u SQLUserName -p SQLUserPassword
+.\RunSQL_R_Walkthrough.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv -u SQLUserName -p SQLUserPassword
  
 ---------------------------------------------------------------------------#> 
 #Script parameters 
@@ -182,16 +182,12 @@ $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)
 Write-Host "This step (creating database, tables and uploading data to table) takes $total_seconds seconds."
-Write-Host "Start running the .sql files to register all functions and stored procedures used in this walkthrough..."
+Write-Host "Start running the .sql files to register all stored procedures used in this walkthrough..."
 $start_time = Get-Date
-ExecuteSQLFile $PWD"\fnCalculateDistance.sql" 1
-ExecuteSQLFile $PWD"\fnEngineerFeatures.sql" 1
-ExecuteSQLFile $PWD"\TrainTipPredictionModel.sql" 1
-ExecuteSQLFile $PWD"\PlotHistogram.sql" 1
-ExecuteSQLFile $PWD"\PlotInOutputFiles.sql" 1
-ExecuteSQLFile $PWD"\PredictTip.sql" 1
+ExecuteSQLFile $PWD"\PersistModel.sql" 1
+ExecuteSQLFile $PWD"\PredictTipBatchMode.sql" 1
 ExecuteSQLFile $PWD"\PredictTipSingleMode.sql" 1
-Write-Host "Completed registering all functions and stored procedures used in this walkthrough."
+Write-Host "Completed registering all stored procedures used in this walkthrough."
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)

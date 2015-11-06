@@ -55,9 +55,9 @@ function GetSampleFilesFromGit($gitdir_name, $list_name, $destination_dir){
 
 
 ###################### End of Functions / Start of Script ######################
-Write-Output "Fetching the sample .sql script files to $DestDir..."
+Write-Output "Fetching the sample script files to $DestDir..."
 GetSampleFilesFromGit "RSQL" "FilestoDownload_R_Walkthrough.txt" $DestDir
-Write-Output "Fetching the sample .sql script files completed."
+Write-Output "Fetching the sample script files completed."
 Write-Output "Now entering the destination directory $DestDir."
 cd $DestDir
 
