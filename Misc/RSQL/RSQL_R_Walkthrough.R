@@ -32,6 +32,7 @@ print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2)," seconds, 
             round(used.time[3],2), " seconds to summarize the inDataSource.", sep=""))
 
 # define a function in open source R to calculate the direct distance between pickup and dropoff as a new feature 
+# Use Haversine Formula: https://en.wikipedia.org/wiki/Haversine_formula
 env <- new.env()
 
 env$ComputeDist <- function(pickup_long, pickup_lat, dropoff_long, dropoff_lat){
@@ -78,7 +79,7 @@ featureEngineeringQuery = "SELECT tipped, fare_amount, passenger_count,trip_time
     dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance,
     pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude
     FROM nyctaxi_joined_1_percent
-    TABLESAMPLE (1 percent)
+    tablesample (1 percent) repeatable (98052)
 "
 featureDataSource = RxSqlServerData(sqlQuery = featureEngineeringQuery, 
                                     colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric", 
@@ -105,7 +106,8 @@ mapPlot <- function(featureDataSource, googMap){
     library(ggmap)
     library(mapproj)
 
-    
+# Open Source R functions require data to be brought back in memory into data frames. Use rxImport to bring in data. 
+# Remember: This whole function is run in the SQL Server Context.
     ds <- rxImport(featureDataSource)
 
     p<-ggmap(googMap)+
@@ -117,10 +119,11 @@ mapPlot <- function(featureDataSource, googMap){
 
 library(ggmap)
 library(mapproj)
-
+# Get the map with Times Square, NY as the center. This is run on the R Client
 gc <- geocode("Times Square", source = "google")
 googMap <- get_googlemap(center = as.numeric(gc), zoom = 12, maptype = 'roadmap', color = 'color')
-# run the points plotting on server
+# Run the points plotting on SQL server. Passing in the map data as arg to remotely executed function. 
+# The points are in the database and will be plotted on the map
 myplots <- rxExec(mapPlot, featureDataSource, googMap, timesToRun = 1)
 plot(myplots[[1]][["myplot"]])
 
@@ -165,11 +168,30 @@ conn <- odbcDriverConnect(connStr )
 q<-paste("EXEC PersistModel @m='", modelbinstr,"'", sep="")
 sqlQuery (conn, q)
 
-# predict with stored procedure in batch mode
-input = "N'select top 10 * from [TaxiNYC_Sample].[dbo].[features]'"
+# predict with stored procedure in batch mode. Take a few records not part of training data
+input = "N'select top 10 a.passenger_count as passenger_count, 
+	a.trip_time_in_secs as trip_time_in_secs,
+	a.trip_distance as trip_distance,
+	a.dropoff_datetime as dropoff_datetime,  
+	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude,dropoff_longitude) as direct_distance 
+from
+(
+	select medallion, hack_license, pickup_datetime, passenger_count,trip_time_in_secs,trip_distance,  
+		dropoff_datetime, pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude
+	from nyctaxi_joined_1_percent
+)a
+left outer join
+(
+select medallion, hack_license, pickup_datetime
+from nyctaxi_joined_1_percent
+tablesample (1 percent) repeatable (98052)
+)b
+on a.medallion=b.medallion and a.hack_license=b.hack_license and a.pickup_datetime=b.pickup_datetime
+where b.medallion is null
+'"
 q<-paste("EXEC PredictTipBatchMode @input = ", input, sep="")
 sqlQuery (conn, q)
 
-# predict with stored procedure in single mode
+# Call predict on a single observation
 q = "EXEC PredictTipSingleMode 1, 2.5, 631, 40.763958,-73.973373, 40.782139,-73.977303 "
 sqlQuery (conn, q)
