@@ -1,7 +1,7 @@
 library(RevoScaleR)
 # connection string
 # currently we use SQL authentication
-connStr <- "Driver=<driver-name>;Server=<server-name>;Database=<db-name>;Uid=<user-name>;Pwd=<password>"
+connStr <- "Driver=SQL Server;Server=<server-name>;Database=<db-name>;Uid=<user-name>;Pwd=<password>"
 
 # set ComputeContext
 sqlShareDir <- paste("C:\\AllShare\\",Sys.getenv("USERNAME"),sep="")
