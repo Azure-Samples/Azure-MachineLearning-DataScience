@@ -60,10 +60,10 @@ SET @sql_script = REPLACE(@sql_script, '{tb_name}', @tb_name)
 EXECUTE(@sql_script)
 
 -- Upload data from a local file on the server to the table
-SET @sql_script = REPLACE(@upload_data_template, '{db_name}', @db_name)
-SET @sql_script = REPLACE(@sql_script, '{tb_name}', @tb_name)
-SET @sql_script = REPLACE(@sql_script, '{path_to_data}', @path_to_data)
-EXECUTE(@sql_script)
+--SET @sql_script = REPLACE(@upload_data_template, '{db_name}', @db_name)
+--SET @sql_script = REPLACE(@sql_script, '{tb_name}', @tb_name)
+--SET @sql_script = REPLACE(@sql_script, '{path_to_data}', @path_to_data)
+--EXECUTE(@sql_script)
 
 -- Create the table to persist the trained model
 SET @sql_script = REPLACE(@create_tb_template2, '{db_name}', @db_name)
