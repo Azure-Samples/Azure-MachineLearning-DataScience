@@ -45,10 +45,10 @@ CREATE TABLE nyc_taxi_models
 )
 '
 
-SET @upload_data_template = 'BULK INSERT {db_name}.dbo.{tb_name} 
-   	FROM ''{path_to_data}''
-   	WITH ( FIELDTERMINATOR ='','', FIRSTROW = 2, ROWTERMINATOR = ''\n'' )
-'
+--SET @upload_data_template = 'BULK INSERT {db_name}.dbo.{tb_name} 
+--   	FROM ''{path_to_data}''
+--   	WITH ( FIELDTERMINATOR ='','', FIRSTROW = 2, ROWTERMINATOR = ''\n'' )
+--'
 
 -- Create database
 SET @sql_script = REPLACE(@create_db_template, '{db_name}', @db_name)

@@ -170,22 +170,55 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
 
 Write-Host "Start creating database and table on your SQL Server, and uploading data to the table. It may take a while..."
 $start_time = Get-Date
-ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
-$end_time = Get-Date
-$time_span = $end_time - $start_time
-$total_seconds = [math]::Round($time_span.TotalSeconds,2)
-Write-Host "This step (creating database, tables and uploading data to table) takes $total_seconds seconds."
+try
+{
+    ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
+    $db_tb = $dbname + ".dbo.nyctaxi_joined_1_percent"
+    bcp $db_tb in $csvfilepath -t ',' -T -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 20000 -U $u -P $p
+    $end_time = Get-Date
+    $time_span = $end_time - $start_time
+    $total_seconds = [math]::Round($time_span.TotalSeconds,2)
+    Write-Host "This step (creating database and tables, and uploading data to table) takes $total_seconds seconds."
+}
+catch
+{
+    Write-Host "Creating database and tables failed. You cannot create database/tables if they already exist."
+}
+
+
 Write-Host "Start running the .sql files to register all stored procedures used in this walkthrough..."
 $start_time = Get-Date
-ExecuteSQLFile $PWD"\PersistModel.sql" 1
-ExecuteSQLFile $PWD"\PredictTipBatchMode.sql" 1
-ExecuteSQLFile $PWD"\PredictTipSingleMode.sql" 1
+try
+{
+    ExecuteSQLFile $PWD"\PersistModel.sql" 1
+}
+catch
+{
+    Write-Host "Stored procedure PersistModel already exists. You cannot create it."
+}
+try
+{
+    ExecuteSQLFile $PWD"\PredictTipBatchMode.sql" 1
+}
+catch
+{
+    Write-Host "Stored procedure PredictTipBatchMode already exists. You cannot create it."
+}
+try
+{
+    ExecuteSQLFile $PWD"\PredictTipSingleMode.sql" 1
+}
+catch
+{
+    Write-Host "Stored procedure PredictTipSingleMode already exists. You cannot create it."
+}
 Write-Host "Completed registering all stored procedures used in this walkthrough."
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)
 Write-Host "This step (registering all stored procedures) takes $total_seconds seconds."
 $SQLConnection.Close()
+
 Write-Host "Plug in the database server name, database name, user name and password into the R script file"
 $start_time = Get-Date
 if($PSVersionTable.WSManStackVersion.Major -ge 3)
