@@ -1,9 +1,17 @@
+# PreRequisites: You have installed Revolution R Enterprise 7.5.0 or higher on the machine and SQL Server 2016 CTP3 or higher on the database server
+# install required R libraries for this walkthrough. 
+# NOTE: You may delete the install.packages lines after first time you run the script on a machine
+install.packages('ggmap')
+install.packages('mapproj')
+install.packages('ROCR')
+install.packages('RODBC')
+
 library(RevoScaleR)
 # connection string
-# currently we use SQL authentication
-connStr <- "Driver=SQL Server;Server=<server-name>;Database=<db-name>;Uid=<user-name>;Pwd=<password>"
+# currently we require SQL authentication to run R in SQL Server Context
+connStr <- "Driver=SQL Server;Server=<your_server_name.somedomain.com>;Database=<Your_Database_Name>;Uid=<Your_User_Name>;Pwd=<Your_Password>"
 
-# set ComputeContext
+# set ComputeContext. Needs a temp directory path to serialize R objects back and forth
 sqlShareDir <- paste("C:\\AllShare\\",Sys.getenv("USERNAME"),sep="")
 sqlWait <- TRUE
 sqlConsoleOutput <- FALSE
@@ -98,7 +106,7 @@ start.time <- proc.time()
 rxHistogram(~fare_amount, data = featureDataSource, title = "Fare Amount Histogram")
 used.time <- proc.time() - start.time
 print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2), 
-            " seconds, Elapsed Time=", round(used.time[3],2), " seconds to generate features.", sep=""))
+            " seconds, Elapsed Time=", round(used.time[3],2), " seconds to generate histogram.", sep=""))
 
 # plot pickup location on map in SQL Server
 # define a function that plots points on a map
@@ -142,10 +150,13 @@ rxPredict(modelObject = logitObj, data = featureDataSource, outData = scoredOutp
                    predVarNames = "Score", type = "response", writeModelVars = TRUE, overwrite = TRUE)
 
 
-# plot ROC curve
+# plot ROC curve from SQL Context
 rxRocCurve( "tipped", "Score", scoredOutput)
 
 # Plot accuracy vs threshold
+# We demonstrate how to do it on the client using Open source R library (ROCR)
+# NOTE: The non Revolution R Enterprise functions ("rx") run locally even if execution context is set to SQL Server
+# First of all you need to bring the scored Output data to the client using rxImport
 scoredOutput = rxImport(scoredOutput)
 
 library('ROCR')
@@ -157,7 +168,8 @@ ind = which.max( slot(acc.perf, 'y.values')[[1]] )
 acc = slot(acc.perf, 'y.values')[[1]][ind]
 cutoff = slot(acc.perf, 'x.values')[[1]][ind]
 
-# serialize a model and put it into a database table
+# OPERATIONALIZE THE MODELS NOW
+# First, serialize a model and put it into a database table
 modelbin <- serialize(logitObj, NULL)
 modelbinstr=paste(modelbin, collapse="")
 
@@ -168,7 +180,9 @@ conn <- odbcDriverConnect(connStr )
 q<-paste("EXEC PersistModel @m='", modelbinstr,"'", sep="")
 sqlQuery (conn, q)
 
-# predict with stored procedure in batch mode. Take a few records not part of training data
+#We have already provided and installed two stored procs to call for prediction on this model - PredictTipBatchMode and PredictTipSingleMode
+# predict with stored procedure in batch mode. Take a few records that are not part of training data
+# NOTE: You need to generate the distance feature when you extract the records to send for prediction in batch mode
 input = "N'select top 10 a.passenger_count as passenger_count, 
 	a.trip_time_in_secs as trip_time_in_secs,
 	a.trip_distance as trip_distance,
