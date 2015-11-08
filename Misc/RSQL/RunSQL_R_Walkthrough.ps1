@@ -174,7 +174,7 @@ try
 {
     ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
     $db_tb = $dbname + ".dbo.nyctaxi_joined_1_percent"
-    bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 20000 -U $u -P $p
+    bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
     $end_time = Get-Date
     $time_span = $end_time - $start_time
     $total_seconds = [math]::Round($time_span.TotalSeconds,2)
