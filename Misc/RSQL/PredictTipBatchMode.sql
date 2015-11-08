@@ -8,8 +8,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'PredictTip')
-  DROP PROCEDURE PredictTip
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'PredictTipBatchMode')
+  DROP PROCEDURE PredictTipBatchMode
 GO
 
 CREATE PROCEDURE [dbo].[PredictTipBatchMode] @inquery nvarchar(max)
