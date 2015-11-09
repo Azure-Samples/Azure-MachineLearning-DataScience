@@ -239,7 +239,7 @@ Write-Host "Plug in the database server name, database name, user name and passw
 $start_time = Get-Date
 if($PSVersionTable.WSManStackVersion.Major -ge 3)
 {
-    (gc RSQL_R_Walkthrough.R).replace('<your_server_name.somedomain.com>', $server) | sc RSQL_R_Walkthrough.R
+    (gc RSQL_R_Walkthrough.R).replace('<Your_Server_Name.somedomain.com>', $server) | sc RSQL_R_Walkthrough.R
     (gc RSQL_R_Walkthrough.R).replace('<Your_Database_Name>', $dbname) | sc RSQL_R_Walkthrough.R
     (gc RSQL_R_Walkthrough.R).replace('<Your_User_Name>', $u) | sc RSQL_R_Walkthrough.R
     (gc RSQL_R_Walkthrough.R).replace('<Your_Password>', $p) | sc RSQL_R_Walkthrough.R

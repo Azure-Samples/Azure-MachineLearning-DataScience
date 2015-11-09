@@ -1,17 +1,26 @@
 # PreRequisites: You have installed Revolution R Enterprise 7.5.0 or higher on the machine and SQL Server 2016 CTP3 or higher on the database server
-# install required R libraries for this walkthrough. 
-# NOTE: You may delete the install.packages lines after first time you run the script on a machine
-install.packages('ggmap')
-install.packages('mapproj')
-install.packages('ROCR')
-install.packages('RODBC')
+# Install required R libraries for this walkthrough if they are not installed. 
+
+if (!('ggmap' %in% rownames(installed.packages()))){
+  install.packages('ggmap')
+}
+if (!('mapproj' %in% rownames(installed.packages()))){
+  install.packages('mapproj')
+}
+if (!('ROCR' %in% rownames(installed.packages()))){
+  install.packages('ROCR')
+}
+if (!('RODBC' %in% rownames(installed.packages()))){
+  install.packages('RODBC')
+}
 
 library(RevoScaleR)
-# connection string
-# currently we require SQL authentication to run R in SQL Server Context
-connStr <- "Driver=SQL Server;Server=<your_server_name.somedomain.com>;Database=<Your_Database_Name>;Uid=<Your_User_Name>;Pwd=<Your_Password>"
 
-# set ComputeContext. Needs a temp directory path to serialize R objects back and forth
+# Define the connection string
+# This walkthrough requires SQL authentication
+connStr <- "Driver=SQL Server;Server=<Your_Server_Name.somedomain.com>;Database=<Your_Database_Name>;Uid=<Your_User_Name>;Pwd=<Your_Password>"
+
+# Set ComputeContext. Needs a temp directory path to serialize R objects back and forth
 sqlShareDir <- paste("C:\\AllShare\\",Sys.getenv("USERNAME"),sep="")
 sqlWait <- TRUE
 sqlConsoleOutput <- FALSE
@@ -19,7 +28,8 @@ cc <- RxInSqlServer(connectionString = connStr, shareDir = sqlShareDir,
                     wait = sqlWait, consoleOutput = sqlConsoleOutput)
 rxSetComputeContext(cc)
 
-#define a DataSource (from a select query) to be used to explore the data and generate features from
+#Define a DataSource (from a select query) to be used to explore the data and generate features from.
+#Keep in mind that inDataSource is just a reference to the result dataset from the SQL query.
 sampleDataQuery <- "select top 1000 tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
     pickup_datetime, dropoff_datetime, pickup_longitude, pickup_latitude, dropoff_longitude,  
     dropoff_latitude from nyctaxi_joined_1_percent"
@@ -31,7 +41,10 @@ inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = c
                                 rowsPerRead=500)
 
 
-# summarize the inDataSource
+################################
+#        Data exploration      #
+################################
+# Summarize the inDataSource
 rxGetVarInfo(data = inDataSource)
 start.time <- proc.time()
 rxSummary(~fare_amount:F(passenger_count), data = inDataSource)
@@ -39,7 +52,10 @@ used.time <- proc.time() - start.time
 print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2)," seconds, Elapsed Time=", 
             round(used.time[3],2), " seconds to summarize the inDataSource.", sep=""))
 
-# define a function in open source R to calculate the direct distance between pickup and dropoff as a new feature 
+################################
+#      Feature engineering     #
+################################
+# Define a function in open source R to calculate the direct distance between pickup and dropoff as a new feature 
 # Use Haversine Formula: https://en.wikipedia.org/wiki/Haversine_formula
 env <- new.env()
 
@@ -60,7 +76,7 @@ env$ComputeDist <- function(pickup_long, pickup_lat, dropoff_long, dropoff_lat){
   return (d)
 }
 
-#define the featureDataSource to be used to store the features, specify the certain variables as numeric
+#Define the featureDataSource to be used to store the features, specify types of some variables as numeric
 featureDataSource = RxSqlServerData(table = "features", 
                                     colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric", 
                                                dropoff_longitude = "numeric", dropoff_latitude = "numeric",
@@ -68,7 +84,9 @@ featureDataSource = RxSqlServerData(table = "features",
                                                    trip_time_in_secs  = "numeric", direct_distance  = "numeric"),
                                     connectionString = connStr)
 
-# create features (including direct distance)
+# Create feature (direct distance) by calling rxDataStep() function, which calls the env$ComputeDist function to process records
+# And output it along with other variables as features to the featureDataSource
+# This will be the feature set for training machine learning models
 start.time <- proc.time()
 rxDataStep(inData =   inDataSource, outFile = featureDataSource,  overwrite = TRUE, 
                            varsToKeep=c("tipped", "fare_amount", "passenger_count","trip_time_in_secs", 
@@ -81,7 +99,10 @@ used.time <- proc.time() - start.time
 print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2), 
             " seconds, Elapsed Time=", round(used.time[3],2), " seconds to generate features.", sep=""))
 
-# alternatively, create features with SQL query for faster processing time
+# Alternatively, use a user defined function in SQL to create features
+# Sometimes, feature engineering in SQL might be faster than R
+# You need to choose the most efficient way based on real situation
+# Here, featureEngineeringQuery is just a reference to the result from a SQL query. 
 featureEngineeringQuery = "SELECT tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
     pickup_datetime, dropoff_datetime, 
     dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance,
@@ -96,20 +117,24 @@ featureDataSource = RxSqlServerData(sqlQuery = featureEngineeringQuery,
                                                    trip_time_in_secs  = "numeric", direct_distance  = "numeric"),
                                     connectionString = connStr)
 
-# summarize the feature table
+# summarize the feature table after the feature set is created
 rxGetVarInfo(data = featureDataSource)
 
+
+################################
+#       Data Visualization     #
+################################
 options(jupyter.plot_mimetypes = 'image/png')
 
-# plot fare amount histogram
+# Plot fare amount histogram on the SQL Server, and ship the plot to R client to display
 start.time <- proc.time()
 rxHistogram(~fare_amount, data = featureDataSource, title = "Fare Amount Histogram")
 used.time <- proc.time() - start.time
 print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2), 
             " seconds, Elapsed Time=", round(used.time[3],2), " seconds to generate histogram.", sep=""))
 
-# plot pickup location on map in SQL Server
-# define a function that plots points on a map
+# Plot pickup location on map in SQL Server
+# Define a function that plots points on a map
 mapPlot <- function(featureDataSource, googMap){
     library(ggmap)
     library(mapproj)
@@ -135,11 +160,16 @@ googMap <- get_googlemap(center = as.numeric(gc), zoom = 12, maptype = 'roadmap'
 myplots <- rxExec(mapPlot, featureDataSource, googMap, timesToRun = 1)
 plot(myplots[[1]][["myplot"]])
 
-
+################################
+#        Training models       #
+################################
 # build classification model to predict tipped or not
 system.time(logitObj <- rxLogit(tipped ~ passenger_count + trip_distance + trip_time_in_secs + direct_distance, data = featureDataSource))
 summary(logitObj)
 
+################################
+#        Make predictions      #
+################################
 # predict and write the prediction results back to SQL Server table
 scoredOutput <- RxSqlServerData(
   connectionString = connStr,
@@ -149,7 +179,9 @@ scoredOutput <- RxSqlServerData(
 rxPredict(modelObject = logitObj, data = featureDataSource, outData = scoredOutput, 
                    predVarNames = "Score", type = "response", writeModelVars = TRUE, overwrite = TRUE)
 
-
+################################
+#        Model evaluation      #
+################################
 # plot ROC curve from SQL Context
 rxRocCurve( "tipped", "Score", scoredOutput)
 
@@ -168,7 +200,9 @@ ind = which.max( slot(acc.perf, 'y.values')[[1]] )
 acc = slot(acc.perf, 'y.values')[[1]][ind]
 cutoff = slot(acc.perf, 'x.values')[[1]][ind]
 
-# OPERATIONALIZE THE MODELS NOW
+################################
+#   Model operationalization   #
+################################
 # First, serialize a model and put it into a database table
 modelbin <- serialize(logitObj, NULL)
 modelbinstr=paste(modelbin, collapse="")
@@ -176,13 +210,15 @@ modelbinstr=paste(modelbin, collapse="")
 library(RODBC)
 conn <- odbcDriverConnect(connStr )
 
-# persist model by calling a stored procedure from SQL
+# Persist model by calling a stored procedure from SQL
 q<-paste("EXEC PersistModel @m='", modelbinstr,"'", sep="")
 sqlQuery (conn, q)
 
-#We have already provided and installed two stored procs to call for prediction on this model - PredictTipBatchMode and PredictTipSingleMode
+# We have already provided and installed two stored procs to call for prediction on this model - PredictTipBatchMode and PredictTipSingleMode
 # predict with stored procedure in batch mode. Take a few records that are not part of training data
 # NOTE: You need to generate the distance feature when you extract the records to send for prediction in batch mode
+# The following query selects the top 10 observations that are not in training set. 
+# This query is parsed as an input parameter to a stored procedure PredictTipBatchMode to make predictions
 input = "N'select top 10 a.passenger_count as passenger_count, 
 	a.trip_time_in_secs as trip_time_in_secs,
 	a.trip_distance as trip_distance,
