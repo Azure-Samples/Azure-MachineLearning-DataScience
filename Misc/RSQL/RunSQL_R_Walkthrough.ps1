@@ -59,6 +59,7 @@ param(
         $p 
     ) 
 #Connect to MS SQL Server 
+$web_client = new-object System.Net.WebClient
 try 
 { 
     $SQLConnection = New-Object System.Data.SqlClient.SqlConnection 
@@ -168,12 +169,50 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
     Write-Host $sqlfile "execution done"
 }
 
+function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
+{
+    $LocalPath = [IO.Path]::GetTempFileName() + "." + $DownloadFileType
+    $web_client.DownloadFile($DownloadPath, $LocalPath)
+
+    Start-Process -FilePath $LocalPath -ArgumentList $ArgsForInstall -Wait
+}
+
+function InstallSQLUtilities(){
+    # Install SQL Server Command Line Utilities
+    Write-Output "Download and install SQL Server Command Line Utilities"
+    $os = Get-WMIObject win32_operatingsystem
+    $os_bit = $os.OSArchitecture
+    if($os_bit -eq '64-bit')
+    {
+        $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188401&clcid=0x409"
+        $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188430&clcid=0x409"
+    }
+    else
+    {
+        $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188400&clcid=0x409"
+        $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188429&clcid=0x409"
+    }
+    DownloadAndInstall $download_url1 "/quiet" "msi"
+    DownloadAndInstall $download_url2 "/quiet" "msi"
+    [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles(x86)}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine") 
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
+}
 Write-Host "Start creating database and table on your SQL Server, and uploading data to the table. It may take a while..."
 $start_time = Get-Date
 try
 {
     ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
     $db_tb = $dbname + ".dbo.nyctaxi_joined_1_percent"
+    Write-Host $db_tb
+    try
+    {
+        InstallSQLUtilities
+    }
+    catch
+    {
+        Write-Host "Installing SQL Utilities failed. Probably it has already been installed previously."
+    }
+    Write-host "start loading the data to SQL Server table..."
     bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
     $end_time = Get-Date
     $time_span = $end_time - $start_time
