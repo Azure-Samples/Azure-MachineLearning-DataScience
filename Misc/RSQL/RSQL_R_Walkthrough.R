@@ -39,8 +39,7 @@ inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = c
                                 colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric", 
                                                dropoff_longitude = "numeric", dropoff_latitude = "numeric"),
                                 rowsPerRead=500)
-
-
+								
 ################################
 #        Data exploration      #
 ################################
@@ -51,6 +50,45 @@ rxSummary(~fare_amount:F(passenger_count), data = inDataSource)
 used.time <- proc.time() - start.time
 print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2)," seconds, Elapsed Time=", 
             round(used.time[3],2), " seconds to summarize the inDataSource.", sep=""))
+
+################################
+#       Data Visualization     #
+################################
+options(jupyter.plot_mimetypes = 'image/png')
+
+# Plot fare amount histogram on the SQL Server, and ship the plot to R client to display
+start.time <- proc.time()
+rxHistogram(~fare_amount, data = inDataSource, title = "Fare Amount Histogram")
+used.time <- proc.time() - start.time
+print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2), 
+            " seconds, Elapsed Time=", round(used.time[3],2), " seconds to generate histogram.", sep=""))
+
+# Plot pickup location on map in SQL Server
+# Define a function that plots points on a map
+mapPlot <- function(inDataSource, googMap){
+    library(ggmap)
+    library(mapproj)
+
+# Open Source R functions require data to be brought back in memory into data frames. Use rxImport to bring in data. 
+# Remember: This whole function runs in the SQL Server Context.
+    ds <- rxImport(inDataSource)
+
+    p<-ggmap(googMap)+
+    geom_point(aes(x = pickup_longitude, y =pickup_latitude ), 
+                      data=ds, alpha =.5, color="darkred", size = 1.5)
+
+    return(list(myplot=p))
+}
+
+library(ggmap)
+library(mapproj)
+# Get the map with Times Square, NY as the center. This is run on the R Client
+gc <- geocode("Times Square", source = "google")
+googMap <- get_googlemap(center = as.numeric(gc), zoom = 12, maptype = 'roadmap', color = 'color')
+# Run the points plotting on SQL server. Passing in the map data as arg to remotely executed function. 
+# The points are in the database and will be plotted on the map
+myplots <- rxExec(mapPlot, inDataSource, googMap, timesToRun = 1)
+plot(myplots[[1]][["myplot"]])
 
 ################################
 #      Feature engineering     #
@@ -119,46 +157,6 @@ featureDataSource = RxSqlServerData(sqlQuery = featureEngineeringQuery,
 
 # summarize the feature table after the feature set is created
 rxGetVarInfo(data = featureDataSource)
-
-
-################################
-#       Data Visualization     #
-################################
-options(jupyter.plot_mimetypes = 'image/png')
-
-# Plot fare amount histogram on the SQL Server, and ship the plot to R client to display
-start.time <- proc.time()
-rxHistogram(~fare_amount, data = featureDataSource, title = "Fare Amount Histogram")
-used.time <- proc.time() - start.time
-print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2), 
-            " seconds, Elapsed Time=", round(used.time[3],2), " seconds to generate histogram.", sep=""))
-
-# Plot pickup location on map in SQL Server
-# Define a function that plots points on a map
-mapPlot <- function(featureDataSource, googMap){
-    library(ggmap)
-    library(mapproj)
-
-# Open Source R functions require data to be brought back in memory into data frames. Use rxImport to bring in data. 
-# Remember: This whole function is run in the SQL Server Context.
-    ds <- rxImport(featureDataSource)
-
-    p<-ggmap(googMap)+
-    geom_point(aes(x = pickup_longitude, y =pickup_latitude ), 
-                      data=ds, alpha =.5, color="darkred", size = 1.5)
-
-    return(list(myplot=p))
-}
-
-library(ggmap)
-library(mapproj)
-# Get the map with Times Square, NY as the center. This is run on the R Client
-gc <- geocode("Times Square", source = "google")
-googMap <- get_googlemap(center = as.numeric(gc), zoom = 12, maptype = 'roadmap', color = 'color')
-# Run the points plotting on SQL server. Passing in the map data as arg to remotely executed function. 
-# The points are in the database and will be plotted on the map
-myplots <- rxExec(mapPlot, featureDataSource, googMap, timesToRun = 1)
-plot(myplots[[1]][["myplot"]])
 
 ################################
 #        Training models       #
