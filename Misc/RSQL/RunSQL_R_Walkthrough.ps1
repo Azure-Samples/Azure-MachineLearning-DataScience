@@ -192,9 +192,11 @@ function InstallSQLUtilities(){
         $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188400&clcid=0x409"
         $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188429&clcid=0x409"
     }
-    DownloadAndInstall $download_url1 "/quiet" "msi"
+    Write-host "Installing SQL Server Native Client..."
+    DownloadAndInstall $download_url1 "/quiet IACCEPTSQLNCLILICENSETERMS=YES" "msi"
+    Write-host "Installing SQL Command Line Utilities..."
     DownloadAndInstall $download_url2 "/quiet" "msi"
-    [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles(x86)}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine") 
+    [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine") 
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
 }
 Write-Host "Start creating database and table on your SQL Server, and uploading data to the table. It may take a while..."
