@@ -203,7 +203,7 @@ tablesample (1 percent) repeatable (98052)
 on a.medallion=b.medallion and a.hack_license=b.hack_license and a.pickup_datetime=b.pickup_datetime
 where b.medallion is null
 '"
-q<-paste("EXEC PredictTipBatchMode @input = ", input, sep="")
+q<-paste("EXEC PredictTipBatchMode @inquery = ", input, sep="")
 sqlQuery (conn, q)
 
 # Call predict on a single observation
