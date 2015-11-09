@@ -220,6 +220,14 @@ catch
 {
     Write-Host "Function fnCalculateDistance  already exists. You cannot create it."
 }
+try
+{
+    ExecuteSQLFile $PWD"\fnEngineerFeatures.sql" 1
+}
+catch
+{
+    Write-Host "Function fnEngineerFeatures  already exists. You cannot create it."
+}
 Write-Host "Completed registering all stored procedures used in this walkthrough."
 $end_time = Get-Date
 $time_span = $end_time - $start_time
