@@ -199,21 +199,22 @@ function InstallSQLUtilities(){
     [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine") 
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
 }
+
+try
+{
+    InstallSQLUtilities
+}
+catch
+{
+    Write-Host "Installing SQL Utilities failed. Probably it has already been installed previously."
+}
+
 Write-Host "Start creating database and table on your SQL Server, and uploading data to the table. It may take a while..."
 $start_time = Get-Date
 try
 {
     ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
     $db_tb = $dbname + ".dbo.nyctaxi_joined_1_percent"
-    Write-Host $db_tb
-    try
-    {
-        InstallSQLUtilities
-    }
-    catch
-    {
-        Write-Host "Installing SQL Utilities failed. Probably it has already been installed previously."
-    }
     Write-host "start loading the data to SQL Server table..."
     bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
     $end_time = Get-Date
