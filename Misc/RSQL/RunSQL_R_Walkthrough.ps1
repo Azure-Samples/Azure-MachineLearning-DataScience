@@ -179,25 +179,29 @@ function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = 
 
 function InstallSQLUtilities(){
     # Install SQL Server Command Line Utilities
-    Write-Output "Download and install SQL Server Command Line Utilities"
-    $os = Get-WMIObject win32_operatingsystem
-    $os_bit = $os.OSArchitecture
-    if($os_bit -eq '64-bit')
+    $b = Get-WmiObject -Class Win32_Product | sort-object Name | select Name | where { $_.Name -match “Microsoft SQL Server" -and $_.Name -match "Command Line Utilities" }
+    if($b -eq $null)
     {
-        $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188401&clcid=0x409"
-        $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188430&clcid=0x409"
+        Write-Output "SQL Server Command Line Utilities not installed. Download and install SQL Server Command Line Utilities"
+        $os = Get-WMIObject win32_operatingsystem
+        $os_bit = $os.OSArchitecture
+        if($os_bit -eq '64-bit')
+        {
+            $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188401&clcid=0x409"
+            $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188430&clcid=0x409"
+        }
+        else
+        {
+            $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188400&clcid=0x409"
+            $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188429&clcid=0x409"
+        }
+        Write-host "Installing SQL Server Native Client..."
+        DownloadAndInstall $download_url1 "/quiet IACCEPTSQLNCLILICENSETERMS=YES" "msi"
+        Write-host "Installing SQL Command Line Utilities..."
+        DownloadAndInstall $download_url2 "/quiet" "msi"
+        [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine")
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
     }
-    else
-    {
-        $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188400&clcid=0x409"
-        $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188429&clcid=0x409"
-    }
-    Write-host "Installing SQL Server Native Client..."
-    DownloadAndInstall $download_url1 "/quiet IACCEPTSQLNCLILICENSETERMS=YES" "msi"
-    Write-host "Installing SQL Command Line Utilities..."
-    DownloadAndInstall $download_url2 "/quiet" "msi"
-    [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine") 
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
 }
 
 try
