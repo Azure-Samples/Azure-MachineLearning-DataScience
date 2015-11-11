@@ -34,7 +34,6 @@ CREATE TABLE {tb_name}
        tipped int,
        tip_class int
 )
-
 CREATE CLUSTERED INDEX Med_Lic_Pickup ON dbo.{tb_name} (medallion, hack_license, pickup_datetime) 
 GO
 '
