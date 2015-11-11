@@ -2,7 +2,7 @@ PlotHistogram.sql
 PredictTip.sql
 PredictTipSingleMode.sql 
 TrainTipPredictionModel.sql
-create-db-tb-upload-data.sql
+create-db-tb-upload-data-sql-walkthrough.sql
 fnCalculateDistance.sql
 fnEngineerFeatures.sql
 CallPredictTipStoredProcedure.sql
