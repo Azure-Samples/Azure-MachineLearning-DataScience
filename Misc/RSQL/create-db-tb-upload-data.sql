@@ -34,7 +34,7 @@ CREATE TABLE {tb_name}
        tipped int,
        tip_class int
 )
-CREATE CLUSTERED INDEX Med_Lic_Pickup ON dbo.{tb_name} (medallion, hack_license, pickup_datetime)
+CREATE CLUSTERED COLUMNSTORE INDEX [nyc_cci] ON {tb_name} WITH (DROP_EXISTING = OFF)
 '
 
 SET @create_tb_template2 = '
