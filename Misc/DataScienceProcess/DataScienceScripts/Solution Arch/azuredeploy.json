@@ -1,0 +1,167 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "nameprefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Prefix for solution name"
+            }
+        }
+    },
+
+    "variables": {
+        "storageAccountType": "Standard_LRS",
+        "location": "[resourceGroup().location]",
+        "storageVersion": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
+        "storageName": "[toLower(concat(parameters('nameprefix'), 'store'))]",
+        "storageId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
+        "sbVersion": "[providers('Microsoft.Eventhub', 'namespaces').apiVersions[0]]",
+        "sbName": "[concat(parameters('nameprefix'), '-servicebus')]",
+        "ehInName": "[concat(parameters('nameprefix'), '-ehin')]",
+        "sbKeyName": "RootManageSharedAccessKey",
+        "sbResourceId": "[resourceId('Microsoft.Eventhub/namespaces/authorizationRules', variables('sbName'), variables('sbKeyName'))]",
+        "saJobName": "[concat(parameters('nameprefix'), '-sajob')]",
+        "saVersion": "2015-06-01"
+    },
+
+    "resources": [
+        {
+            "apiVersion": "[variables('storageVersion')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageName')]",
+            "location": "[variables('location')]",
+            "properties": { "accountType": "[variables('storageAccountType')]" }
+        },
+        {
+            "apiVersion": "[variables('sbVersion')]",
+            "name": "[variables('sbName')]",
+            "type": "Microsoft.Eventhub/namespaces",
+            "location": "[variables('location')]",
+            "properties": {
+                "region": "[variables('location')]"
+            },
+            "resources": [
+                {
+                    "apiVersion": "[variables('sbVersion')]",
+                    "name": "[variables('ehInName')]",
+                    "type": "eventHubs",
+                    "location": "[variables('location')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Eventhub/namespaces/', variables('sbName'))]"
+                    ],
+                    "properties": {
+                        "path": "[variables('ehInName')]"
+                    }
+                }
+             ]
+        },
+        {
+            "apiVersion": "[variables('saVersion')]",
+            "type": "Microsoft.StreamAnalytics/streamingjobs",
+            "name": "[variables('saJobName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageName'))]"
+            ],
+            "properties": {
+                "sku": { "name": "standard" },
+                "EventsOutOfOrderMaxDelayInSeconds": 10,
+                "EventsOutOfOrderPolicy": "adjust",
+                "Inputs": [
+                    {
+                        "Name": "IoTHubStream",
+                        "Properties": {
+                            "DataSource": {
+                                "Properties": {
+                                    "ConsumerGroupName": "",
+                                    "EventHubName": "[variables('ehInName')]",
+                                    "ServiceBusNamespace": "[variables('sbName')]",
+                                    "SharedAccessPolicyKey": "[listkeys(variables('sbResourceId'), variables('sbVersion')).primaryKey]",
+                                    "SharedAccessPolicyName": "[variables('sbKeyName')]"
+                                },
+                                "Type": "Microsoft.ServiceBus/EventHub"
+                            },
+                            "Serialization": {
+                                "Properties": {
+                                    "Encoding": "UTF8"
+                                },
+                                "Type": "Json"
+                            },
+                            "Type": "Stream"
+                        }
+                    }
+                ],
+                "Outputs": [
+                    {
+                        "Name": "StreamOutput",
+                        "Properties": {
+                            "DataSource": {
+                                "Properties": {
+                                    "Container": "devicetelemetry",
+                                    "DateFormat": "yyyy/MM/dd",
+                                    "TimeFormat": "HH",
+                                    "PathPattern": "Output/logs/{date}/{time}",
+                                    "StorageAccounts": [
+                                        {
+                                            "AccountKey": "[listkeys(variables('storageId'), variables('storageVersion')).key1]",
+                                            "AccountName": "[variables('storageName')]"
+                                        }
+                                    ]
+                                },
+                                "Type": "Microsoft.Storage/Blob"
+                            },
+                            "Serialization": {
+                                "Properties": {
+                                    "Encoding": "UTF8",
+                                    "Format": "Array"
+                                },
+                                "Type": "Json"
+                            }
+                        }
+                    },
+                    {
+                        "Name": "SummaryOutput",
+                        "Properties": {
+                            "DataSource": {
+                                "Properties": {
+                                    "Container": "DeviceTelemetrySummary",
+                                    "DateFormat": "yyyy/MM/dd",
+                                    "TimeFormat": "HH",
+                                    "PathPattern": "Output/logs/{date}/{time}",
+                                    "StorageAccounts": [
+                                        {
+                                            "AccountKey": "[listkeys(variables('storageId'), variables('storageVersion')).key1]",
+                                            "AccountName": "[variables('storageName')]"
+                                        }
+                                    ]
+                                },
+                                "Type": "Microsoft.Storage/Blob"
+                            },
+                            "Serialization": {
+                                "Properties": {
+                                    "Encoding": "UTF8",
+                                    "Format": "Array"
+                                },
+                                "Type": "Json"
+                            }
+                        }
+                    }
+                ],
+                "Transformation": {
+                    "Name": "AllToBlob",
+                    "Properties": {
+                        "Query": "WITH [StreamData] AS (SELECT * FROM [IoTHubStream] TIMESTAMP BY Time) SELECT * INTO [StreamOutput] FROM [StreamData] SELECT AVG(Humidity) AS [AverageHumidity], MIN(Humidity) AS [MinimumHumidity], MAX(Humidity) AS [MaxHumidity], 5.0 AS TimeframeMinutes INTO [SummaryOutput] FROM [StreamData] WHERE [Humidity] IS NOT NULL GROUP BY SlidingWindow (mi, 5)",
+                        "StreamingUnits": 1
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "ehInPath": { "type": "string", "value": "[variables('ehInName')" },
+        "sbConnectionString": { "type": "string", "value": "[listkeys(variables('sbResourceId'), variables('sbVersion')).primaryConnectionString]" },
+        "storageName": { "type": "string", "value": "[variables('storageName')]" },
+        "storagekey": { "type": "string", "value": "[listkeys(variables('storageId'), variables('storageVersion')).key1]" }
+    }
+}
