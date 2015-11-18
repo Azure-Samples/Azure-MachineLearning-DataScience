@@ -177,7 +177,7 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
 
 Write-Host "Start creating database and table on your SQL Server, and uploading data to the table. It may take a while..."
 $start_time = Get-Date
-ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
+ExecuteSQLFile $PWD"\create-db-tb-upload-data-sql-walkthrough.sql" 1
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)

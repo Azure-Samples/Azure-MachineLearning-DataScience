@@ -3,4 +3,7 @@ create-db-tb-upload-data.sql
 PersistModel.sql
 PredictTipSingleMode.sql
 PredictTipBatchMode.sql
+fnCalculateDistance.sql
+fnEngineerFeatures.sql
 RSQL_R_Walkthrough.R
+taxiimportfmt.xml

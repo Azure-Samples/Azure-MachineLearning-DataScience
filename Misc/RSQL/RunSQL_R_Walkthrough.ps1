@@ -59,6 +59,7 @@ param(
         $p 
     ) 
 #Connect to MS SQL Server 
+$web_client = new-object System.Net.WebClient
 try 
 { 
     $SQLConnection = New-Object System.Data.SqlClient.SqlConnection 
@@ -168,29 +169,123 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
     Write-Host $sqlfile "execution done"
 }
 
+function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
+{
+    $LocalPath = [IO.Path]::GetTempFileName() + "." + $DownloadFileType
+    $web_client.DownloadFile($DownloadPath, $LocalPath)
+
+    Start-Process -FilePath $LocalPath -ArgumentList $ArgsForInstall -Wait
+}
+
+function InstallSQLUtilities(){
+    # Install SQL Server Command Line Utilities
+    $b = Get-WmiObject -Class Win32_Product | sort-object Name | select Name | where { $_.Name -match “Microsoft SQL Server" -and $_.Name -match "Command Line Utilities" }
+    if($b -eq $null)
+    {
+        Write-Output "SQL Server Command Line Utilities not installed. Download and install SQL Server Command Line Utilities"
+        $os = Get-WMIObject win32_operatingsystem
+        $os_bit = $os.OSArchitecture
+        if($os_bit -eq '64-bit')
+        {
+            $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188401&clcid=0x409"
+            $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188430&clcid=0x409"
+        }
+        else
+        {
+            $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188400&clcid=0x409"
+            $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188429&clcid=0x409"
+        }
+        Write-host "Installing SQL Server Native Client..."
+        DownloadAndInstall $download_url1 "/quiet IACCEPTSQLNCLILICENSETERMS=YES" "msi"
+        Write-host "Installing SQL Command Line Utilities..."
+        DownloadAndInstall $download_url2 "/quiet" "msi"
+        [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine")
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
+    }
+}
+
+try
+{
+    InstallSQLUtilities
+}
+catch
+{
+    Write-Host "Installing SQL Utilities failed. Probably it has already been installed previously."
+}
+
 Write-Host "Start creating database and table on your SQL Server, and uploading data to the table. It may take a while..."
 $start_time = Get-Date
-ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
-$end_time = Get-Date
-$time_span = $end_time - $start_time
-$total_seconds = [math]::Round($time_span.TotalSeconds,2)
-Write-Host "This step (creating database, tables and uploading data to table) takes $total_seconds seconds."
+try
+{
+    ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
+    $db_tb = $dbname + ".dbo.nyctaxi_joined_1_percent"
+    Write-host "start loading the data to SQL Server table..."
+    bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
+    $end_time = Get-Date
+    $time_span = $end_time - $start_time
+    $total_seconds = [math]::Round($time_span.TotalSeconds,2)
+    Write-Host "This step (creating database and tables, and uploading data to table) takes $total_seconds seconds."
+}
+catch
+{
+    Write-Host "Creating database and tables failed. You cannot create database/tables if they already exist."
+}
+
+
 Write-Host "Start running the .sql files to register all stored procedures used in this walkthrough..."
 $start_time = Get-Date
-ExecuteSQLFile $PWD"\PersistModel.sql" 1
-ExecuteSQLFile $PWD"\PredictTipBatchMode.sql" 1
-ExecuteSQLFile $PWD"\PredictTipSingleMode.sql" 1
+try
+{
+    ExecuteSQLFile $PWD"\PersistModel.sql" 1
+}
+catch
+{
+    Write-Host "Stored procedure PersistModel already exists. You cannot create it."
+}
+try
+{
+    ExecuteSQLFile $PWD"\PredictTipBatchMode.sql" 1
+}
+catch
+{
+    Write-Host "Stored procedure PredictTipBatchMode already exists. You cannot create it."
+}
+try
+{
+    ExecuteSQLFile $PWD"\PredictTipSingleMode.sql" 1
+}
+catch
+{
+    Write-Host "Stored procedure PredictTipSingleMode already exists. You cannot create it."
+}
+try
+{
+    ExecuteSQLFile $PWD"\fnCalculateDistance.sql" 1
+}
+catch
+{
+    Write-Host "Function fnCalculateDistance  already exists. You cannot create it."
+}
+try
+{
+    ExecuteSQLFile $PWD"\fnEngineerFeatures.sql" 1
+}
+catch
+{
+    Write-Host "Function fnEngineerFeatures  already exists. You cannot create it."
+}
 Write-Host "Completed registering all stored procedures used in this walkthrough."
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)
 Write-Host "This step (registering all stored procedures) takes $total_seconds seconds."
 $SQLConnection.Close()
+
 Write-Host "Plug in the database server name, database name, user name and password into the R script file"
 $start_time = Get-Date
 if($PSVersionTable.WSManStackVersion.Major -ge 3)
 {
-    (gc RSQL_R_Walkthrough.R).replace('<your_server_name.somedomain.com>', $server) | sc RSQL_R_Walkthrough.R
+    (gc RSQL_R_Walkthrough.R).replace('<Your_Server_Name.somedomain.com>', $server) | sc RSQL_R_Walkthrough.R
     (gc RSQL_R_Walkthrough.R).replace('<Your_Database_Name>', $dbname) | sc RSQL_R_Walkthrough.R
     (gc RSQL_R_Walkthrough.R).replace('<Your_User_Name>', $u) | sc RSQL_R_Walkthrough.R
     (gc RSQL_R_Walkthrough.R).replace('<Your_Password>', $p) | sc RSQL_R_Walkthrough.R

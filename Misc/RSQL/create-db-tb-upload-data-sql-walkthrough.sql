@@ -7,7 +7,6 @@ SET @path_to_data = 'C:\temp\nyctaxi1pct.csv' --Please change the path to the da
 SET @create_db_template = 'create database {db_name}'
 SET @create_tb_template = '
 use {db_name}
-
 CREATE TABLE {tb_name}
 (
        medallion varchar(50) not null,
@@ -45,6 +44,11 @@ CREATE TABLE nyc_taxi_models
 )
 '
 
+SET @upload_data_template = 'BULK INSERT {db_name}.dbo.{tb_name} 
+   	FROM ''{path_to_data}''
+   	WITH ( FIELDTERMINATOR ='','', FIRSTROW = 2, ROWTERMINATOR = ''\n'' )
+'
+
 -- Create database
 SET @sql_script = REPLACE(@create_db_template, '{db_name}', @db_name)
 EXECUTE(@sql_script)
@@ -52,6 +56,12 @@ EXECUTE(@sql_script)
 -- Create table
 SET @sql_script = REPLACE(@create_tb_template, '{db_name}', @db_name)
 SET @sql_script = REPLACE(@sql_script, '{tb_name}', @tb_name)
+EXECUTE(@sql_script)
+
+-- Upload data from a local file on the server to the table
+SET @sql_script = REPLACE(@upload_data_template, '{db_name}', @db_name)
+SET @sql_script = REPLACE(@sql_script, '{tb_name}', @tb_name)
+SET @sql_script = REPLACE(@sql_script, '{path_to_data}', @path_to_data)
 EXECUTE(@sql_script)
 
 -- Create the table to persist the trained model
