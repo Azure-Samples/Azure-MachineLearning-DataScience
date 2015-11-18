@@ -43,12 +43,9 @@
             },
             "variables": {
                 "location": "[resourceGroup().location]",
-        "imagePublisher": "MicrosoftWindowsServer",
-        "imageOffer": "WindowsServer",
                 "imagePublisher": "microsoft-ads",
-                "imageOffer": "standard-data-science-vm-preview",
+                "imageOffer": "standard-data-science-vm",
                 "OSDiskName": "osdiskforwindowssimple",
-        "windowsOSVersion": "2012-R2-Datacenter",
                 "windowsOSVersion": "standard-data-science-vm",
                 "nicName": "myVMNic",
                 "addressPrefix": "10.0.0.0/16",
@@ -141,7 +138,7 @@
                     "plan": {
                         "name": "standard-data-science-vm",
                         "publisher": "microsoft-ads",
-                        "product": "standard-data-science-vm-preview"
+                        "product": "standard-data-science-vm"
                     },
                     "tags": {
                         "Application": "DataScience"
