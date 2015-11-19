@@ -22,4 +22,6 @@ If you want to create the data science VM in your Azure subscription, please cli
 
 [![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
 
-Note: Compute usage charges will apply once you deploy the virtual machine to your subscription. For details of usage charges please visit the VM [listing page](https://azure.microsoft.com/en-us/marketplace/partners/microsoft-ads/standard-data-science-vm/). 
+**IMPORTANT**: Before you use the "Deploy to Azure" button for the first time, you need to complete a one time process to accept the terms by visiting the [Azure portal] (https://ms.portal.azure.com/#create/microsoft-ads.standard-data-science-vmstandard-data-science-vm) and then at the bottom of that page click on "Want to deploy programatically? Get Started ->" link. 
+
+**Note**: Compute usage charges will apply once you deploy the virtual machine to your subscription. For details of usage charges please visit the VM [listing page](https://azure.microsoft.com/en-us/marketplace/partners/microsoft-ads/standard-data-science-vm/). 
