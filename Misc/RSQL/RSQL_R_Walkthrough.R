@@ -18,7 +18,7 @@ library(RevoScaleR)
 
 # Define the connection string
 # This walkthrough requires SQL authentication
-connStr <- "Driver=SQL Server;Server=rsqldemoserver2.redmond.corp.microsoft.com;Database=hztest1119;Uid=rreadmin;Pwd=Tr@iningUser201509"
+connStr <- "Driver=SQL Server;Server=<Your_Server_Name.somedomain.com>;Database=<Your_Database_Name>;Uid=<Your_User_Name>;Pwd=<Your_Password>"
 
 # Set ComputeContext. Needs a temp directory path to serialize R objects back and forth
 sqlShareDir <- paste("C:\\AllShare\\",Sys.getenv("USERNAME"),sep="")
