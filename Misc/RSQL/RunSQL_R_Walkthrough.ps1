@@ -20,44 +20,56 @@ Mandatory parameters:
 Examples. 
  
 Execute on remote SQL Server Express with   
-.\RunSQL_R_Walkthrough.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv -u SQLUserName -p SQLUserPassword
+.\RunSQL_R_Walkthrough.ps1
+When asked for user name and password, input user name and password respectively. 
+
+If log in using Windows authentication, when asked for user name and password, do not input anything, just press the return button. 
  
 ---------------------------------------------------------------------------#> 
 #Script parameters 
-param( 
-        #Name of MS SQL Server instance 
-        [parameter(Mandatory=$true, 
-               HelpMessage="Specify the SQL Server name where will be run a T-SQL code",Position=0)] 
-        [String] 
-        [ValidateNotNullOrEmpty()] 
-        $server = $(throw "sqlserver parameter is required."), 
+#param( 
+#        #Name of MS SQL Server instance 
+#        [parameter(Mandatory=$true, 
+#               HelpMessage="Specify the SQL Server name where will be run a T-SQL code",Position=0)] 
+#        [String] 
+#        [ValidateNotNullOrEmpty()] 
+#        $server = $(throw "sqlserver parameter is required."), 
  
         #Database name for execution context 
-        [parameter(Mandatory=$true, 
-               HelpMessage="Specify the context database name",Position=1)] 
-        [String] 
-        [ValidateNotNullOrEmpty()] 
-        $dbname = $(throw "dbname parameter is required."),
+#        [parameter(Mandatory=$true, 
+#               HelpMessage="Specify the context database name",Position=1)] 
+#        [String] 
+#        [ValidateNotNullOrEmpty()] 
+#        $dbname = $(throw "dbname parameter is required."),
         
-        #Location of example csv file to be uploaded to SQL table nyctaxi_joined_1_percent 
-        [parameter(Mandatory=$true, 
-               HelpMessage="Specify the path to the example csv file to be uploaded to SQL table nyctaxi_joined_1_percent",Position=1)] 
-        [String] 
-        [ValidateNotNullOrEmpty()] 
-        $csvfilepath = $(throw "path to the example csv file is required."), 
- 
-        #MS SQL Server user name 
-        [parameter(Mandatory=$false,Position=4)] 
-        [String] 
-        [AllowEmptyString()] 
-        $u, 
- 
-        #MS SQL Server password name 
-        [parameter(Mandatory=$false,Position=5)] 
-        [String] 
-        [AllowEmptyString()] 
-        $p 
-    ) 
+#        #Location of example csv file to be uploaded to SQL table nyctaxi_joined_1_percent 
+#        [parameter(Mandatory=$true, 
+#               HelpMessage="Specify the path to the example csv file to be uploaded to SQL table nyctaxi_joined_1_percent",Position=1)] 
+#        [String] 
+#        [ValidateNotNullOrEmpty()] 
+#        $csvfilepath = $(throw "path to the example csv file is required."), 
+# 
+#        #MS SQL Server user name 
+#        [parameter(Mandatory=$false,Position=4)] 
+#        [String] 
+#        [AllowEmptyString()] 
+#        $u, 
+# 
+#        #MS SQL Server password name 
+#        [parameter(Mandatory=$false,Position=5)] 
+#        [String] 
+#        [AllowEmptyString()] 
+#        $p 
+#    ) 
+# Keyboard input for parameters
+$server = Read-Host -Prompt 'Input the database server name (the full address)'
+$dbname = Read-Host -Prompt 'Input the name of the database you want to create'
+$u = Read-Host -Prompt 'Input the user name which has the previlige to create the database'
+$p0 = Read-Host -Prompt 'Input the password of user name which has the previlige to create the database' -AsSecureString
+$p1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($p0)
+$p = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($p1)
+$csvfilepath = Read-Host -Prompt 'Input the path to the csv file you want to upload to the database'
+
 #Connect to MS SQL Server 
 $web_client = new-object System.Net.WebClient
 try 
