@@ -54,7 +54,6 @@ print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2)," seconds, 
 ################################
 #       Data Visualization     #
 ################################
-options(jupyter.plot_mimetypes = 'image/png')
 
 # Plot fare amount histogram on the SQL Server, and ship the plot to R client to display
 start.time <- proc.time()
