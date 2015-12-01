@@ -230,7 +230,7 @@ $start_time = Get-Date
 try
 {
     ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
-    $db_tb = $dbname + ".dbo.nyctaxi_joined_1_percent"
+    $db_tb = $dbname + ".dbo.nyctaxi_sample"
     Write-host "start loading the data to SQL Server table..."
     bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
     $end_time = Get-Date
@@ -276,7 +276,7 @@ try
 }
 catch
 {
-    Write-Host "Function fnCalculateDistance  already exists. You cannot create it."
+    Write-Host "Function fnCalculateDistance already exists. You cannot create it."
 }
 try
 {
@@ -284,7 +284,7 @@ try
 }
 catch
 {
-    Write-Host "Function fnEngineerFeatures  already exists. You cannot create it."
+    Write-Host "Function fnEngineerFeatures already exists. You cannot create it."
 }
 Write-Host "Completed registering all stored procedures used in this walkthrough."
 $end_time = Get-Date
