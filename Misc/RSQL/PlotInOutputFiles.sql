@@ -18,7 +18,7 @@ AS
 BEGIN
   SET NOCOUNT ON;
   DECLARE @query nvarchar(max) =
-  N'SELECT cast(tipped as int) as tipped, tip_amount, fare_amount FROM [dbo].[nyctaxi_joined_1_percent]'
+  N'SELECT cast(tipped as int) as tipped, tip_amount, fare_amount FROM [dbo].[nyctaxi_sample]'
   EXECUTE sp_execute_external_script @language = N'R',
                                      @script = N'
 # Set output directory for files

@@ -21,7 +21,7 @@ BEGIN
 	select tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
     pickup_datetime, dropoff_datetime, 
     dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance
-    from nyctaxi_joined_1_percent
+    from nyctaxi_sample
     tablesample (70 percent) repeatable (98052)
 '
   -- Insert the trained model into a database table

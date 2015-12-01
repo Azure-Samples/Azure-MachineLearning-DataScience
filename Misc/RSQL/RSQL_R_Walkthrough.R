@@ -32,7 +32,7 @@ rxSetComputeContext(cc)
 #Keep in mind that inDataSource is just a reference to the result dataset from the SQL query.
 sampleDataQuery <- "select top 1000 tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
     pickup_datetime, dropoff_datetime, pickup_longitude, pickup_latitude, dropoff_longitude,  
-    dropoff_latitude from nyctaxi_joined_1_percent"
+    dropoff_latitude from nyctaxi_sample"
 
 
 inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = connStr, 
@@ -145,7 +145,7 @@ featureEngineeringQuery = "SELECT tipped, fare_amount, passenger_count,trip_time
     pickup_datetime, dropoff_datetime, 
     dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance,
     pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude
-    FROM nyctaxi_joined_1_percent
+    FROM nyctaxi_sample
     tablesample (1 percent) repeatable (98052)
 "
 featureDataSource = RxSqlServerData(sqlQuery = featureEngineeringQuery, 
@@ -226,12 +226,12 @@ from
 (
 	select medallion, hack_license, pickup_datetime, passenger_count,trip_time_in_secs,trip_distance,  
 		dropoff_datetime, pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude
-	from nyctaxi_joined_1_percent
+	from nyctaxi_sample
 )a
 left outer join
 (
 select medallion, hack_license, pickup_datetime
-from nyctaxi_joined_1_percent
+from nyctaxi_sample
 tablesample (1 percent) repeatable (98052)
 )b
 on a.medallion=b.medallion and a.hack_license=b.hack_license and a.pickup_datetime=b.pickup_datetime
