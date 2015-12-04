@@ -211,14 +211,37 @@ function InstallSQLUtilities(){
         DownloadAndInstall $download_url1 "/quiet IACCEPTSQLNCLILICENSETERMS=YES" "msi"
         Write-host "Installing SQL Command Line Utilities..."
         DownloadAndInstall $download_url2 "/quiet" "msi"
-        [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine")
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
     }
+}
+
+function SearchBCP(){
+    $bcp_list = Get-ChildItem -Path "C:\Program Files*\" -Filter bcp.exe -Recurse -ErrorAction SilentlyContinue -Force | where {$_.FullName -like '*\bcp.exe'}
+    if ($bcp_list -ne $null){
+        $bcp_path = @('')*$bcp_list.count
+        for ($i=1; $i -le $bcp_list.count; $i++){
+            $bcp_path[$i] = $bcp_list[$i].FullName -replace '\bcp.exe',''
+        }
+    }
+    return $bcp_path
 }
 
 try
 {
-    InstallSQLUtilities
+    $bcp_path = SearchBCP
+    if ($bcp_list -eq $null){
+        Write-Host "bcp.exe is not found in C:\Program Files*. Now, start installing SQL Utilities..."
+        InstallSQLUtilities
+        $bcp_path = SearchBCP
+    }
+    Write-Host "Adding path to bcp.exe to the system path..."
+    $env_path = $env:Path
+    for ($i=1; $i -le $bcp_path.count; $i++){
+        if ($env_path -notlike ‘*’+$bcp_path+'*'){
+            [Environment]::SetEnvironmentVariable("Path", $bcp_path[$i] + $env:Path, "Machine")
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
+            $env_path = $env:Path
+        }
+    }
 }
 catch
 {
