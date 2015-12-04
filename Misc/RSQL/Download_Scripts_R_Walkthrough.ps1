@@ -20,10 +20,6 @@ $web_client = new-object System.Net.WebClient
 
 function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination_dir)
 {   
-    if (!(Test-Path $destination_dir)) {
-        mkdir $destination_dir
-    }
-
     # Download the list so we can iterate over it.
     $tempPath = [IO.Path]::GetTempFileName()
     $url = $base_url + $file_list_name
@@ -55,6 +51,14 @@ function GetSampleFilesFromGit($gitdir_name, $list_name, $destination_dir){
 
 
 ###################### End of Functions / Start of Script ######################
+if (!(Test-Path $DestDir)) {
+    Write-Output "$DestDir does not exist and is created."
+    mkdir $DestDir
+}
+Write-Output "Start downloading the data file to $DestDir. It may take a while..."
+$file_url = "http://getgoing.blob.core.windows.net/public/nyctaxi1pct.csv"
+$file_dest = Join-Path $DestDir "nyctaxi1pct.csv"
+$web_client.DownloadFile($file_url, $file_dest)
 Write-Output "Fetching the sample script files to $DestDir..."
 GetSampleFilesFromGit "RSQL" "FilestoDownload_R_Walkthrough.txt" $DestDir
 Write-Output "Fetching the sample script files completed."
