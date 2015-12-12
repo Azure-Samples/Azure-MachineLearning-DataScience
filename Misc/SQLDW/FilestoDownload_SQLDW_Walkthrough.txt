@@ -1,0 +1,2 @@
+SQLDW_Data_Import.ps1
+LoadDataWithPolyBase.sql
