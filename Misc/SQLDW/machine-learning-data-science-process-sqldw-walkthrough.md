@@ -68,18 +68,21 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 As you can see from the [Plan Your Environment](machine-learning-data-science-plan-your-environment.md) guide, there are several options to work with the NYC Taxi Trips dataset in Azure:
 
 - Work with the data in Azure blobs then model in Azure Machine Learning
-- Load the data into a SQL Server database then model in Azure Machine Learning
+- Load the data into a SQL Data Warehouse then model in Azure Machine Learning
 
 In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample scripts](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/DataScienceScripts) and [IPython notebooks](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/iPythonNotebooks) are shared in GitHub. A sample IPython notebook to work with the data in Azure blobs is also available in the same location.
 
 To set up your Azure Data Science environment:
 
-1. [Create a storage account](../storage-create-storage-account.md)
+1. The data used in this walkthrough is shared in a public blob storage container in Azure in a .csv format. In this walkthrough, the data will be copied to your own Azure blob storage before the data is uploaded to SQL DW. 
+The public blob storage is located at South Central US. When you provision your own Azure blob storage, please try to choose a geo-location of your Azure blob storage as close as possible to South Central US. A closer geo-location of your Azure blob storage will make Step 4 which copies data to your Azure blob storage faster than a geographically further Azure blob storage.
+Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/storage-create-storage-account/](https://azure.microsoft.com/en-us/documentation/articles/storage-create-storage-account/) to create your own Azure storage account, if you don’t already have one. Please make notes on the following storage account credential. The data will be copied from the public blob storage container to a container in your own storage account.
+
 	- Storage Account Name
 	- Storage Account Key
 	- Container Name (which you want the data to be stored in the Azure blob storage)
 
-2. [Provision a SQL Data Warehouse](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-provision/). Make sure that you keep make notations on the following the SQL Data Warehouse credential which will be used to make SQL DW connections.
+2. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-provision/](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-provision/) to provision a SQL Data Warehouse instance. Make sure that you make notations on the following the SQL Data Warehouse credential which will be used to make SQL DW connections.
 	
 	- Server Name
 	- SQLDW (Database) Name
@@ -94,12 +97,12 @@ Open a Windows PowerShell command console. Run the following PowerShell commands
 
 >You might need to Run as Administrator when executing the following PowerShell scripts if your DestDir needs Administrator privilege to create or write. 
 
-	$source = ‘https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/SQLDW/Download_Scripts_SQLDW_Walkthrough.ps1’
-	$ps1_dest = “$pwd\Download_Scripts_SQLDW_Walkthrough.ps1”
+	$source = "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/SQLDW/Download_Scripts_SQLDW_Walkthrough.ps1"
+	$ps1_dest = "$pwd\Download_Scripts_SQLDW_Walkthrough.ps1"
 	$wc = New-Object System.Net.WebClient
 	$wc.DownloadFile($source, $ps1_dest) 
 
-	.\Download_Scripts_SQLDW_Walkthrough.ps1 –DestDir ‘C:\tempSQLDW’
+	.\Download_Scripts_SQLDW_Walkthrough.ps1 –DestDir 'C:\tempSQLDW'
 
 Execute a single PowerShell script to
 
@@ -258,7 +261,7 @@ The label generation and geography conversion exploration queries can also be us
 
 #### Preparing Data for Model Building
 
-The following query joins the **nyctaxi\_trip** and **nyctaxi\_fare** tables, generates a binary classification label **tipped**, a multi-class classification label **tip\_class**, and extracts a 1% random sample from the full joined dataset. This query can be copied then pasted directly in the [Azure Machine Learning Studio](https://studio.azureml.net) [Reader][reader] module for direct data ingestion from the SQL Server database instance in Azure. The query excludes records with incorrect (0, 0) coordinates.
+The following query joins the **nyctaxi\_trip** and **nyctaxi\_fare** tables, generates a binary classification label **tipped**, a multi-class classification label **tip\_class**, and extracts a sample from the full joined dataset. The sampling is done by retrieving a subset of the trips based on pickup time.  This query can be copied then pasted directly in the [Azure Machine Learning Studio](https://studio.azureml.net) [Reader][reader] module for direct data ingestion from the SQL database instance in Azure. The query excludes records with incorrect (0, 0) coordinates.
 
 	SELECT t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax, f.tolls_amount, 	f.total_amount, f.tip_amount,
 	    CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END AS tipped,
