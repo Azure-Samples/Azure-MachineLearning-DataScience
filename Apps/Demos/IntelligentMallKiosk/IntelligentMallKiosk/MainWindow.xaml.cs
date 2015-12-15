@@ -430,8 +430,8 @@ namespace MLMarketplaceDemo
                     {
                         this.fullText += e.PhraseResponse.Results[i].DisplayText + " ";
                         userInput.Text = fullText;
-                        /* userInput.Text = e.PhraseResponse.Results[i].DisplayText;
-                         this.fullText += " " + userInput.Text;*/
+                       /* userInput.Text = e.PhraseResponse.Results[i].DisplayText;
+                        this.fullText += " " + userInput.Text;*/
                         pingPong = 0;
                     }));
                 }
@@ -564,7 +564,7 @@ namespace MLMarketplaceDemo
                     //FaceMarker  fm = new FaceMarker(age, face.Attributes.Gender);
 
                     FaceMarker fm = new FaceMarker(face as NamedFace);
-
+                    
                     fm.Height = Math.Round(face.FaceRectangle.Height / heightRatio);
                     fm.Width = Math.Round(face.FaceRectangle.Width / widthRatio);
                     canvas.Children.Add(fm);
@@ -573,11 +573,11 @@ namespace MLMarketplaceDemo
                     Canvas.SetTop(fm, Math.Round(face.FaceRectangle.Top / heightRatio));
                     Canvas.SetLeft(fm, Math.Round(face.FaceRectangle.Left / widthRatio));
 
-                    /*  HumanIdentification identification = new HumanIdentification();
-                      identification.Age = face.Attributes.Age.ToString() + " years old";
-                      identification.Id = face.Attributes.Gender;
-                      identification.HairlineColor = brushList[index++];
-                      Ids.Children.Add(identification);*/
+                  /*  HumanIdentification identification = new HumanIdentification();
+                    identification.Age = face.Attributes.Age.ToString() + " years old";
+                    identification.Id = face.Attributes.Gender;
+                    identification.HairlineColor = brushList[index++];
+                    Ids.Children.Add(identification);*/
                 }
             }
         }
@@ -664,14 +664,14 @@ namespace MLMarketplaceDemo
 
 
             PrintDialog printDialog = new PrintDialog();
-
+            
             // Set image and adjust to new size
             layout.ImageToPrint.Source = OutputImage.Source;
 
             // Add face markers
             if (RecognizedFaces != null && RecognizedFaces.Length > 0)
             {
-
+                
                 int index = 0;
                 foreach (var face in RecognizedFaces)
                 {
@@ -694,7 +694,7 @@ namespace MLMarketplaceDemo
 
             TransformGroup transGroup = new TransformGroup();
             layout.CardToPrint.LayoutTransform = transGroup;
-
+            
             System.Printing.PrintCapabilities capabilities = printDialog.PrintQueue.GetPrintCapabilities(printDialog.PrintTicket);
             transGroup.Children.Add(new ScaleTransform(capabilities.PageImageableArea.ExtentWidth / layout.CardToPrint.Width,
                 capabilities.PageImageableArea.ExtentHeight / layout.CardToPrint.Height));
@@ -722,16 +722,14 @@ namespace MLMarketplaceDemo
 
             if (this.MediaDeviceList.Count > 0)
             {
-                //bind the combobox to the list
-                comboBox_webcamSelector.ItemsSource = this.MediaDeviceList;
-                comboBox_webcamSelector.DisplayMemberPath = "DisplayName";
-                comboBox_webcamSelector.SelectedItem = this.MediaDeviceList[this.MediaDeviceList.Count - 1];
+                this.SelectedVideoDevice = this.MediaDeviceList[this.MediaDeviceList.Count - 1];
             }
             else
             {
                 this.SelectedVideoDevice = null;
             }
 
+            CameraVideoDeviceControl.VideoSourceId = SelectedVideoDevice.UsbId;
         }
 
 
@@ -797,19 +795,6 @@ namespace MLMarketplaceDemo
             {
                 this.mediaDeviceList = value;
             }
-        }
-
-
-        /// <summary>
-        /// Set the video device in the webcam control to whichever device is selected in the dropdown
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void WebcamComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var cb = sender as ComboBox;
-            this.SelectedVideoDevice = cb.SelectedItem as MediaInformation;
-            CameraVideoDeviceControl.VideoSourceId = SelectedVideoDevice.UsbId;
         }
     }
 }
