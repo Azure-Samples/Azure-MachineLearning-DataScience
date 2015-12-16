@@ -66,7 +66,7 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 ## <a name="setup"></a>Setting Up the Azure data science environment for advanced analytics
 
 
-In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample scripts](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/DataScienceScripts) and [IPython notebooks](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/iPythonNotebooks) are shared in GitHub. A sample IPython notebook to work with the data in Azure blobs is also available in the same location.
+In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample scripts](./Sample Scripts) are shared in GitHub.
 
 To set up your Azure Data Science environment, follow the steps below.
 
@@ -119,11 +119,11 @@ Depending on the geographical location of your blob storage account, the process
 
 ## <a name="dbexplore"></a>Data Exploration and Feature Engineering in SQL Data Warehouse
 
-In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio**. A sample script named **sample\_queries.sql** is provided in the **Sample Scripts** folder. Modify the script to change the database or data table name, if it is different from the default: **TaxiNYC**.
+In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided in the **Sample Scripts** folder. Modify the script to change the database or data table name, if it is different from the default.
 
 In this exercise, we will:
 
-- Connect to **SQL Server Management Studio** using SQL Authentication and the SQL login name and password.
+- Connect to **SQL Server Management Studio** with the SQL login name and password.
 - Explore data distributions of a few fields in varying time windows.
 - Investigate data quality of the longitude and latitude fields.
 - Generate binary and multiclass classification labels based on the **tip\_amount**.
@@ -134,8 +134,6 @@ When you are ready to proceed to Azure Machine Learning, you may either:
 
 1. Save the final SQL query to extract and sample the data and copy-paste the query directly into a [Reader][reader] module in Azure Machine Learning, or
 2. Persist the sampled and engineered data you plan to use for model building in a new database table and use the new table in the [Reader][reader] module in Azure Machine Learning.
-
-In this section we will save the final query to extract and sample the data. The second method is demonstrated in the [Data Exploration and Feature Engineering in IPython Notebook](#ipnb) section.
 
 For a quick verification of the number of rows and columns in the tables populated earlier using parallel bulk import,
 
@@ -241,15 +239,6 @@ This example converts the pickup and drop-off longitude and latitude to SQL geog
 	END
 	GO
 
-	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
-	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
-	FROM nyctaxi_trip
-	WHERE datepart("mi",pickup_datetime)=1
-	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
-	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
-	AND pickup_longitude != '0' AND dropoff_longitude != '0'
-
-
 
 #### Feature Engineering in SQL Queries
 
@@ -275,10 +264,38 @@ The following query joins the **nyctaxi\_trip** and **nyctaxi\_fare** tables, ge
 	AND   pickup_longitude != '0' AND dropoff_longitude != '0'
 
 
-## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook [TBD]
+#### Create a Sample Data based on the Joint Table
+
+We join the tables **nyctaxi\_trip** and **nyctaxi\_fare**, extract a random sample, and persist the sampled data in a new table name **nyctaxi\_sample**:
+
+	CREATE TABLE nyctaxi_sample
+	WITH 
+	(   
+    CLUSTERED COLUMNSTORE INDEX,
+	DISTRIBUTION = HASH(medallion)
+	)
+	AS 
+	(
+    SELECT t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax, f.tolls_amount, f.total_amount, f.tip_amount,
+	tipped = CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END,
+	tip_class = CASE WHEN (tip_amount = 0) THEN 0
+                        WHEN (tip_amount > 0 AND tip_amount <= 5) THEN 1
+                        WHEN (tip_amount > 5 AND tip_amount <= 10) THEN 2
+                        WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
+                        ELSE 4
+                    END
+    FROM nyctaxi_trip t, nyctaxi_fare f
+    WHERE datepart("mi",t.pickup_datetime) = 1
+	AND t.medallion = f.medallion
+    AND   t.hack_license = f.hack_license
+    AND   t.pickup_datetime = f.pickup_datetime
+    AND   pickup_longitude <> '0' AND dropoff_longitude <> '0'
+	)
+
+## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook
 
 In this section, we will perform data exploration and feature generation
-using both Python and SQL queries against the SQL Server database created earlier. A sample IPython notebook named **machine-Learning-data-science-process-sqldw-story.ipynb** is provided in the **Sample IPython Notebooks** folder. This notebook is also available on [GitHub](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/iPythonNotebooks).
+using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **machine-Learning-data-science-process-sqldw-story.ipynb** is provided in the **Sample IPython Notebooks** folder. This notebook is also available on [GitHub](./mlads-workshop-taxi-sql-walkthrough-v3.ipynb).
 
 The recommended sequence when working with big data is the following:
 
@@ -329,12 +346,31 @@ Initialize your database connection settings in the following variables:
 - Total number of rows = 173179759  
 - Total number of columns = 14
 
+#### Report number of rows and columns in table nyctaxi_fare
+
+    nrows = pd.read_sql('''
+		SELECT SUM(rows) FROM sys.partitions
+		WHERE object_id = OBJECT_ID('nyctaxi_fare')
+	''', conn)
+
+	print 'Total number of rows = %d' % nrows.iloc[0,0]
+
+    ncols = pd.read_sql('''
+		SELECT COUNT(*) FROM information_schema.columns
+		WHERE table_name = ('nyctaxi_fare')
+	''', conn)
+
+	print 'Total number of columns = %d' % ncols.iloc[0,0]
+
+- Total number of rows = 173179759  
+- Total number of columns = 11
+
 #### Read-in a small data sample from the SQL Server Database
 
     t0 = time.time()
 
 	query = '''
-		SELECT t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax,
+		SELECT TOP 10000 t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax,
 			f.tolls_amount, f.total_amount, f.tip_amount
 		FROM nyctaxi_trip t, nyctaxi_fare f
 		WHERE datepart("mi",t.pickup_datetime) = 1
@@ -350,8 +386,8 @@ Initialize your database connection settings in the following variables:
 
     print 'Number of rows and columns retrieved = (%d, %d)' % (df1.shape[0], df1.shape[1])
 
-Time to read the sample table is 6.492000 seconds  
-Number of rows and columns retrieved = (84952, 21)
+Time to read the sample table is 14.096495 seconds  
+Number of rows and columns retrieved = (1000, 21)
 
 #### Descriptive Statistics
 
@@ -418,40 +454,48 @@ When preparing data for model building in [Azure Machine Learning Studio](https:
 
 In this section we will create a new table to hold the sampled and engineered data. An example of a direct SQL query for model building is provided in the [Data Exploration and Feature Engineering in SQL Server](#dbexplore) section.
 
-#### Create a Sample Table and Populate with 1% of the Joined Tables. Drop Table First if it Exists.
-
-In this section, we join the tables **nyctaxi\_trip** and **nyctaxi\_fare**, extract a 1% random sample, and persist the sampled data in a new table name **nyctaxi\_one\_percent**:
-
-    cursor = conn.cursor()
-
-    drop_table_if_exists = '''
-        IF OBJECT_ID('nyctaxi_one_percent', 'U') IS NOT NULL DROP TABLE nyctaxi_one_percent
-    '''
-
-    nyctaxi_one_percent_insert = '''
-        SELECT t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax, f.tolls_amount, f.total_amount, f.tip_amount
-		INTO nyctaxi_one_percent
-		FROM nyctaxi_trip t, nyctaxi_fare f
-		TABLESAMPLE (1 PERCENT)
-		WHERE t.medallion = f.medallion
-		AND   t.hack_license = f.hack_license
-		AND   t.pickup_datetime = f.pickup_datetime
-		AND   pickup_longitude <> '0' AND dropoff_longitude <> '0'
-    '''
-
-    cursor.execute(drop_table_if_exists)
-    cursor.execute(nyctaxi_one_percent_insert)
-    cursor.commit()
 
 ### Data Exploration using SQL Queries in IPython Notebook
 
-In this section, we explore data distributions using the 1% sampled data which is persisted in the new table we created above. Note that similar explorations can be performed using the original tables, optionally using **TABLESAMPLE** to limit the exploration sample or by limiting the results to a given time period using the **pickup\_datetime** partitions, as illustrated in the [Data Exploration and Feature Engineering in SQL Server](#dbexplore) section.
+In this section, we explore data distributions using the sampled data which is persisted in the new table we created above. Note that similar explorations can be performed using the original tables.
+
+#### Exploration: Report number of rows and columns in the sampled table
+
+	nrows = pd.read_sql('''SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('nyctaxi_sample')''', conn)
+	print 'Number of rows in sample = %d' % nrows.iloc[0,0]
+
+	ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = ('nyctaxi_sample')''', conn)
+	print 'Number of columns in sample = %d' % ncols.iloc[0,0]
+
+#### Exploration: Tipped/Not Tipped Distribution
+
+	query = '''
+        SELECT tipped, count(*) AS tip_freq
+        FROM nyctaxi_sample
+        GROUP BY tipped
+        '''
+
+	pd.read_sql(query, conn)
+
+#### Exploration: Tip Class Distribution
+
+	query = '''
+        SELECT tip_class, count(*) AS tip_freq
+        FROM nyctaxi_sample
+        GROUP BY tip_class
+	'''
+
+	pd.read_sql(query, conn)
+
+#### Exploration: Plot the Tip Distribution by class
+
+	tip_class_dist['tip_freq'].plot(kind='bar')
 
 #### Exploration: Daily distribution of trips
 
     query = '''
 		SELECT CONVERT(date, dropoff_datetime) AS date, COUNT(*) AS c
-		FROM nyctaxi_one_percent
+		FROM nyctaxi_sample
 		GROUP BY CONVERT(date, dropoff_datetime)
 	'''
 
@@ -461,135 +505,36 @@ In this section, we explore data distributions using the 1% sampled data which i
 
     query = '''
 		SELECT medallion,count(*) AS c
-		FROM nyctaxi_one_percent
+		FROM nyctaxi_sample
 		GROUP BY medallion
 	'''
 
 	pd.read_sql(query,conn)
 
-### Feature Generation Using SQL Queries in IPython Notebook
+#### Exploration: Trip distribution by medallion and Hack License
 
-In this section we will generate new labels and features directly using SQL queries, operating on the 1% sample table we created in the previous section.
+	query = '''select medallion, hack_license,count(*) from nyctaxi_sample group by medallion, hack_license'''
+	pd.read_sql(query,conn)
 
-#### Label Generation: Generate Class Labels
 
-In the following example, we generate two sets of labels to use for modeling:
+#### Exploration: Trip Time Distribution
 
-1. Binary Class Labels **tipped** (predicting if a tip will be given)
-2. Multiclass Labels **tip\_class** (predicting the tip bin or range)
+	query = '''select trip_time_in_secs, count(*) from nyctaxi_sample group by trip_time_in_secs order by count(*) desc'''
+	pd.read_sql(query,conn)
 
-		nyctaxi_one_percent_add_col = '''
-			ALTER TABLE nyctaxi_one_percent ADD tipped bit, tip_class int
-		'''
+#### Exploration: Trip Distance Distribution
 
-		cursor.execute(nyctaxi_one_percent_add_col)
-		cursor.commit()
+	query = '''select floor(trip_distance/5)*5 as tripbin, count(*) from nyctaxi_sample group by floor(trip_distance/5)*5 order by count(*) desc'''
+	pd.read_sql(query,conn)
 
-    	nyctaxi_one_percent_update_col = '''
-        	UPDATE nyctaxi_one_percent
-            SET
-               tipped = CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END,
-               tip_class = CASE WHEN (tip_amount = 0) THEN 0
-                                WHEN (tip_amount > 0 AND tip_amount <= 5) THEN 1
-                                WHEN (tip_amount > 5 AND tip_amount <= 10) THEN 2
-                                WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
-                                ELSE 4
-                            END
-        '''
+#### Exploration: Payment Type Distribution
 
-    	cursor.execute(nyctaxi_one_percent_update_col)
-		cursor.commit()
-
-#### Feature Engineering: Count Features for Categorical Columns
-
-This example transforms a categorical field into a numeric field by replacing each category with the count of its occurrences in the data.
-
-    nyctaxi_one_percent_insert_col = '''
-		ALTER TABLE nyctaxi_one_percent ADD cmt_count int, vts_count int
-	'''
-
-    cursor.execute(nyctaxi_one_percent_insert_col)
-    cursor.commit()
-
-    nyctaxi_one_percent_update_col = '''
-		WITH B AS
-		(
-			SELECT medallion, hack_license,
-				SUM(CASE WHEN vendor_id = 'cmt' THEN 1 ELSE 0 END) AS cmt_count,
-				SUM(CASE WHEN vendor_id = 'vts' THEN 1 ELSE 0 END) AS vts_count
-			FROM nyctaxi_one_percent
-			GROUP BY medallion, hack_license
-		)
-
-		UPDATE nyctaxi_one_percent
-		SET nyctaxi_one_percent.cmt_count = B.cmt_count,
-			nyctaxi_one_percent.vts_count = B.vts_count
-		FROM nyctaxi_one_percent A INNER JOIN B
-		ON A.medallion = B.medallion AND A.hack_license = B.hack_license
-	'''
-
-    cursor.execute(nyctaxi_one_percent_update_col)
-    cursor.commit()
-
-#### Feature Engineering: Bin features for Numerical Columns
-
-This example transforms a continuous numeric field into preset category ranges, i.e., transform numeric field into a categorical field.
-
-    nyctaxi_one_percent_insert_col = '''
-		ALTER TABLE nyctaxi_one_percent ADD trip_time_bin int
-	'''
-
-    cursor.execute(nyctaxi_one_percent_insert_col)
-    cursor.commit()
-
-    nyctaxi_one_percent_update_col = '''
-		WITH B(medallion,hack_license,pickup_datetime,trip_time_in_secs, BinNumber ) AS
-		(
-			SELECT medallion,hack_license,pickup_datetime,trip_time_in_secs,
-			NTILE(5) OVER (ORDER BY trip_time_in_secs) AS BinNumber from nyctaxi_one_percent
-		)
-
-		UPDATE nyctaxi_one_percent
-		SET trip_time_bin = B.BinNumber
-		FROM nyctaxi_one_percent A INNER JOIN B
-		ON A.medallion = B.medallion
-		AND A.hack_license = B.hack_license
-		AND A.pickup_datetime = B.pickup_datetime
-	'''
-
-    cursor.execute(nyctaxi_one_percent_update_col)
-    cursor.commit()
-
-#### Feature Engineering: Extract Location Features from Decimal Latitude/Longitude
-
-This example breaks down the decimal representation of a latitude and/or longitude field into multiple region fields of different granularity, such as, country, city, town, block, etc. Note that the new geo-fields are not mapped to actual locations. For information on mapping geocode locations, see [Bing Maps REST Services](https://msdn.microsoft.com/library/ff701710.aspx).
-
-    nyctaxi_one_percent_insert_col = '''
-		ALTER TABLE nyctaxi_one_percent
-		ADD l1 varchar(6), l2 varchar(3), l3 varchar(3), l4 varchar(3),
-			l5 varchar(3), l6 varchar(3), l7 varchar(3)
-	'''
-
-    cursor.execute(nyctaxi_one_percent_insert_col)
-    cursor.commit()
-
-    nyctaxi_one_percent_update_col = '''
-		UPDATE nyctaxi_one_percent
-		SET l1=round(pickup_longitude,0)
-			, l2 = CASE WHEN LEN (PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1)) >= 1 THEN SUBSTRING(PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1),1,1) ELSE '0' END     
-			, l3 = CASE WHEN LEN (PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1)) >= 2 THEN SUBSTRING(PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1),2,1) ELSE '0' END     
-			, l4 = CASE WHEN LEN (PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1)) >= 3 THEN SUBSTRING(PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1),3,1) ELSE '0' END     
-			, l5 = CASE WHEN LEN (PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1)) >= 4 THEN SUBSTRING(PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1),4,1) ELSE '0' END     
-			, l6 = CASE WHEN LEN (PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1)) >= 5 THEN SUBSTRING(PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1),5,1) ELSE '0' END     
-			, l7 = CASE WHEN LEN (PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1)) >= 6 THEN SUBSTRING(PARSENAME(ROUND(ABS(pickup_longitude) - FLOOR(ABS(pickup_longitude)),6),1),6,1) ELSE '0' END
-	'''
-
-    cursor.execute(nyctaxi_one_percent_update_col)
-    cursor.commit()
+	query = '''select payment_type,count(*) from nyctaxi_sample group by payment_type'''
+	pd.read_sql(query,conn)
 
 #### Verify the final form of the featurized table
 
-    query = '''SELECT TOP 100 * FROM nyctaxi_one_percent'''
+    query = '''SELECT TOP 100 * FROM nyctaxi_sample'''
     pd.read_sql(query,conn)
 
 We are now ready to proceed to model building and model deployment in [Azure Machine Learning](https://studio.azureml.net). The data is ready for any of the prediction problems identified earlier, namely:
