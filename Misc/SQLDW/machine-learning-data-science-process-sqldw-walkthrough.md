@@ -279,17 +279,17 @@ The following query joins the **nyctaxi\_trip** and **nyctaxi\_fare** tables, ge
 	AND   pickup_longitude != '0' AND dropoff_longitude != '0'
 
 
-## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook
+## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook [TBD]
 
 In this section, we will perform data exploration and feature generation
-using both Python and SQL queries against the SQL Server database created earlier. A sample IPython notebook named **machine-Learning-data-science-process-sql-story.ipynb** is provided in the **Sample IPython Notebooks** folder. This notebook is also available on [GitHub](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/iPythonNotebooks).
+using both Python and SQL queries against the SQL Server database created earlier. A sample IPython notebook named **machine-Learning-data-science-process-sqldw-story.ipynb** is provided in the **Sample IPython Notebooks** folder. This notebook is also available on [GitHub](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/iPythonNotebooks).
 
 The recommended sequence when working with big data is the following:
 
 - Read in a small sample of the data into an in-memory data frame.
 - Perform some visualizations and explorations using the sampled data.
 - Experiment with feature engineering using the sampled data.
-- For larger data exploration, data manipulation and feature engineering, use Python to issue SQL Queries directly against the SQL Server database in the Azure VM.
+- For larger data exploration, data manipulation and feature engineering, use Python to issue SQL Queries directly against the SQL DW.
 - Decide the sample size to use for Azure Machine Learning model building.
 
 When ready to proceed to Azure Machine Learning, you may either:  
@@ -692,24 +692,24 @@ This sample walkthrough and its accompanying scripts and IPython notebook(s) are
 •	[NYC Taxi and Limousine Commission Research and Statistics](https://www1.nyc.gov/html/tlc/html/about/statistics.shtml)
 
 
-[1]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_26_1.png
-[2]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_28_1.png
-[3]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_35_1.png
-[4]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_36_1.png
-[5]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_39_1.png
-[6]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_42_1.png
-[7]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_44_1.png
-[8]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_46_1.png
-[9]: ./media/machine-learning-data-science-process-sql-walkthrough/sql-walkthrough_71_1.png
-[10]: ./media/machine-learning-data-science-process-sql-walkthrough/azuremltrain.png
-[11]: ./media/machine-learning-data-science-process-sql-walkthrough/azuremlpublish.png
-[12]: ./media/machine-learning-data-science-process-sql-walkthrough/ssmsconnect.png
-[13]: ./media/machine-learning-data-science-process-sql-walkthrough/executescript.png
-[14]: ./media/machine-learning-data-science-process-sql-walkthrough/sqlserverproperties.png
-[15]: ./media/machine-learning-data-science-process-sql-walkthrough/sqldefaultdirs.png
-[16]: ./media/machine-learning-data-science-process-sql-walkthrough/bulkimport.png
-[17]: ./media/machine-learning-data-science-process-sql-walkthrough/amlreader.png
-[18]: ./media/machine-learning-data-science-process-sql-walkthrough/amlscoring.png
+[1]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_26_1.png
+[2]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_28_1.png
+[3]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_35_1.png
+[4]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_36_1.png
+[5]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_39_1.png
+[6]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_42_1.png
+[7]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_44_1.png
+[8]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_46_1.png
+[9]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sql-walkthrough_71_1.png
+[10]: ./media/machine-learning-data-science-process-sqldw-walkthrough/azuremltrain.png
+[11]: ./media/machine-learning-data-science-process-sqldw-walkthrough/azuremlpublish.png
+[12]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ssmsconnect.png
+[13]: ./media/machine-learning-data-science-process-sqldw-walkthrough/executescript.png
+[14]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sqlserverproperties.png
+[15]: ./media/machine-learning-data-science-process-sqldw-walkthrough/sqldefaultdirs.png
+[16]: ./media/machine-learning-data-science-process-sqldw-walkthrough/bulkimport.png
+[17]: ./media/machine-learning-data-science-process-sqldw-walkthrough/amlreader.png
+[18]: ./media/machine-learning-data-science-process-sqldw-walkthrough/amlscoring.png
 
 
 <!-- Module References -->
