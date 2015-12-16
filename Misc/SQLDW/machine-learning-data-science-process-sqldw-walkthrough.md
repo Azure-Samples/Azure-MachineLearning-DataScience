@@ -65,14 +65,10 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 
 ## <a name="setup"></a>Setting Up the Azure data science environment for advanced analytics
 
-As you can see from the [Plan Your Environment](machine-learning-data-science-plan-your-environment.md) guide, there are several options to work with the NYC Taxi Trips dataset in Azure:
-
-- Work with the data in Azure blobs then model in Azure Machine Learning
-- Load the data into a SQL Data Warehouse then model in Azure Machine Learning
 
 In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample scripts](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/DataScienceScripts) and [IPython notebooks](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/DataScienceProcess/iPythonNotebooks) are shared in GitHub. A sample IPython notebook to work with the data in Azure blobs is also available in the same location.
 
-To set up your Azure Data Science environment:
+To set up your Azure Data Science environment, follow the steps below.
 
 1. The data used in this walkthrough is shared in a public blob storage container in Azure in a .csv format. In this walkthrough, the data will be copied to your own Azure blob storage before the data is uploaded to SQL DW. 
 The public blob storage is located at South Central US. When you provision your own Azure blob storage, please try to choose a geo-location of your Azure blob storage as close as possible to South Central US. A closer geo-location of your Azure blob storage will make Step 4 which copies data to your Azure blob storage faster than a geographically further Azure blob storage.
