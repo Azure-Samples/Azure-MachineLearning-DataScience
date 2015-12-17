@@ -119,7 +119,7 @@ Depending on the geographical location of your blob storage account, the process
 
 ## <a name="dbexplore"></a>Data Exploration and Feature Engineering in SQL Data Warehouse
 
-In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided on [Github](./SQLDW_Explorations_sql). Modify the script to change the database or data table name, if it is different from the default.
+In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided on [Github](./SQLDW_Explorations.sql). Modify the script to change the database or data table name, if it is different from the default.
 
 In this exercise, we will:
 
