@@ -66,7 +66,7 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 ## <a name="setup"></a>Setting Up the Azure data science environment for advanced analytics
 
 
-In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample scripts](./SQL_Explorations.sql) are shared in GitHub.
+In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample script](./SQL_Explorations.sql) is shared in GitHub.
 
 To set up your Azure Data Science environment, follow the steps below.
 
@@ -119,7 +119,7 @@ Depending on the geographical location of your blob storage account, the process
 
 ## <a name="dbexplore"></a>Data Exploration and Feature Engineering in SQL Data Warehouse
 
-In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided in the **Sample_Scripts** folder. Modify the script to change the database or data table name, if it is different from the default.
+In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided on [Github](./SQLDW_Explorations_sql). Modify the script to change the database or data table name, if it is different from the default.
 
 In this exercise, we will:
 
