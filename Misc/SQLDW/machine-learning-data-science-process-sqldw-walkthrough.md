@@ -19,7 +19,7 @@
 
 # The Cortana Analytics Process in action: using SQL Data Warehouse
 
-In this tutorial, you walkthrough building and deploying a model using a publicly available dataset -- the [NYC Taxi Trips](http://www.andresmh.com/nyctaxitrips/) dataset. The procedure follows the Cortana Analytics Process (CAP) workflow.
+In this tutorial, we will walk you through building and deploying a model using a publicly available dataset -- the [NYC Taxi Trips](http://www.andresmh.com/nyctaxitrips/) dataset. The procedure follows the Cortana Analytics Process (CAP) workflow.
 
 
 ## <a name="dataset"></a>NYC Taxi Trips Dataset Description
