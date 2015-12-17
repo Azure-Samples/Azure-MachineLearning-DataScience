@@ -1,34 +1,81 @@
-﻿# Set-Location $AzCopy_path
-# Specify your storage account name
-$StorageAccountName = Read-Host -Prompt 'Input the storage account name'
-# Specify your storage account key
-$StorageAccountKey0 = Read-Host -Prompt 'Input the storage account key' -AsSecureString
-$StorageAccountKey1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($StorageAccountKey0) 
-$StorageAccountKey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($StorageAccountKey1)
+function ReadHostInput(){
+    $Script:StorageAccountName = Read-Host -Prompt 'Input the storage account name'
+    $StorageAccountKey0 = Read-Host -Prompt 'Input the storage account key' -AsSecureString
+    $StorageAccountKey1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($StorageAccountKey0) 
+    $Script:StorageAccountKey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($StorageAccountKey1)
+    $ContainerName0 = Read-Host -Prompt 'Input your storage account container name to upload the NYC Taxi dataset to. Only letters, numbers, and the dash (-) character'
+    $Script:Server = Read-Host -Prompt 'Input the SQL DW server name'
+    $Script:Database = Read-Host -Prompt 'Input the SQL DW database name'
+    $Script:Username = Read-Host -Prompt 'Input the SQL DW user name'
+    $pass0 = Read-Host -Prompt 'Input the password of user name which has the previlige to create the database' -AsSecureString
+    $pass1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($pass0) 
+    $Script:Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($pass1)
 
-# Specify your storage account container name to store the NYC Taxi dataset
-$ContainerName = Read-Host -Prompt 'Input the storage account container name to store the NYC Taxi dataset'
-Write-Host "ContainerName: " $ContainerName
-# The blob storage account destination 
-$DestURL = "http://$StorageAccountName.blob.core.windows.net/$ContainerName"
-Write-Host "DestURL: " $DestURL
-	
-# The NYC Taxi dataset on public blob
-$Source = "http://getgoing.blob.core.windows.net/public/nyctaxidataset"
+    $Script:RandomNumber = Get-Random
 
-# Import data from your blob storage account to SQL DW
-# Specify your server name
-$Server = Read-Host -Prompt 'Input the SQL DW server name'
-# Specify your SQL DW database name
-$Database = Read-Host -Prompt 'Input the SQL DW database name'
-# Specify your user name
-$Username = Read-Host -Prompt 'Input the SQL DW user name'
-# Specify your password
-$pass0 = Read-Host -Prompt 'Input the password of user name which has the previlige to create the database' -AsSecureString
-$pass1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($pass0) 
-$Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($pass1)
+	$Script:KeyAlias = 'KeyAlias' + '_' + $RandomNumber
+    $Script:ContainerName = $ContainerName0 + '-' + $RandomNumber
+	$Script:nyctaxi_trip_storage = 'nyctaxi_trip_storage' + '_' + $RandomNumber
+	$Script:nyctaxi_fare_storage = 'nyctaxi_fare_storage' + '_' + $RandomNumber
+	$Script:csv_file_format = 'csv_file_format' + '_' + $RandomNumber
+	$Script:external_nyctaxi_trip = 'external_nyctaxi_trip' + '_' + $RandomNumber
+	$Script:external_nyctaxi_fare = 'external_nyctaxi_fare' + '_' + $RandomNumber
+
+	#Specify your table names
+    $TripTableName0 = Read-Host -Prompt 'Input the NYC Taxi Trip table name, for example nyctaxi_trip_yourname'
+	$FareTableName0 = Read-Host -Prompt 'Input the NYC Taxi Fare table name, for example nyctaxi_fare_yourname'
+	$SampleTableName0 = Read-Host -Prompt 'Input the NYC Taxi 1% Sample table name, for example nyctaxi_sample_yourname'
+	$Script:TripTableName = $TripTableName0 + '_' + $RandomNumber
+	$Script:FareTableName = $FareTableName0 + '_' + $RandomNumber
+	$Script:SampleTableName = $SampleTableName0 + '_' + $RandomNumber
+	Write-host "The tables created in your SQL DW are $TripTableName , $FareTableName and $SampleTableName. " -ForegroundColor "Yellow"
+
+}
+
+
+function ReadConfFile(){
+    $ConfContent = @(Get-Content -Path $conf_file) 
+    foreach($ConfLine in  $ConfContent) 
+    {
+        $ConfLine1 = $ConfLine.split(':')
+        $ParmName = $ConfLine1[0].Trim()
+        $ParmValue = $ConfLine1[1].Trim()
+        switch($ParmName)
+        {
+            "StorageAccountName" {$Script:StorageAccountName = $ParmValue}
+            "StorageAccountKey" {$Script:StorageAccountKey = $ParmValue}
+            "ContainerName" {$Script:ContainerName = $ParmValue}
+            "Server" {$Script:Server = $ParmValue}
+            "Database" {$Script:Database = $ParmValue}
+            "Username" {$Script:Username = $ParmValue}
+            "Password" {$Script:Password = $ParmValue}
+			"TripTableName" {$Script:TripTableName = $ParmValue}
+            "FareTableName" {$Script:FareTableName = $ParmValue}
+			"SampleTableName" {$Script:SampleTableName = $ParmValue}
+
+        }
+    }
+    return $ContainerName, $TripTableName, $FareTableName, $SampleTableName
+
+}
+
 	
-$web_client = new-object System.Net.WebClient
+function WriteConfFile(){
+  $file = @(
+            "StorageAccountName : $StorageAccountName",
+            "StorageAccountKey : $StorageAccountKey",
+            "ContainerName : $ContainerName",
+            "Server : $Server",
+            "Database : $Database",
+            "Username : $Username",
+            "Password : $Password",
+			"TripTableName : $TripTableName",
+			"FareTableName : $FareTableName",
+			"SampleTableName : $SampleTableName"
+        )
+  $file | Out-File $conf_file -Encoding UTF8 -Force
+}
+
 
 function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
 {
@@ -42,7 +89,7 @@ function InstallAzCopy(){
     Write-Output "Downloading and installing AzCopy now..." -ForegroundColor "Yellow"
 	$download_url = "http://aka.ms/downloadazcopy"
     Write-host "Installing AzCopy..." -ForegroundColor "Yellow"
-    DownloadAndInstall $download_url "" "msi"
+    DownloadAndInstall $download_url "/quiet" "msi"
 }
 
 function SearchAzCopy(){
@@ -57,17 +104,6 @@ function SearchAzCopy(){
     return $AzCopy_path
 }
 
-try 
-{ 
-    $SQLConnection = New-Object System.Data.SqlClient.SqlConnection 
-    #The SQL DW user and password is specified 
-    $SQLConnection.ConnectionString = "Server=" + $Server + ";Database="+$Database+";User ID= "  + $Username + ";Password="  + $Password + ";" 
-    $SQLConnection.Open() 
-}
-catch{
-    Write-Host $Error[0] -ForegroundColor Red 
-    exit 1 
-}
 
 #The GO switch is specified - parsing T-SQL code with GO
 function ExecuteSQLFile($sqlfile,$go_or_not)
@@ -83,30 +119,82 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
                 if($SQLString.ToLower() -match "set @storageaccountname")
                 {
                     $SQLPacket += "SET @StorageAccountName = '" + $StorageAccountName + "'`n"
+                    #Write-host "$StorageAccountName"
                 }
                 Elseif($SQLString.ToLower() -match "set @storageaccountkey")
                 {
                     $SQLPacket += "SET @StorageAccountKey = '" + $StorageAccountKey + "'`n"
+                    #Write-host "$StorageAccountKey"
                 }
                 Elseif($SQLString.ToLower() -match "set @containername")
                 {
                     $SQLPacket += "SET @ContainerName = '" + $ContainerName + "'`n"
+                    #Write-host "$ContainerName"
                 }
+				Elseif($SQLString.ToLower() -match "set @keyalias")
+				{
+				    $SQLPacket += "SET @KeyAlias = '" + $KeyAlias + "'`n"
+                    #Write-host "$KeyAlias"
+				}
+				Elseif($SQLString.ToLower() -match "set @nyctaxi_trip_storage")
+				{
+				    $SQLPacket += "SET @nyctaxi_trip_storage = '" + $nyctaxi_trip_storage + "'`n"
+                    #Write-host "$nyctaxi_trip_storage"
+				}
+				Elseif($SQLString.ToLower() -match "set @nyctaxi_fare_storage")
+				{
+				    $SQLPacket += "SET @nyctaxi_fare_storage = '" + $nyctaxi_fare_storage + "'`n"
+                    #Write-host "$nyctaxi_fare_storage"
+				}
+				Elseif($SQLString.ToLower() -match "set @external_nyctaxi_trip")
+				{
+				    $SQLPacket += "SET @external_nyctaxi_trip = '" + $external_nyctaxi_trip + "'`n"
+                    #Write-host "$external_nyctaxi_trip"
+				}
+				Elseif($SQLString.ToLower() -match "set @external_nyctaxi_fare")
+				{
+				    $SQLPacket += "SET @external_nyctaxi_fare = '" + $external_nyctaxi_fare + "'`n"
+                    #Write-host "$external_nyctaxi_fare"
+				}	
+				Elseif($SQLString.ToLower() -match "set @nyctaxi_trip")
+				{
+				    $SQLPacket += "SET @nyctaxi_trip = '" + $TripTableName + "'`n"
+                    #Write-host "$TripTableName"
+				}
+				Elseif($SQLString.ToLower() -match "set @nyctaxi_fare")
+				{
+				    $SQLPacket += "SET @nyctaxi_fare = '" + $FareTableName + "'`n"
+                    #Write-host "$FareTableName"
+				}
+				Elseif($SQLString.ToLower() -match "set @nyctaxi_sample")
+				{
+				    $SQLPacket += "SET @nyctaxi_sample = '" + $SampleTableName + "'`n"
+                    #Write-host "$SampleTableName"
+				}				
+				Elseif($SQLString.ToLower() -match "set @csv_file_format")
+				{
+				    $SQLPacket += "SET @csv_file_format = '" + $csv_file_format + "'`n"
+                    #Write-host "$csv_file_format"
+				}	
+
                 Else
                 {
                     $SQLPacket += $SQLString + "`n"
-                } 
+                }
+                #Write-Host $SQLPacket 
             } 
             else 
             { 
                 Write-Host "---------------------------------------------" 
                 Write-Host "Executing SQL to load data into SQL DW:" 
+				#Write-Host $SQLPacket
                 $IsSQLErr = $false 
                 #Execution of SQL packet 
                 try 
                 { 
                     $SQLCommand = New-Object System.Data.SqlClient.SqlCommand($SQLPacket, $SQLConnection) 
                     $SQLCommand.CommandTimeout = 6000
+			        #$SQLCommand.CommandTimeout = 0
                     $SQLCommand.ExecuteScalar() 
                 } 
                 catch 
@@ -120,7 +208,7 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
                 } 
                 if(-not $IsSQLErr) 
                 { 
-                    Write-Host "Execution succesful" 
+                    Write-Host "Execution successful" 
                 } 
                 else 
                 { 
@@ -152,6 +240,87 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
     Write-Host $sqlfile "execution done"
 }
 
+
+
+#-------------------------------------------------------------------#
+# Main code starts from here
+#-------------------------------------------------------------------#
+# Specify your storage account name
+$conf_file = "$PWD\SQLDW.conf"
+$StorageAccountName = ""
+$StorageAccountKey = ""
+$ContainerName = ""
+$Server = ""
+$Database = ""
+$Username = ""
+$Password = ""
+$KeyAlias = ""
+$nyctaxi_trip_storage = ""
+$nyctaxi_fare_storage = ""
+$external_nyctaxi_fare = ""
+$external_nyctaxi_trip = ""
+$csv_file_format = ""
+$TripTableName = ""
+$FareTableName = ""
+$SampleTableName = ""
+
+function Generate_new_names($OldString, $New_RandomNumber,$Delimiter){
+    $OldRN = $OldString.Split($Delimiter)[-1]
+    $NewString = $OldString -replace $OldRN, $New_RandomNumber
+    return $NewString
+}
+
+If (Test-Path $conf_file){
+  $yesorno = Read-Host -Prompt "Configuration file $conf_file found. Do you want to use the parameters there?[Y]/N"
+  if ($yesorno -eq "" -Or $yesorno.ToLower() -eq 'y'){
+    Write-Host "Reading parameters from configuration file $conf_file..." -ForegroundColor "Yellow"
+    $ConfResults = ReadConfFile
+    $New_RandomNumber = get-random
+    #$ContainerName = Generate_new_names $ConfResults[0] $New_RandomNumber '-'
+    $KeyAlias = 'KeyAlias' + '_' + $New_RandomNumber
+    $nyctaxi_trip_storage = 'nyctaxi_trip_storage' + '_' + $New_RandomNumber
+    $nyctaxi_fare_storage = 'nyctaxi_fare_storage' + '_' + $New_RandomNumber
+    $external_nyctaxi_fare = 'external_nyctaxi_fare' + '_' + $New_RandomNumber
+    $external_nyctaxi_trip = 'external_nyctaxi_trip' + '_' + $New_RandomNumber
+    $csv_file_format = 'csv_file_format' + '_' + $New_RandomNumber
+    $TripTableName = Generate_new_names $ConfResults[1] $New_RandomNumber '_'
+    $FareTableName = Generate_new_names $ConfResults[2] $New_RandomNumber '_' 
+    $SampleTableName = Generate_new_names $ConfResults[3] $New_RandomNumber '_'
+  } else{
+    ReadHostInput
+    $yesorno = Read-Host -Prompt "Overwrite existing configuration file $conf_file?[Y]/N"
+    if ($yesorno -eq ""){
+        Write-Host "Overwriting existing configuration file $conf_file..." -ForegroundColor "Yellow"
+        WriteConfFile
+    } elseif ($yesorno.ToLower() -eq 'y'){
+        Write-Host "Overwriting existing configuration file $conf_file..." -ForegroundColor "Yellow"
+        WriteConfFile
+    }
+  }
+}Else{
+  ReadHostInput
+  WriteConfFile
+}
+
+$DestURL = "http://$StorageAccountName.blob.core.windows.net/$ContainerName"
+Write-Host "DestURL: " $DestURL	
+# The NYC Taxi dataset on public blob
+$Source = "http://getgoing.blob.core.windows.net/public/nyctaxidataset"
+	
+$web_client = new-object System.Net.WebClient
+
+try 
+{ 
+    $SQLConnection = New-Object System.Data.SqlClient.SqlConnection 
+    #The SQL DW user and password is specified 
+    $SQLConnection.ConnectionString = "Server=" + $Server + ";Database="+$Database+";User ID= "  + $Username + ";Password="  + $Password + ";" 
+    $SQLConnection.Open() 
+}
+catch{
+    Write-Host $Error[0] -ForegroundColor Red 
+    exit 1 
+}
+
 try
 {
     $AzCopy_path = SearchAzCopy
@@ -167,7 +336,7 @@ try
 			} else {
 				$AzCopy_path_i = $AzCopy_path[$i]
 			}
-			if ($env_path -notlike ‘*’+$AzCopy_path_i+'*'){
+			if ($env_path -notlike '*' +$AzCopy_path_i+'*'){
 				Write-Host $AzCopy_path_i 'not in system path, add it...'
 				[Environment]::SetEnvironmentVariable("Path", "$AzCopy_path_i;$env_path", "Machine")
 				$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
@@ -175,26 +344,28 @@ try
 			}
 		}
 
-    Write-Output "AzCopy is copying data from public blob to your storage account. It may take a while..." -ForegroundColor "Yellow"	
+    Write-Host "AzCopy is copying data from public blob to your storage account. It may take a while..." -ForegroundColor "Yellow"	
 	$start_time = Get-Date
 	AzCopy.exe /Source:$Source /Dest:$DestURL /DestKey:$StorageAccountKey /S
 	$end_time = Get-Date
     $time_span = $end_time - $start_time
     $total_seconds = [math]::Round($time_span.TotalSeconds,2)
-    Write-Output "AzCopy finished copying data. Please check your storage account to verify." -ForegroundColor "Yellow"
-    Write-Host "This step (copying data from public blob to your storage account) takes $total_seconds seconds."
+    Write-Host "AzCopy finished copying data. Please check your storage account to verify." -ForegroundColor "Yellow"
+    Write-Host "This step (copying data from public blob to your storage account) takes $total_seconds seconds." -ForegroundColor "Green"
 
 	$start_time = Get-Date
-	ExecuteSQLFile LoadDataWithPolyBase.sql 1
+	ExecuteSQLFile LoadDataToSQLDW.sql 1
 	$end_time = Get-Date
     $time_span = $end_time - $start_time
     $total_seconds = [math]::Round($time_span.TotalSeconds,2)
-    Write-Output "SQL script execution finished." -ForegroundColor "Yellow"
-    Write-Host "This step (loading data from your private blob to SQLDW) takes $total_seconds seconds."
+    Write-Host "SQL script execution finished." -ForegroundColor "Yellow"
+    Write-Host "This step (loading data from your private blob to SQLDW) takes $total_seconds seconds." -ForegroundColor "Green"
 
 	
-	$qa1 = "select count(*) from nyctaxi_trip"
-	$qa2 = "select count(*) from nyctaxi_fare"
+	$qa1 = "select count(*) from $TripTableName"
+	$qa2 = "select count(*) from $FareTableName"
+	$qa3 = "select count(*) from $SampleTableName"
+
 	$SQLCommand = New-Object System.Data.SqlClient.SqlCommand($qa1, $SQLConnection) 
     $SQLCommand.CommandTimeout = 0
     $qa1_result = $SQLCommand.ExecuteScalar() 
@@ -204,10 +375,79 @@ try
     $SQLCommand.ExecuteScalar() 
 	$qa2_result = $SQLCommand.ExecuteScalar()
 
-	Write-Host "The numbers of records from taxi_trip and taxi_fare are " $qa1_result "and "  $qa2_result -ForegroundColor "Yellow"
-	Write-Host "The data is loaded from your blob storage account to SQL DW." -ForegroundColor "Yellow"
+	$SQLCommand = New-Object System.Data.SqlClient.SqlCommand($qa3, $SQLConnection) 
+    $SQLCommand.CommandTimeout = 0
+    $SQLCommand.ExecuteScalar() 
+	$qa3_result = $SQLCommand.ExecuteScalar()
 
-	}
+
+	Write-Host "The numbers of records from $TripTableName, $FareTableName,$SampleTableName  are  $qa1_result, $qa2_result, and $qa3_result" -ForegroundColor "Yellow"
+	Write-Host "The data is loaded from your blob storage account to SQL DW." -ForegroundColor "Green"
+
+
+    Write-Host "Plug in the parameterized table names in SQL script file" -Foregroundcolor "Yellow"
+    $start_time = Get-Date
+    if($PSVersionTable.WSManStackVersion.Major -ge 3)
+    {
+        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.sql
+        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.sql
+        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.sql
+
+
+        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.ipynb
+
+        (gc ./SQLDW_Explorations.ipynb).replace('<server name>', $Server) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<database name>', $Database) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<user name>', $Username) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<password>', $Password) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<database server>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations.ipynb
+
+    }
+    else
+    {
+
+        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_trip>', $TripTableName
+        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_fare>', $FareTableName
+        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_sample>', $SampleTableName
+
+        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_trip>', $TripTableName
+        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_fare>', $FareTableName
+        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_sample>', $SampleTableName
+		
+		(gc ./SQLDW_Explorations.ipynb) -replace '<server name>', $Server
+        (gc ./SQLDW_Explorations.ipynb) -replace '<database name>', $Database
+        (gc ./SQLDW_Explorations.ipynb) -replace '<user name>', $Username
+        (gc ./SQLDW_Explorations.ipynb) -replace '<password>', $Password
+        (gc ./SQLDW_Explorations.ipynb) -replace '<database server>', 'SQL Server Native Client 11.0'
+
+    }
+
+    $end_time = Get-Date
+    $time_span = $end_time - $start_time
+    $total_seconds = [math]::Round($time_span.TotalSeconds,2)
+    Write-Host "This step (plugging in database information) takes $total_seconds seconds." -Foregroundcolor "Yellow"
+
+    
+	$DeleteTable_file = "$PWD\DeleteResourcesOnSQLDW.sql"
+	$DeleteTableSqlScript = "
+	DROP EXTERNAL TABLE $external_nyctaxi_fare
+	DROP EXTERNAL TABLE $external_nyctaxi_trip
+
+	DROP EXTERNAL DATA SOURCE $nyctaxi_trip_storage
+	DROP EXTERNAL DATA SOURCE $nyctaxi_fare_storage
+	DROP EXTERNAL FILE FORMAT $csv_file_format
+	DROP DATABASE SCOPED CREDENTIAL $KeyAlias
+	
+	"
+	Out-File $DeleteTable_file -inputobject $DeleteTableSqlScript  -Encoding UTF8 -Force
+
+
+	##If you want to drop the temporary tables you created, please execute the following line:
+	Invoke-Sqlcmd -ServerInstance $Server  -Database $Database -Username $Username -Password $Password -InputFile DeleteResourcesOnSQLDW.sql -QueryTimeout 200000
+	
+}
 catch
 {
     Write-Host "Error Message. " -ForegroundColor "Yellow"
