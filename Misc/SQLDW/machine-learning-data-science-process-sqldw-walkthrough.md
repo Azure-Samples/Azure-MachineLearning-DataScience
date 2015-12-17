@@ -66,7 +66,7 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 ## <a name="setup"></a>Setting Up the Azure data science environment for advanced analytics
 
 
-In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. Sample scripts are shared in GitHub.
+In this tutorial we will demonstrate loading data to SQL Data Warehouse, exploration data, engineering features, and building machine learning models.
 
 To set up your Azure Data Science environment, follow the steps below.
 
@@ -85,7 +85,7 @@ Follow the documentation at [https://azure.microsoft.com/en-us/documentation/art
 	- User Name
 	- Password
 
-3. [Create an Azure ML workspace](machine-learning-create-workspace.md)
+3. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/](https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/) to create an Azure Machine Learning workspace.
 
 ## <a name="getdata"></a>Load the data into SQL Data Warehouse
 
@@ -119,12 +119,14 @@ Input your credentials as prompted. After this PowerShell script is run the firs
 
 Depending on the geographical location of your blob storage account, the process of copying data from public blob to your private storage account could take about 15 minutes or longer,and the process of loading data from your storage account to SQL DW could takes about 20 minutes or longer. For your information, the public blob storage account we use to share the data is located at South Central US. 
 
+Other than loading data to the SQL Data Warehouse, the Powershell script (1) creates a sample data table (NYCTaxi_Sample) which is going to be used in following sections and (2) parameterizes the data exploration scripts ([SQL](./SQLDW_Explorations.sql) and [IPython notebook](./SQLDW_Explorations.ipynb)) with your Data Warehouse credentials. 
+
 After successful execution, you will see screen like below:
 ![][20]
 
 ## <a name="dbexplore"></a>Data Exploration and Feature Engineering in SQL Data Warehouse
 
-In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided on [Github](./SQLDW_Explorations.sql). Modify the script to change the database or data table name, if it is different from the default.
+In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW_Explorations.sql** is provided on [Github](./SQLDW_Explorations.sql).
 
 In this exercise, we will:
 
