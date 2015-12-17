@@ -66,7 +66,7 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 ## <a name="setup"></a>Setting Up the Azure data science environment for advanced analytics
 
 
-In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample script](./SQL_Explorations.sql) is shared in GitHub.
+In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. Sample scripts are shared in GitHub.
 
 To set up your Azure Data Science environment, follow the steps below.
 
