@@ -35,6 +35,8 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
             # download the file specified by this line...
             $url = $base_url + $line
             $destination = Join-Path $destination_dir $line
+			Write-Host $url
+			Write-Host $destination
             $web_client.DownloadFile($url, $destination)
         }
     }

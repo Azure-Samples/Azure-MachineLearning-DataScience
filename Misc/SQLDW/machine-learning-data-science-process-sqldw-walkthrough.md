@@ -66,7 +66,7 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 ## <a name="setup"></a>Setting Up the Azure data science environment for advanced analytics
 
 
-In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample scripts](./Sample Scripts) are shared in GitHub.
+In this tutorial we will demonstrate loading data to SQL DW, data exploration, feature engineering. [Sample scripts](./SQL_Explorations.sql) are shared in GitHub.
 
 To set up your Azure Data Science environment, follow the steps below.
 
@@ -119,7 +119,7 @@ Depending on the geographical location of your blob storage account, the process
 
 ## <a name="dbexplore"></a>Data Exploration and Feature Engineering in SQL Data Warehouse
 
-In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided in the **Sample Scripts** folder. Modify the script to change the database or data table name, if it is different from the default.
+In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW.sql** is provided in the **Sample_Scripts** folder. Modify the script to change the database or data table name, if it is different from the default.
 
 In this exercise, we will:
 
@@ -302,7 +302,7 @@ We join the tables **nyctaxi\_trip** and **nyctaxi\_fare**, extract a random sam
 ## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook
 
 In this section, we will perform data exploration and feature generation
-using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **machine-Learning-data-science-process-sqldw-story.ipynb** is provided in the **Sample IPython Notebooks** folder. This notebook is also available on [GitHub](./mlads-workshop-taxi-sql-walkthrough-v3.ipynb).
+using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **SQLDW_Explorations.ipynb** is provided on [GitHub](./SQLDW_Explorations.ipynb).
 
 The recommended sequence when working with big data is the following:
 
