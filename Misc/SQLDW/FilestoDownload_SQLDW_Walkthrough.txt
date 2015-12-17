@@ -1,3 +1,5 @@
 SQLDW_Data_Import.ps1
 LoadDataWithPolyBase.sql
 DeleteResourcesOnSQLDW.sql
+./Sample_Scripts/SQLDW.sql
+./Sample_Scripts/SQLDW.ipynb
