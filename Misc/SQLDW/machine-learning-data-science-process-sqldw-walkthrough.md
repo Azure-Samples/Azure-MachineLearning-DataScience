@@ -239,6 +239,13 @@ This example converts the pickup and drop-off longitude and latitude to SQL geog
 	END
 	GO
 
+	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
+	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
+	FROM nyctaxi_trip
+	WHERE datepart("mi",pickup_datetime)=1
+	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
+	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
+	AND pickup_longitude != '0' AND dropoff_longitude != '0'
 
 #### Feature Engineering in SQL Queries
 

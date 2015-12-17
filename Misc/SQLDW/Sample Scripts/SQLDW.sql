@@ -44,8 +44,6 @@
 	GROUP BY tip_class
 
 
-	GO
-
 	/****** Object:  UserDefinedFunction [dbo].[fnCalculateDistance] ******/
 	SET ANSI_NULLS ON
 	GO
@@ -78,6 +76,14 @@
   		RETURN @distance
 	END
 	GO
+
+	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
+	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
+	FROM nyctaxi_trip
+	WHERE datepart("mi",pickup_datetime)=1
+	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
+	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
+	AND pickup_longitude != '0' AND dropoff_longitude != '0'
 
 	SELECT t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax, f.tolls_amount, 	f.total_amount, f.tip_amount,
 	    CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END AS tipped,
