@@ -3,7 +3,7 @@
 	description="Advanced Analytics Process and Technology in Action"  
 	services="machine-learning"
 	documentationCenter=""
-	authors="msolhab"
+	authors="xibingao,hangzh"
 	manager="paulettm"
 	editor="cgronlun" />
 
@@ -14,7 +14,7 @@
 	ms.devlang="na"
 	ms.topic="article"
 	ms.date="10/27/2015" 
-	ms.author="mohabib;fashah;bradsev"/>
+	ms.author=""/>
 
 
 # The Cortana Analytics Process in action: using SQL Data Warehouse
@@ -100,6 +100,8 @@ Open a Windows PowerShell command console. Run the following PowerShell commands
 
 	.\Download_Scripts_SQLDW_Walkthrough.ps1 –DestDir 'C:\tempSQLDW'
 
+After successful execution, you will see screen like below:
+![][19]
 Execute a single PowerShell script to
 
 - Download and install AzCopy, if AzCopy is not installed
@@ -116,6 +118,9 @@ Open a Windows PowerShell command console, and enter the directory DestDir. Run 
 Input your credentials as prompted. After this PowerShell script is run the first time, the credentials you just input will be write to a configuration file SQLDW.conf in the same directory as the PowerShell script file. The future run of this PowerShell script file will read all needed parameters from this configuration file. If you want to change some parameters, you can either delete this configuration file, and input parameters as prompted. Alternatively, you can change the parameters in the configuration file. 
 
 Depending on the geographical location of your blob storage account, the process of copying data from public blob to your private storage account could take about 15 minutes or longer,and the process of loading data from your storage account to SQL DW could takes about 20 minutes or longer. For your information, the public blob storage account we use to share the data is located at South Central US. 
+
+After successful execution, you will see screen like below:
+![][20]
 
 ## <a name="dbexplore"></a>Data Exploration and Feature Engineering in SQL Data Warehouse
 
@@ -658,6 +663,8 @@ This sample walkthrough and its accompanying scripts and IPython notebook(s) are
 [16]: ./media/machine-learning-data-science-process-sqldw-walkthrough/bulkimport.png
 [17]: ./media/machine-learning-data-science-process-sqldw-walkthrough/amlreader.png
 [18]: ./media/machine-learning-data-science-process-sqldw-walkthrough/amlscoring.png
+[19]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ps_download_scripts.png
+[20]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ps_load_data.png
 
 
 <!-- Module References -->
