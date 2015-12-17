@@ -6,31 +6,17 @@ Built on a post by Andy Mishechkin at https://gallery.technet.microsoft.com/scri
  
 .DESCRIPTION 
 
-.\runsql.ps1 -server dbserver_name.domain_name -dbname taxinyc_sample -csvfilepath C:\temp\nyctaxi1pct.csv [-u SQLUser] [-p SQLPassword] 
+.\runsql.ps1 
+ 
 
+(1)when asked for user name and password, directly press return button. 
  
-Mandatory parameters: 
--server - name of Microsoft SQL Server instance  
--dbname - database name that you want to create and use in this walkthrough 
--csvfilepath - path and name of the .csv file on the SQL Server to be loaded to the database 
- 
-Optional parameters: 
--u - the user name if using Microsoft SQL Server authentication 
--p - the password  if using Microsoft SQL Server authentication 
- 
-Examples. 
- 
-1) Execute on local SQL Server the script CreateDB.sql, which is placed in  C:\MyTSQLScripts\ and contains 'GO'  statements, using 
- 
-Windows credentials of current user: 
-.\runsql.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv
 
- 
-2) Execute on remote SQL Server Express with   
-.\runsql.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv -u SQLUserName -p SQLUserPassword
+(2)when asked for user name and password, input user name and password, respectively. Password will be masked.
  
 ---------------------------------------------------------------------------#> 
 #Script parameters 
+<#
 param( 
         #Name of MS SQL Server instance 
         [parameter(Mandatory=$true, 
@@ -65,6 +51,14 @@ param(
         [AllowEmptyString()] 
         $p 
     ) 
+    #>
+$server = Read-Host -Prompt 'Input the database server name (the full address)'
+$dbname = Read-Host -Prompt 'Input the name of the database you want to create'
+$u = Read-Host -Prompt 'Input the user name which has the previlige to create the database'
+$p0 = Read-Host -Prompt 'Input the password of user name which has the previlige to create the database' -AsSecureString
+$p1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($p0)
+$p = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($p1)
+$csvfilepath = Read-Host -Prompt 'Input the path to the csv file you want to upload to the database'
 #Connect to MS SQL Server 
 try 
 { 

@@ -1,0 +1,4 @@
+2406e770-769c-4189-89de-1c9283f93a96,Clara Callan,Book,book description,author=Richard Wright,publisher=Harper Flamingo Canada,year=2001
+21bf8088-b6c0-4509-870c-e1c7ac78304a,The Forgetting Room: A Fiction (Byzantium Book),Book,book description,author=Nick Bantock,publisher=Harpercollins,year=1997
+3bb5cb44-d143-4bdd-a55c-443964bf4b23,Spadework,Book,book description,author=Timothy Findley, publisher=HarperFlamingo Canada, year=2001
+552a1940-21e4-4399-82bb-594b46d7ed54,Restraint of Beasts,Book,book description,author=Magnus Mills, publisher=Arcade Publishing, year=1998

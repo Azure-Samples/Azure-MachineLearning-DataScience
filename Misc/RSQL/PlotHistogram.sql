@@ -18,7 +18,7 @@ AS
 BEGIN
   SET NOCOUNT ON;
   DECLARE @query nvarchar(max) =
-  N'SELECT tipped FROM nyctaxi_joined_1_percent'
+  N'SELECT tipped FROM nyctaxi_sample'
   EXECUTE sp_execute_external_script @language = N'R',
                                      @script = N'
 image_file = tempfile();

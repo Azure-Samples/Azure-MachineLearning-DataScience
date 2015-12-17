@@ -20,44 +20,56 @@ Mandatory parameters:
 Examples. 
  
 Execute on remote SQL Server Express with   
-.\RunSQL_R_Walkthrough.ps1 -server servername.microsoft.com -dbname name_of_db_to_create -csvfilepath C:\path_to_csv_file\filename.csv -u SQLUserName -p SQLUserPassword
+.\RunSQL_R_Walkthrough.ps1
+When asked for user name and password, input user name and password respectively. 
+
+If log in using Windows authentication, when asked for user name and password, do not input anything, just press the return button. 
  
 ---------------------------------------------------------------------------#> 
 #Script parameters 
-param( 
-        #Name of MS SQL Server instance 
-        [parameter(Mandatory=$true, 
-               HelpMessage="Specify the SQL Server name where will be run a T-SQL code",Position=0)] 
-        [String] 
-        [ValidateNotNullOrEmpty()] 
-        $server = $(throw "sqlserver parameter is required."), 
+#param( 
+#        #Name of MS SQL Server instance 
+#        [parameter(Mandatory=$true, 
+#               HelpMessage="Specify the SQL Server name where will be run a T-SQL code",Position=0)] 
+#        [String] 
+#        [ValidateNotNullOrEmpty()] 
+#        $server = $(throw "sqlserver parameter is required."), 
  
         #Database name for execution context 
-        [parameter(Mandatory=$true, 
-               HelpMessage="Specify the context database name",Position=1)] 
-        [String] 
-        [ValidateNotNullOrEmpty()] 
-        $dbname = $(throw "dbname parameter is required."),
+#        [parameter(Mandatory=$true, 
+#               HelpMessage="Specify the context database name",Position=1)] 
+#        [String] 
+#        [ValidateNotNullOrEmpty()] 
+#        $dbname = $(throw "dbname parameter is required."),
         
-        #Location of example csv file to be uploaded to SQL table nyctaxi_joined_1_percent 
-        [parameter(Mandatory=$true, 
-               HelpMessage="Specify the path to the example csv file to be uploaded to SQL table nyctaxi_joined_1_percent",Position=1)] 
-        [String] 
-        [ValidateNotNullOrEmpty()] 
-        $csvfilepath = $(throw "path to the example csv file is required."), 
- 
-        #MS SQL Server user name 
-        [parameter(Mandatory=$false,Position=4)] 
-        [String] 
-        [AllowEmptyString()] 
-        $u, 
- 
-        #MS SQL Server password name 
-        [parameter(Mandatory=$false,Position=5)] 
-        [String] 
-        [AllowEmptyString()] 
-        $p 
-    ) 
+#        #Location of example csv file to be uploaded to SQL table nyctaxi_joined_1_percent 
+#        [parameter(Mandatory=$true, 
+#               HelpMessage="Specify the path to the example csv file to be uploaded to SQL table nyctaxi_joined_1_percent",Position=1)] 
+#        [String] 
+#        [ValidateNotNullOrEmpty()] 
+#        $csvfilepath = $(throw "path to the example csv file is required."), 
+# 
+#        #MS SQL Server user name 
+#        [parameter(Mandatory=$false,Position=4)] 
+#        [String] 
+#        [AllowEmptyString()] 
+#        $u, 
+# 
+#        #MS SQL Server password name 
+#        [parameter(Mandatory=$false,Position=5)] 
+#        [String] 
+#        [AllowEmptyString()] 
+#        $p 
+#    ) 
+# Keyboard input for parameters
+$server = Read-Host -Prompt 'Input the database server name (the full address)'
+$dbname = Read-Host -Prompt 'Input the name of the database you want to create'
+$u = Read-Host -Prompt 'Input the user name which has the previlige to create the database'
+$p0 = Read-Host -Prompt 'Input the password of user name which has the previlige to create the database' -AsSecureString
+$p1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($p0)
+$p = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($p1)
+$csvfilepath = Read-Host -Prompt 'Input the path to the csv file you want to upload to the database'
+
 #Connect to MS SQL Server 
 $web_client = new-object System.Net.WebClient
 try 
@@ -78,7 +90,7 @@ try
 #Error of connection 
 catch 
 { 
-    Write-Host $Error[0] -ForegroundColor Red 
+    Write-Host $Error[0] -ForegroundColor "Red" 
     exit 1 
 } 
 #The GO switch is specified - parsing T-SQL code with GO
@@ -182,7 +194,7 @@ function InstallSQLUtilities(){
     $b = Get-WmiObject -Class Win32_Product | sort-object Name | select Name | where { $_.Name -match “Microsoft SQL Server" -and $_.Name -match "Command Line Utilities" }
     if($b -eq $null)
     {
-        Write-Output "SQL Server Command Line Utilities not installed. Download and install SQL Server Command Line Utilities"
+        Write-Output "SQL Server Command Line Utilities not installed. Download and install SQL Server Command Line Utilities" -ForegroundColor "Yellow"
         $os = Get-WMIObject win32_operatingsystem
         $os_bit = $os.OSArchitecture
         if($os_bit -eq '64-bit')
@@ -195,22 +207,52 @@ function InstallSQLUtilities(){
             $download_url1 = "http://go.microsoft.com/fwlink/?LinkID=188400&clcid=0x409"
             $download_url2 = "http://go.microsoft.com/fwlink/?LinkID=188429&clcid=0x409"
         }
-        Write-host "Installing SQL Server Native Client..."
+        Write-host "Installing SQL Server Native Client..." -ForegroundColor "Yellow"
         DownloadAndInstall $download_url1 "/quiet IACCEPTSQLNCLILICENSETERMS=YES" "msi"
-        Write-host "Installing SQL Command Line Utilities..."
+        Write-host "Installing SQL Command Line Utilities..." -ForegroundColor "Yellow"
         DownloadAndInstall $download_url2 "/quiet" "msi"
-        [Environment]::SetEnvironmentVariable("Path", ("${env:ProgramFiles}\Microsoft SQL Server\100\Tools\Binn;") + $env:Path, "Machine")
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
     }
+}
+
+function SearchBCP(){
+    $bcp_list = Get-ChildItem -Path "C:\Program Files*\" -Filter bcp.exe -Recurse -ErrorAction SilentlyContinue -Force | where {$_.FullName -like '*\bcp.exe'}
+
+    if ($bcp_list -ne $null){
+        $bcp_path = @('')*$bcp_list.count
+        for ($i=0; $i -lt $bcp_list.count; $i++){
+            $bcp_path[$i] = $bcp_list[$i].DirectoryName
+        }
+    }
+    return $bcp_path
 }
 
 try
 {
-    InstallSQLUtilities
+    $bcp_path = SearchBCP
+    if ($bcp_path -eq $null){
+        Write-Host "bcp.exe is not found in C:\Program Files*. Now, start installing SQL Utilities..." -ForegroundColor "Yellow"
+        InstallSQLUtilities
+        $bcp_path = SearchBCP
+    }
+    Write-Host "Adding path to bcp.exe to the system path..." -Foregroundcolor "Yellow"
+    $env_path = $env:Path
+    for ($i=0; $i -lt $bcp_path.count; $i++){
+        if ($bcp_path.count -eq 1){
+            $bcp_path_i = $bcp_path
+        } else {
+            $bcp_path_i = $bcp_path[$i]
+        }
+        if ($env_path -notlike ‘*’+$bcp_path_i+'*'){
+            Write-Host $bcp_path_i 'not in system path, add it...'
+            [Environment]::SetEnvironmentVariable("Path", "$bcp_path_i;$env_path", "Machine")
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
+            $env_path = $env:Path
+        }
+    }
 }
 catch
 {
-    Write-Host "Installing SQL Utilities failed. Probably it has already been installed previously."
+    Write-Host "Installing SQL Utilities failed. "
 }
 
 Write-Host "Start creating database and table on your SQL Server, and uploading data to the table. It may take a while..."
@@ -218,21 +260,29 @@ $start_time = Get-Date
 try
 {
     ExecuteSQLFile $PWD"\create-db-tb-upload-data.sql" 1
-    $db_tb = $dbname + ".dbo.nyctaxi_joined_1_percent"
-    Write-host "start loading the data to SQL Server table..."
-    bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
-    $end_time = Get-Date
-    $time_span = $end_time - $start_time
-    $total_seconds = [math]::Round($time_span.TotalSeconds,2)
-    Write-Host "This step (creating database and tables, and uploading data to table) takes $total_seconds seconds."
 }
 catch
 {
-    Write-Host "Creating database and tables failed. You cannot create database/tables if they already exist."
+    Write-Host "Creating database and tables failed. Probably the database or tables already exist." -ForegroundColor "Red"
 }
+$db_tb = $dbname + ".dbo.nyctaxi_sample"
+Write-host "start loading the data to SQL Server table..." -Foregroundcolor "Yellow"
+try
+{
+    bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
+}
+catch
+{
+    Write-Host "BCP uploading data to table failed. Please check whether bcp.exe is installed and the path is added to system path." -ForegroundColor "Red"
+}
+$end_time = Get-Date
+$time_span = $end_time - $start_time
+$total_seconds = [math]::Round($time_span.TotalSeconds,2)
+Write-Host "This step (creating database and tables, and uploading data to table) takes $total_seconds seconds." -Foregroundcolor "Yellow"
 
 
-Write-Host "Start running the .sql files to register all stored procedures used in this walkthrough..."
+
+Write-Host "Start running the .sql files to register all stored procedures used in this walkthrough..." -Foregroundcolor "Yellow"
 $start_time = Get-Date
 try
 {
@@ -240,7 +290,7 @@ try
 }
 catch
 {
-    Write-Host "Stored procedure PersistModel already exists. You cannot create it."
+    Write-Host "Stored procedure PersistModel already exists. You cannot create it." -Foregroundcolor "Red"
 }
 try
 {
@@ -248,7 +298,7 @@ try
 }
 catch
 {
-    Write-Host "Stored procedure PredictTipBatchMode already exists. You cannot create it."
+    Write-Host "Stored procedure PredictTipBatchMode already exists. You cannot create it." -Foregroundcolor "Red"
 }
 try
 {
@@ -256,7 +306,7 @@ try
 }
 catch
 {
-    Write-Host "Stored procedure PredictTipSingleMode already exists. You cannot create it."
+    Write-Host "Stored procedure PredictTipSingleMode already exists. You cannot create it." -Foregroundcolor "Red"
 }
 try
 {
@@ -264,7 +314,7 @@ try
 }
 catch
 {
-    Write-Host "Function fnCalculateDistance  already exists. You cannot create it."
+    Write-Host "Function fnCalculateDistance  already exists. You cannot create it." -Foregroundcolor "Red"
 }
 try
 {
@@ -272,16 +322,16 @@ try
 }
 catch
 {
-    Write-Host "Function fnEngineerFeatures  already exists. You cannot create it."
+    Write-Host "Function fnEngineerFeatures  already exists. You cannot create it." -Foregroundcolor "Red"
 }
-Write-Host "Completed registering all stored procedures used in this walkthrough."
+Write-Host "Completed registering all stored procedures used in this walkthrough." -Foregroundcolor "Yellow"
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)
-Write-Host "This step (registering all stored procedures) takes $total_seconds seconds."
+Write-Host "This step (registering all stored procedures) takes $total_seconds seconds." -Foregroundcolor "Yellow"
 $SQLConnection.Close()
 
-Write-Host "Plug in the database server name, database name, user name and password into the R script file"
+Write-Host "Plug in the database server name, database name, user name and password into the R script file" -Foregroundcolor "Yellow"
 $start_time = Get-Date
 if($PSVersionTable.WSManStackVersion.Major -ge 3)
 {
@@ -300,6 +350,4 @@ else
 $end_time = Get-Date
 $time_span = $end_time - $start_time
 $total_seconds = [math]::Round($time_span.TotalSeconds,2)
-Write-Host "This step (plugging in database information) takes $total_seconds seconds."
-
-
+Write-Host "This step (plugging in database information) takes $total_seconds seconds." -Foregroundcolor "Yellow"
