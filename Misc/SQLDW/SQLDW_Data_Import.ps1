@@ -22,9 +22,9 @@ function ReadHostInput(){
 	$Script:external_nyctaxi_fare = 'external_nyctaxi_fare' + '_' + $RandomNumber
 
 	#Specify your table names
-    $TripTableName0 = Read-Host -Prompt 'Input the NYC Taxi Trip table name, for example nyctaxi_trip_yourname'
-	$FareTableName0 = Read-Host -Prompt 'Input the NYC Taxi Fare table name, for example nyctaxi_fare_yourname'
-	$SampleTableName0 = Read-Host -Prompt 'Input the NYC Taxi 1% Sample table name, for example nyctaxi_sample_yourname'
+    $TripTableName0 = Read-Host -Prompt 'Input the NYC Taxi Trip table name, for example nyctaxi_trip_yourname (no dash(-) in table name)'
+	$FareTableName0 = Read-Host -Prompt 'Input the NYC Taxi Fare table name, for example nyctaxi_fare_yourname (no dash(-) in table name)'
+	$SampleTableName0 = Read-Host -Prompt 'Input the NYC Taxi 1% Sample table name, for example nyctaxi_sample_yourname (no dash(-) in table name)'
 	$Script:TripTableName = $TripTableName0 + '_' + $RandomNumber
 	$Script:FareTableName = $FareTableName0 + '_' + $RandomNumber
 	$Script:SampleTableName = $SampleTableName0 + '_' + $RandomNumber
