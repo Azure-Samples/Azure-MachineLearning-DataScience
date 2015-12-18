@@ -3,7 +3,7 @@ function ReadHostInput(){
     $StorageAccountKey0 = Read-Host -Prompt 'Input the storage account key' -AsSecureString
     $StorageAccountKey1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($StorageAccountKey0) 
     $Script:StorageAccountKey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($StorageAccountKey1)
-    $ContainerName0 = Read-Host -Prompt 'Input your storage account container name to upload the NYC Taxi dataset to. Only letters, numbers, and the dash (-) character'
+    $ContainerName0 = Read-Host -Prompt 'Input your storage account container name to upload the NYC Taxi dataset to. Only letters (lower case), numbers, and the dash (-) character are allowed'
     $Script:Server = Read-Host -Prompt 'Input the SQL DW server name'
     $Script:Database = Read-Host -Prompt 'Input the SQL DW database name'
     $Script:Username = Read-Host -Prompt 'Input the SQL DW user name'
@@ -420,7 +420,7 @@ try
         (gc ./SQLDW_Explorations.ipynb) -replace '<database name>', $Database
         (gc ./SQLDW_Explorations.ipynb) -replace '<user name>', $Username
         (gc ./SQLDW_Explorations.ipynb) -replace '<password>', $Password
-        (gc ./SQLDW_Explorations.ipynb) -replace '<database server>', 'SQL Server Native Client 11.0'
+        (gc ./SQLDW_Explorations.ipynb) -replace '<database driver>', 'SQL Server Native Client 11.0'
 
     }
 

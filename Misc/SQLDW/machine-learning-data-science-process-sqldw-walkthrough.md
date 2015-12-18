@@ -19,7 +19,7 @@
 
 # The Cortana Analytics Process in action: using SQL Data Warehouse
 
-In this tutorial, we will walk you through building and deploying a model using a publicly available dataset -- the [NYC Taxi Trips](http://www.andresmh.com/nyctaxitrips/) dataset. The procedure follows the Cortana Analytics Process (CAP) workflow.
+In this tutorial, we will walk you through building and deploying a machine learning model using a publicly available dataset -- the [NYC Taxi Trips](http://www.andresmh.com/nyctaxitrips/) dataset. The procedure follows the Cortana Analytics Process (CAP) workflow.
 
 
 ## <a name="dataset"></a>NYC Taxi Trips Dataset Description
@@ -66,30 +66,34 @@ We will formulate three prediction problems based on the *tip\_amount*, namely:
 ## <a name="setup"></a>Setting Up the Azure data science environment for advanced analytics
 
 
-In this tutorial we will demonstrate loading data to SQL Data Warehouse, exploration data, engineering features, and building machine learning models.
+In this tutorial we will demonstrate loading data to Azure SQL Data Warehouse (SQL DW), exploration data, engineering features, and building machine learning models.
 
 To set up your Azure Data Science environment, follow the steps below.
 
-1. The data used in this walkthrough is shared in a public blob storage container in Azure in a .csv format. In this walkthrough, the data will be copied to your own Azure blob storage before the data is uploaded to SQL DW. 
-The public blob storage is located at South Central US. When you provision your own Azure blob storage, please try to choose a geo-location of your Azure blob storage as close as possible to South Central US. A closer geo-location of your Azure blob storage will make Step 4 which copies data to your Azure blob storage faster than a geographically further Azure blob storage.
-Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/storage-create-storage-account/](https://azure.microsoft.com/en-us/documentation/articles/storage-create-storage-account/) to create your own Azure storage account, if you don’t already have one. Please make notes on the following storage account credential. The data will be copied from the public blob storage container to a container in your own storage account.
+1. Create your own Azure blob storage account. The NYC Taxi data used in this walkthrough is shared in a public blob storage container in Azure in a .csv format. In this walkthrough, the data will be copied to your own Azure blob storage before the data is uploaded to Azure SQL DW. 
+
+	The public blob storage is located at ***South Central US***. When you provision your own Azure blob storage, please try to choose a geo-location of your Azure blob storage as close as possible to South Central US. A closer geo-location of your Azure blob storage will make Step 4 which copies data to your Azure blob storage faster than a geographically further Azure blob storage.
+
+	Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/storage-create-storage-account/](https://azure.microsoft.com/en-us/documentation/articles/storage-create-storage-account/) to create your own Azure storage account, if you don’t already have one. Please make notes on the following storage account credential. The data will be copied from the public blob storage container to a container in your own storage account.
 
 	- Storage Account Name
 	- Storage Account Key
 	- Container Name (which you want the data to be stored in the Azure blob storage)
 
-2. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-provision/](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-provision/) to provision a SQL Data Warehouse instance. Make sure that you make notations on the following the SQL Data Warehouse credential which will be used to make SQL DW connections.
+2. Provision your Azure SQL DW instance. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-provision/](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-provision/) to provision a SQL Data Warehouse instance. Make sure that you make notations on the following SQL Data Warehouse credentials which will be used in later steps.
 	
 	- Server Name
 	- SQLDW (Database) Name
 	- User Name
 	- Password
 
-3. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/](https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/) to create an Azure Machine Learning workspace.
+3. Make sure you can [connect to your Azure SQL DW with Visual Studio](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-connect/). As a prerequisite, you need to [install Visual Studio 2015 and/or SSDT (SQL Server Data Tools) for SQL Data Warehouse](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-install-visual-studio/). 
+
+4. Create an Azure Machine Learning workspace under your Azure subscription. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/](https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/) to create an Azure Machine Learning workspace.
 
 ## <a name="getdata"></a>Load the data into SQL Data Warehouse
 
-Open a Windows PowerShell command console. Run the following PowerShell commands to download the sample dataset that is used in this walkthrough, and the example SQL script files that we share with you on Github to a local directory. You can change the value of parameter DestDir to any local directory. If DestDir does not exist, it will be created by the PowerShell script. 
+Open a Windows PowerShell command console. Run the following PowerShell commands to download the example SQL script files that we share with you on Github to a local directory you specify by parameter _-DestDir_. You can change the value of parameter _-DestDir_ to any local directory. If _-DestDir_ does not exist, it will be created by the PowerShell script. 
 
 >You might need to Run as Administrator when executing the following PowerShell scripts if your DestDir needs Administrator privilege to create or write. 
 
@@ -97,66 +101,63 @@ Open a Windows PowerShell command console. Run the following PowerShell commands
 	$ps1_dest = "$pwd\Download_Scripts_SQLDW_Walkthrough.ps1"
 	$wc = New-Object System.Net.WebClient
 	$wc.DownloadFile($source, $ps1_dest) 
-
 	.\Download_Scripts_SQLDW_Walkthrough.ps1 –DestDir 'C:\tempSQLDW'
 
-After successful execution, you will see screen like below:
+After successful execution, your current working directory changes to _-DestDir_. You should be able to see screen like below:
 ![][19]
 
-In your DestDir, execute a single PowerShell script in administrator mode to
-
-- Download and install AzCopy, if AzCopy is not installed
-- Copy data from the public blob to your private blob storage account with AzCopy
-- Load data from private blob storage account to your SQL DW
-	- Create external tables for NYC taxi dataset on the blob storage account
-	- Create tables on SQL DW to store NYC taxi dataset
-	- Import the NYC taxi dataset from external tables into SQL DW tables
-
-Open a Windows PowerShell command console in Administrator mode, and enter the directory DestDir. Run the following PowerShell command to import data to SQL DW. 
+In your _-DestDir_, execute the following PowerShell script in administrator mode:
 
 	./SQLDW_Data_Import.ps1
 
-Input your credentials as prompted. After this PowerShell script is run the first time, the credentials you just input will be write to a configuration file SQLDW.conf in the same directory as the PowerShell script file. The future run of this PowerShell script file will read all needed parameters from this configuration file. If you want to change some parameters, you can either delete this configuration file, and input parameters as prompted. Alternatively, you can change the parameters in the configuration file. 
+This PowerShell script file will complete the following tasks:
 
-Depending on the geographical location of your blob storage account, the process of copying data from public blob to your private storage account could take about 15 minutes or longer,and the process of loading data from your storage account to SQL DW could takes about 20 minutes or longer. For your information, the public blob storage account we use to share the data is located at South Central US. 
+- Download and install AzCopy, if AzCopy is not installed
+- Copy data from the public blob to your private blob storage account with AzCopy
+- Load data from your private blob storage account to your Azure SQL DW
+	- Create external tables for NYC taxi dataset on the blob storage account
+	- Create tables (trip and fare tables) on SQL DW to store NYC taxi dataset
+	- Import the NYC taxi dataset from external tables into SQL DW tables
+	- Create a sample data table (NYCTaxi_Sample) and insert data to it from selecting SQL queries on the trip and fare tables. Some steps of this walkthrough needs to use this sample table. 
 
-Other than loading data to the SQL Data Warehouse, the Powershell script (1) creates a sample data table (NYCTaxi_Sample) which is going to be used in following sections and (2) parameterizes the data exploration scripts ([SQL](./SQLDW_Explorations.sql) and [IPython notebook](./SQLDW_Explorations.ipynb)) with your Data Warehouse credentials. 
+When the PowerShell script runs for the first time, you will be asked to input the information of your Azure SQL DW and your Azure blob storage account. After this PowerShell script completes running for the first time, the credentials you just input will be written to a configuration file SQLDW.conf in the present working directory. The future run of this PowerShell script file has the option to read all needed parameters from this configuration file. If you want to change some parameters, you can choose to input the parameters on the screen upon prompt, delete this configuration file, and input parameters as prompted. or change the parameters in the configuration file. 
+
+Please be noted that in order to avoid name conflicts with tables that already exist in your Azure SQL DW (it might happen if multiple users are using the same Azure SQL DW as you are using to practice on this walkthrough), a random number is added to the table names created by every run of this PowerShell script. The actual table names that are created by this run of this PowerShell script file are printed out on your screen and also output to the SQLDW.conf file. 
+
+Depending on the geographical location of your private blob storage account, the process of copying data from public blob to your private storage account could take about 15 minutes or longer,and the process of loading data from your storage account to your Azure SQL DW could takes about 20 minutes or longer.  
+
+This Powershell script also plugs in the Azure SQL DW information into the data exploration example files ([SQL](./SQLDW_Explorations.sql) and [IPython notebook](./SQLDW_Explorations.ipynb)) so that these two files are ready to be tried out instantly after the PowerShell script completes. 
 
 After successful execution, you will see screen like below:
 ![][20]
 
-## <a name="dbexplore"></a>Data Exploration and Feature Engineering in SQL Data Warehouse
+## <a name="dbexplore"></a>Data Exploration and Feature Engineering in Azure SQL Data Warehouse
 
-In this section, we will perform data exploration and feature generation by running SQL queries directly in the **SQL Server Management Studio** or **Visual Studio**. A sample script named **SQLDW_Explorations.sql** is provided on [Github](./SQLDW_Explorations.sql).
+In this section, we will perform data exploration and feature generation by running SQL queries against Azure SQL DW directly **Visual Studio Data Tools**. All SQL queries used in this section can be found in the sample script named **SQLDW_Explorations.sql**. This file has already been downloaded to your local directory by the PowerShell script. You can also get it from [Github](https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/SQLDW/SQLDW_Explorations.sql).
 
 In this exercise, we will:
 
-- Connect to **SQL Server Management Studio** with the SQL login name and password.
+- Connect to your Azure SQL DW using Visual Studio with the SQL DW login name and password.
 - Explore data distributions of a few fields in varying time windows.
 - Investigate data quality of the longitude and latitude fields.
 - Generate binary and multiclass classification labels based on the **tip\_amount**.
 - Generate features and compute/compare trip distances.
 - Join the two tables and extract a random sample that will be used to build models.
 
-When you are ready to proceed to Azure Machine Learning, you may either:  
-
-1. Save the final SQL query to extract and sample the data and copy-paste the query directly into a [Reader][reader] module in Azure Machine Learning, or
-2. Persist the sampled and engineered data you plan to use for model building in a new database table and use the new table in the [Reader][reader] module in Azure Machine Learning.
-
 For a quick verification of the number of rows and columns in the tables populated earlier using parallel bulk import,
 
-	-- Report number of rows in table nyctaxi_trip without table scan
-	SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('nyctaxi_trip')
+	-- Report number of rows in table <nyctaxi_trip> without table scan
+	SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<nyctaxi_trip>')
 
-	-- Report number of columns in table nyctaxi_trip
-	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'nyctaxi_trip'
+	-- Report number of columns in table <nyctaxi_trip>
+	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>'
 
 #### Exploration: Trip distribution by medallion
 
 This example identifies the medallion (taxi numbers) with more than 100 trips within a given time period. The query would benefit from the partitioned table access since it is conditioned by the partition scheme of **pickup\_datetime**. Querying the full dataset will also make use of the partitioned table and/or index scan.
 
 	SELECT medallion, COUNT(*)
-	FROM nyctaxi_fare
+	FROM <nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130331'
 	GROUP BY medallion
 	HAVING COUNT(*) > 100
@@ -164,7 +165,7 @@ This example identifies the medallion (taxi numbers) with more than 100 trips wi
 #### Exploration: Trip distribution by medallion and hack_license
 
 	SELECT medallion, hack_license, COUNT(*)
-	FROM nyctaxi_fare
+	FROM <nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130131'
 	GROUP BY medallion, hack_license
 	HAVING COUNT(*) > 100
@@ -173,7 +174,7 @@ This example identifies the medallion (taxi numbers) with more than 100 trips wi
 
 This example investigates if any of the longitude and/or latitude fields either contain an invalid value (radian degrees should be between -90 and 90), or have (0, 0) coordinates.
 
-	SELECT COUNT(*) FROM nyctaxi_trip
+	SELECT COUNT(*) FROM <nyctaxi_trip>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130331'
 	AND  (CAST(pickup_longitude AS float) NOT BETWEEN -90 AND 90
 	OR    CAST(pickup_latitude AS float) NOT BETWEEN -90 AND 90
@@ -188,7 +189,7 @@ This example finds the number of trips that were tipped vs. not tipped in a give
 
 	SELECT tipped, COUNT(*) AS tip_freq FROM (
 	  SELECT CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END AS tipped, tip_amount
-	  FROM nyctaxi_fare
+	  FROM <nyctaxi_fare>
 	  WHERE pickup_datetime BETWEEN '20130101' AND '20131231') tc
 	GROUP BY tipped
 
@@ -204,15 +205,13 @@ This example computes the distribution of tip ranges in a given time period (or 
 			WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
 			ELSE 4
 		END AS tip_class
-	FROM nyctaxi_fare
+	FROM <nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20131231') tc
 	GROUP BY tip_class
 
 #### Exploration: Compute and Compare Trip Distance
 
 This example converts the pickup and drop-off longitude and latitude to SQL geography points, computes the trip distance using SQL geography points difference, and returns a random sample of the results for comparison. The example limits the results to valid coordinates only using the data quality assessment query covered earlier.
-
-	GO
 
 	/****** Object:  UserDefinedFunction [dbo].[fnCalculateDistance] ******/
 	SET ANSI_NULLS ON
@@ -225,8 +224,9 @@ This example converts the pickup and drop-off longitude and latitude to SQL geog
 	  DROP FUNCTION fnCalculateDistance
 	GO
 
-	CREATE FUNCTION [dbo].[fnCalculateDistance] (@Lat1 float, @Long1 float, @Lat2 float, @Long2 float)
 	-- User-defined function calculate the direct distance between two geographical coordinates.
+	CREATE FUNCTION [dbo].[fnCalculateDistance] (@Lat1 float, @Long1 float, @Lat2 float, @Long2 float)
+	
 	RETURNS float
 	AS
 	BEGIN
@@ -249,15 +249,61 @@ This example converts the pickup and drop-off longitude and latitude to SQL geog
 
 	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
 	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
-	FROM nyctaxi_trip
+	FROM <nyctaxi_trip>
 	WHERE datepart("mi",pickup_datetime)=1
 	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
 	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
 	AND pickup_longitude != '0' AND dropoff_longitude != '0'
 
-#### Feature Engineering in SQL Queries
+#### Feature Engineering using SQL Functions
 
-The label generation and geography conversion exploration queries can also be used to generate labels/features by removing the counting part. Additional feature engineering SQL examples are provided in the [Data Exploration and Feature Engineering in IPython Notebook](#ipnb) section. It is more efficient to run the feature generation queries on the full dataset or a large subset of it using SQL queries which run directly on the SQL Server database instance. The queries may be executed in **SQL Server Management Studio**, IPython Notebook or any development tool/environment which can access the database locally or remotely.
+Sometimes, SQL functions might be a more efficient option for feature engineering. In this walkthrough, we defined a SQL function to calculate the direct distance between the pickup and dropoff locations. You can run the following SQL scripts in Visual Studio Data Tools. 
+
+The function definition SQL scripts and the SQL query that calls this function can be found in the 
+
+	SET ANSI_NULLS ON
+	GO
+
+	SET QUOTED_IDENTIFIER ON
+	GO
+
+	IF EXISTS (SELECT * FROM sys.objects WHERE type IN ('FN', 'IF') AND name = 'fnCalculateDistance')
+	  DROP FUNCTION fnCalculateDistance
+	GO
+
+	-- User-defined function calculate the direct distance between two geographical coordinates.
+	CREATE FUNCTION [dbo].[fnCalculateDistance] (@Lat1 float, @Long1 float, @Lat2 float, @Long2 float)
+	
+	RETURNS float
+	AS
+	BEGIN
+	  	DECLARE @distance decimal(28, 10)
+  		-- Convert to radians
+  		SET @Lat1 = @Lat1 / 57.2958
+  		SET @Long1 = @Long1 / 57.2958
+  		SET @Lat2 = @Lat2 / 57.2958
+  		SET @Long2 = @Long2 / 57.2958
+  		-- Calculate distance
+  		SET @distance = (SIN(@Lat1) * SIN(@Lat2)) + (COS(@Lat1) * COS(@Lat2) * COS(@Long2 - @Long1))
+  		--Convert to miles
+  		IF @distance <> 0
+  		BEGIN
+    		SET @distance = 3958.75 * ATAN(SQRT(1 - POWER(@distance, 2)) / @distance);
+  		END
+  		RETURN @distance
+	END
+	GO 
+
+Here is an example to call this function to generate features in your SQL query:
+
+	-- Sample query to call the function to create features
+	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
+	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
+	FROM <nyctaxi_trip>
+	WHERE datepart("mi",pickup_datetime)=1
+	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
+	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
+	AND pickup_longitude != '0' AND dropoff_longitude != '0'
 
 #### Preparing Data for Model Building
 
@@ -271,48 +317,27 @@ The following query joins the **nyctaxi\_trip** and **nyctaxi\_fare** tables, ge
 	        WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
 	        ELSE 4
 	    END AS tip_class
-	FROM nyctaxi_trip t, nyctaxi_fare f
+	FROM <nyctaxi_trip> t, <nyctaxi_fare> f
 	WHERE datepart("mi",t.pickup_datetime) = 1
 	AND   t.medallion = f.medallion
 	AND   t.hack_license = f.hack_license
 	AND   t.pickup_datetime = f.pickup_datetime
 	AND   pickup_longitude != '0' AND dropoff_longitude != '0'
 
+When you are ready to proceed to Azure Machine Learning, you may either:  
 
-#### Create a Sample Data based on the Joint Table
+1. Save the final SQL query to extract and sample the data and copy-paste the query directly into a [Reader][reader] module in Azure Machine Learning, or
+2. Persist the sampled and engineered data you plan to use for model building in a new SQL DW table and use the new table in the [Reader][reader] module in Azure Machine Learning. The PowerShell script in earlier step has done this for you. You can directly read from this table in the Reader module. 
 
-We join the tables **nyctaxi\_trip** and **nyctaxi\_fare**, extract a random sample, and persist the sampled data in a new table name **nyctaxi\_sample**:
-
-	CREATE TABLE nyctaxi_sample
-	WITH 
-	(   
-    CLUSTERED COLUMNSTORE INDEX,
-	DISTRIBUTION = HASH(medallion)
-	)
-	AS 
-	(
-    SELECT t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax, f.tolls_amount, f.total_amount, f.tip_amount,
-	tipped = CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END,
-	tip_class = CASE WHEN (tip_amount = 0) THEN 0
-                        WHEN (tip_amount > 0 AND tip_amount <= 5) THEN 1
-                        WHEN (tip_amount > 5 AND tip_amount <= 10) THEN 2
-                        WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
-                        ELSE 4
-                    END
-    FROM nyctaxi_trip t, nyctaxi_fare f
-    WHERE datepart("mi",t.pickup_datetime) = 1
-	AND t.medallion = f.medallion
-    AND   t.hack_license = f.hack_license
-    AND   t.pickup_datetime = f.pickup_datetime
-    AND   pickup_longitude <> '0' AND dropoff_longitude <> '0'
-	)
 
 ## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook
 
 In this section, we will perform data exploration and feature generation
-using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **SQLDW_Explorations.ipynb** is provided on [GitHub](./SQLDW_Explorations.ipynb).
+using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **SQLDW_Explorations.ipynb** has been downloaded to your local directory. It is also available on [GitHub](https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/SQLDW/SQLDW_Explorations.ipynb).
 
-The recommended sequence when working with big data is the following:
+The needed Azure SQL DW information in the IPython Notebook has been plugged in by the PowerShell script previously. You can open this notebook and run it directly.
+
+The recommended sequence when working with large data is the following:
 
 - Read in a small sample of the data into an in-memory data frame.
 - Perform some visualizations and explorations using the sampled data.
@@ -320,12 +345,7 @@ The recommended sequence when working with big data is the following:
 - For larger data exploration, data manipulation and feature engineering, use Python to issue SQL Queries directly against the SQL DW.
 - Decide the sample size to use for Azure Machine Learning model building.
 
-When ready to proceed to Azure Machine Learning, you may either:  
-
-1. Save the final SQL query to extract and sample the data and copy-paste the query directly into a [Reader][reader] module in Azure Machine Learning. This method is demonstrated in the [Building Models in Azure Machine Learning](#mlmodel) section.    
-2. Persist the sampled and engineered data you plan to use for model building in a new database table, then use the new table in the [Reader][reader] module.
-
-The following are a few data exploration, data visualization, and feature engineering examples. For more examples, see the sample SQL IPython notebook in the **Sample IPython Notebooks** folder.
+The followings are a few data exploration, data visualization, and feature engineering examples. More data explorations can be found in the sample IPython Notebook.
 
 #### Initialize Database Credentials
 
@@ -335,25 +355,24 @@ Initialize your database connection settings in the following variables:
     DATABASE_NAME=<database name>
     USERID=<user name>
     PASSWORD=<password>
-    DB_DRIVER = <database server>
+    DB_DRIVER = <database driver>
 
 #### Create Database Connection
-
     CONNECTION_STRING = 'DRIVER={'+DRIVER+'};SERVER='+SERVER_NAME+';DATABASE='+DATABASE_NAME+';UID='+USERID+';PWD='+PASSWORD
     conn = pyodbc.connect(CONNECTION_STRING)
 
-#### Report number of rows and columns in table nyctaxi_trip
+#### Report number of rows and columns in table <nyctaxi_trip>
 
     nrows = pd.read_sql('''
 		SELECT SUM(rows) FROM sys.partitions
-		WHERE object_id = OBJECT_ID('nyctaxi_trip')
+		WHERE object_id = OBJECT_ID('<nyctaxi_trip>')
 	''', conn)
 
 	print 'Total number of rows = %d' % nrows.iloc[0,0]
 
     ncols = pd.read_sql('''
 		SELECT COUNT(*) FROM information_schema.columns
-		WHERE table_name = ('nyctaxi_trip')
+		WHERE table_name = ('<nyctaxi_trip>')
 	''', conn)
 
 	print 'Total number of columns = %d' % ncols.iloc[0,0]
@@ -361,18 +380,18 @@ Initialize your database connection settings in the following variables:
 - Total number of rows = 173179759  
 - Total number of columns = 14
 
-#### Report number of rows and columns in table nyctaxi_fare
+#### Report number of rows and columns in table <nyctaxi_fare>
 
     nrows = pd.read_sql('''
 		SELECT SUM(rows) FROM sys.partitions
-		WHERE object_id = OBJECT_ID('nyctaxi_fare')
+		WHERE object_id = OBJECT_ID('<nyctaxi_fare>')
 	''', conn)
 
 	print 'Total number of rows = %d' % nrows.iloc[0,0]
 
     ncols = pd.read_sql('''
 		SELECT COUNT(*) FROM information_schema.columns
-		WHERE table_name = ('nyctaxi_fare')
+		WHERE table_name = ('<nyctaxi_fare>')
 	''', conn)
 
 	print 'Total number of columns = %d' % ncols.iloc[0,0]
@@ -387,7 +406,7 @@ Initialize your database connection settings in the following variables:
 	query = '''
 		SELECT TOP 10000 t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax,
 			f.tolls_amount, f.total_amount, f.tip_amount
-		FROM nyctaxi_trip t, nyctaxi_fare f
+		FROM <nyctaxi_trip> t, <nyctaxi_fare> f
 		WHERE datepart("mi",t.pickup_datetime) = 1
 		AND   t.medallion = f.medallion
 		AND   t.hack_license = f.hack_license
@@ -463,14 +482,8 @@ Similarly we can check the relationship between **rate\_code** and **trip\_dista
 
 ![Plot #8][8]
 
-### Sub-Sampling the Data in SQL
 
-When preparing data for model building in [Azure Machine Learning Studio](https://studio.azureml.net), you may either decide on the **SQL query to use directly in the Reader module** or persist the engineered and sampled data in a new table, which you could use in the [Reader][reader] module with a simple **SELECT * FROM <your\_new\_table\_name>**.
-
-In this section we will create a new table to hold the sampled and engineered data. An example of a direct SQL query for model building is provided in the [Data Exploration and Feature Engineering in SQL Server](#dbexplore) section.
-
-
-### Data Exploration using SQL Queries in IPython Notebook
+### Data Exploration on Sampled Data using SQL Queries in IPython Notebook
 
 In this section, we explore data distributions using the sampled data which is persisted in the new table we created above. Note that similar explorations can be performed using the original tables.
 
