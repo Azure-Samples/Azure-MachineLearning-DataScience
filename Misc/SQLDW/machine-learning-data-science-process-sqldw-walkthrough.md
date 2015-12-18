@@ -3,7 +3,7 @@
 	description="Advanced Analytics Process and Technology in Action"  
 	services="machine-learning"
 	documentationCenter=""
-	authors="xibingao,hangzh"
+	authors="xibingao,hangzh,weig"
 	manager="paulettm"
 	editor="cgronlun" />
 
@@ -102,7 +102,8 @@ Open a Windows PowerShell command console. Run the following PowerShell commands
 
 After successful execution, you will see screen like below:
 ![][19]
-Execute a single PowerShell script to
+
+In your DestDir, execute a single PowerShell script in administrator mode to
 
 - Download and install AzCopy, if AzCopy is not installed
 - Copy data from the public blob to your private blob storage account with AzCopy
@@ -111,7 +112,7 @@ Execute a single PowerShell script to
 	- Create tables on SQL DW to store NYC taxi dataset
 	- Import the NYC taxi dataset from external tables into SQL DW tables
 
-Open a Windows PowerShell command console, and enter the directory DestDir. Run the following PowerShell command to import data to SQL DW. 
+Open a Windows PowerShell command console in Administrator mode, and enter the directory DestDir. Run the following PowerShell command to import data to SQL DW. 
 
 	./SQLDW_Data_Import.ps1
 
