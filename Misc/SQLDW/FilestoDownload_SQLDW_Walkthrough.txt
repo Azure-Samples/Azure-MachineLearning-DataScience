@@ -3,3 +3,4 @@ LoadDataToSQLDW.sql
 DeleteResourcesOnSQLDW.sql
 SQLDW_Explorations.sql
 SQLDW_Explorations.ipynb
+SQLDW_Explorations_Scripts.py
