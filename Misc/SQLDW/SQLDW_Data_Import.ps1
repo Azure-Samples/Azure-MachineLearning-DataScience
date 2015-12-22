@@ -14,8 +14,8 @@ function ReadHostInput(){
 	$Script:RandomNumber = Get-Random -minimum 100 -maximum 999
 
 	$Script:KeyAlias = 'KeyAlias' + '_' + $RandomNumber
-    $Script:ContainerName = $ContainerName0 + '-' + $RandomNumber
-	$Script:nyctaxi_trip_storage = 'nyctaxi_trip_storage' + '_' + $RandomNumber
+    
+    $Script:nyctaxi_trip_storage = 'nyctaxi_trip_storage' + '_' + $RandomNumber
 	$Script:nyctaxi_fare_storage = 'nyctaxi_fare_storage' + '_' + $RandomNumber
 	$Script:csv_file_format = 'csv_file_format' + '_' + $RandomNumber
 	$Script:external_nyctaxi_trip = 'external_nyctaxi_trip' + '_' + $RandomNumber
@@ -23,12 +23,30 @@ function ReadHostInput(){
 
 	#Specify your table names
 	
-	if(($TripTableName0 = Read-Host "Input the NYC Taxi Trip table name") -eq ''){$TripTableName0 = "nyctaxitrip"}else{}
-	if(($FareTableName0 = Read-Host "Input the NYC Taxi Fare table name") -eq ''){$FareTableName0 = "nyctaxifare"}else{}
-	if(($SampleTableName0 = Read-Host "Input the NYC Taxi Sample table name") -eq ''){$SampleTableName0 = "nyctaxisample"}else{}
-	$Script:TripTableName = $TripTableName0 + '_' + $RandomNumber
-	$Script:FareTableName = $FareTableName0 + '_' + $RandomNumber
-	$Script:SampleTableName = $SampleTableName0 + '_' + $RandomNumber
+	if(($TripTableName0 = Read-Host "Input the NYC Taxi Trip table name[nyctaxitrip]") -eq ''){
+        $TripTableName0 = "nyctaxitrip"
+        Write-Host "Taking default name $TripTableName0 for NYC Taxi Trip table." -ForegroundColor "Yellow"
+    }
+	if(($FareTableName0 = Read-Host "Input the NYC Taxi Fare table name[nyctaxifare]") -eq ''){
+        $FareTableName0 = "nyctaxifare"
+        Write-Host "Taking default name $FareTableName0 for NYC Taxi Fare table." -ForegroundColor "Yellow"
+    }
+	if(($SampleTableName0 = Read-Host "Input the NYC Taxi Sample table name[nyctaxisample]") -eq ''){
+        $SampleTableName0 = "nyctaxisample"
+        Write-Host "Taking default name $SampleTableName0 for NYC Taxi Sample table." -ForegroundColor "Yellow"
+    }
+    $yesorno = Read-Host -Prompt "Do you want to add random numbers between 100 and 999 to the end ot container and table names to avoid conflict with other users of the same Azure storage account and/or SQL Data Warehouse?Y/[N]"
+    if ($yesorno -eq "" -Or $yesorno.ToLower() -eq 'n'){
+        $Script:ContainerName = $ContainerName0
+	    $Script:TripTableName = $TripTableName0
+	    $Script:FareTableName = $FareTableName0
+	    $Script:SampleTableName = $SampleTableName0
+    } else{
+        $Script:ContainerName = $ContainerName0 + '-' + $RandomNumber
+        $Script:TripTableName = $TripTableName0 + '_' + $RandomNumber
+	    $Script:FareTableName = $FareTableName0 + '_' + $RandomNumber
+	    $Script:SampleTableName = $SampleTableName0 + '_' + $RandomNumber
+    }
 	Write-host "The tables created in your SQL DW are $TripTableName , $FareTableName and $SampleTableName. " -ForegroundColor "Yellow"
 
 }
@@ -77,6 +95,11 @@ function WriteConfFile(){
   $file | Out-File $conf_file -Encoding UTF8 -Force
 }
 
+function Generate_new_names($OldString, $New_RandomNumber,$Delimiter){
+    $OldRN = $OldString.Split($Delimiter)[-1]
+    $NewString = $OldString -replace $OldRN, $New_RandomNumber
+    return $NewString
+}
 
 function DownloadAndInstall($DownloadPath, $ArgsForInstall, $DownloadFileType = "exe")
 {
@@ -265,18 +288,12 @@ $TripTableName = ""
 $FareTableName = ""
 $SampleTableName = ""
 
-function Generate_new_names($OldString, $New_RandomNumber,$Delimiter){
-    $OldRN = $OldString.Split($Delimiter)[-1]
-    $NewString = $OldString -replace $OldRN, $New_RandomNumber
-    return $NewString
-}
-
 If (Test-Path $conf_file){
   $yesorno = Read-Host -Prompt "Configuration file $conf_file found. Do you want to use the parameters there?[Y]/N"
   if ($yesorno -eq "" -Or $yesorno.ToLower() -eq 'y'){
     Write-Host "Reading parameters from configuration file $conf_file..." -ForegroundColor "Yellow"
     $ConfResults = ReadConfFile
-    $New_RandomNumber = get-random
+    $New_RandomNumber = get-random -minimum 100 -maximum 999
     #$ContainerName = Generate_new_names $ConfResults[0] $New_RandomNumber '-'
     $KeyAlias = 'KeyAlias' + '_' + $New_RandomNumber
     $nyctaxi_trip_storage = 'nyctaxi_trip_storage' + '_' + $New_RandomNumber
@@ -284,16 +301,24 @@ If (Test-Path $conf_file){
     $external_nyctaxi_fare = 'external_nyctaxi_fare' + '_' + $New_RandomNumber
     $external_nyctaxi_trip = 'external_nyctaxi_trip' + '_' + $New_RandomNumber
     $csv_file_format = 'csv_file_format' + '_' + $New_RandomNumber
-    $TripTableName = Generate_new_names $ConfResults[1] $New_RandomNumber '_'
-    $FareTableName = Generate_new_names $ConfResults[2] $New_RandomNumber '_' 
-    $SampleTableName = Generate_new_names $ConfResults[3] $New_RandomNumber '_'
+    $yesorno = Read-Host -Prompt "Do you want to add random numbers between 100 and 999 to the end of table names to avoid conflict with other users of the same SQL Data Warehouse?Y/[N]"
+    if ($yesorno -eq "" -Or $yesorno.ToLower() -eq 'n'){
+	    $TripTableName = $ConfResults[1]
+	    $FareTableName = $ConfResults[2]
+	    $SampleTableName = $ConfResults[3]
+    } else{
+        $TripTableName = Generate_new_names $ConfResults[1] $New_RandomNumber '_'
+        $FareTableName = Generate_new_names $ConfResults[2] $New_RandomNumber '_' 
+        $SampleTableName = Generate_new_names $ConfResults[3] $New_RandomNumber '_'
+        Write-host "The tables created in your SQL DW are $TripTableName , $FareTableName and $SampleTableName. " -ForegroundColor "Yellow"
+        Write-Host "Overwriting existing configuration file $conf_file..." -ForegroundColor "Yellow"
+        WriteConfFile
+    }
+    
   } else{
     ReadHostInput
     $yesorno = Read-Host -Prompt "Overwrite existing configuration file $conf_file?[Y]/N"
-    if ($yesorno -eq ""){
-        Write-Host "Overwriting existing configuration file $conf_file..." -ForegroundColor "Yellow"
-        WriteConfFile
-    } elseif ($yesorno.ToLower() -eq 'y'){
+    if ($yesorno -eq "" -Or $yesorno.ToLower() -eq 'y'){
         Write-Host "Overwriting existing configuration file $conf_file..." -ForegroundColor "Yellow"
         WriteConfFile
     }
