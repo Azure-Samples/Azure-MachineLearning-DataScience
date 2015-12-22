@@ -97,7 +97,18 @@ function WriteConfFile(){
 
 function Generate_new_names($OldString, $New_RandomNumber,$Delimiter){
     $OldRN = $OldString.Split($Delimiter)[-1]
-    $NewString = $OldString -replace $OldRN, $New_RandomNumber
+    try{
+        $OldRN_Int = $OldRN -as [int]
+        if ($OldRN_Int -ge 100 -and $OldRN -le 999){
+            $NewString = $OldString -replace $OldRN, $New_RandomNumber
+        } else{
+            $NewString = $OldString + '_' + $New_RandomNumber
+            Write-Host "Old table name $OldString does not end with random number between 100 and 999. The new table name with random number is $NewString." -ForegroundColor "Yellow"
+        }
+    } catch{
+        $NewString = $OldString + '_' + $New_RandomNumber
+        Write-Host "Old table name $OldString does not end with random number between 100 and 999. The new table name with random number is $NewString." -ForegroundColor "Yellow"
+    }
     return $NewString
 }
 
