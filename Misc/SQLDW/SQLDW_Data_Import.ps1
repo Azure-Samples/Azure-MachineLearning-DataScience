@@ -411,7 +411,7 @@ try
         (gc ./SQLDW_Explorations_Scripts.py).replace('<database name>', $Database) | sc ./SQLDW_Explorations_Scripts.py
         (gc ./SQLDW_Explorations_Scripts.py).replace('<user name>', $Username) | sc ./SQLDW_Explorations_Scripts.py
         (gc ./SQLDW_Explorations_Scripts.py).replace('<password>', $Password) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<database server>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<database driver>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations_Scripts.py
     }
     else
     {
@@ -438,7 +438,7 @@ try
         (gc ./SQLDW_Explorations_Scripts.py) -replace '<database name>', $Database
         (gc ./SQLDW_Explorations_Scripts.py) -replace '<user name>', $Username
         (gc ./SQLDW_Explorations_Scripts.py) -replace '<password>', $Password
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database server>', 'SQL Server Native Client 11.0'
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database driver>', 'SQL Server Native Client 11.0'
     }
 
     $end_time = Get-Date
