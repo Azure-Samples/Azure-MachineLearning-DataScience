@@ -1,3 +1,4 @@
+
 DECLARE @StorageAccountKey varchar(255)
 SET @StorageAccountKey = 'x'
 
@@ -37,6 +38,15 @@ SET @nyctaxi_sample = 'x'
 
 DECLARE @load_data_template varchar(8000)
 SET @load_data_template = '
+
+BEGIN TRY
+	--Try to create the master key
+    CREATE MASTER KEY
+END TRY
+BEGIN CATCH
+	--If the master key exists, do nothing
+END CATCH;
+
 -- Create a database scoped credential
 CREATE DATABASE SCOPED CREDENTIAL {KeyAlias} 
 WITH IDENTITY = ''asbkey'' , 

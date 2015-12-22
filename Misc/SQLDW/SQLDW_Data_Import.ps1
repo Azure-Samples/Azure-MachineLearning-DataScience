@@ -3,15 +3,15 @@ function ReadHostInput(){
     $StorageAccountKey0 = Read-Host -Prompt 'Input the storage account key' -AsSecureString
     $StorageAccountKey1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($StorageAccountKey0) 
     $Script:StorageAccountKey = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($StorageAccountKey1)
-    $ContainerName0 = Read-Host -Prompt 'Input your storage account container name to upload the NYC Taxi dataset to. Only letters (lower case), numbers, and the dash (-) character are allowed'
+    $ContainerName0 = Read-Host -Prompt 'Input your storage account container name to upload the NYC Taxi dataset to. Only letters, numbers, and the dash (-) character'
     $Script:Server = Read-Host -Prompt 'Input the SQL DW server name'
     $Script:Database = Read-Host -Prompt 'Input the SQL DW database name'
     $Script:Username = Read-Host -Prompt 'Input the SQL DW user name'
-    $pass0 = Read-Host -Prompt 'Input the password of user name which has the previlige to create the database' -AsSecureString
+    $pass0 = Read-Host -Prompt 'Input the password of user name which has the previlege to create the database' -AsSecureString
     $pass1 = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($pass0) 
     $Script:Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($pass1)
 
-    $Script:RandomNumber = Get-Random
+	$Script:RandomNumber = Get-Random -minimum 100 -maximum 999
 
 	$Script:KeyAlias = 'KeyAlias' + '_' + $RandomNumber
     $Script:ContainerName = $ContainerName0 + '-' + $RandomNumber
@@ -22,9 +22,10 @@ function ReadHostInput(){
 	$Script:external_nyctaxi_fare = 'external_nyctaxi_fare' + '_' + $RandomNumber
 
 	#Specify your table names
-    $TripTableName0 = Read-Host -Prompt 'Input the NYC Taxi Trip table name, for example nyctaxi_trip_yourname (no dash(-) in table name)'
-	$FareTableName0 = Read-Host -Prompt 'Input the NYC Taxi Fare table name, for example nyctaxi_fare_yourname (no dash(-) in table name)'
-	$SampleTableName0 = Read-Host -Prompt 'Input the NYC Taxi 1% Sample table name, for example nyctaxi_sample_yourname (no dash(-) in table name)'
+	
+	if(($TripTableName0 = Read-Host "Input the NYC Taxi Trip table name") -eq ''){$TripTableName0 = "nyctaxitrip"}else{}
+	if(($FareTableName0 = Read-Host "Input the NYC Taxi Fare table name") -eq ''){$FareTableName0 = "nyctaxifare"}else{}
+	if(($SampleTableName0 = Read-Host "Input the NYC Taxi Sample table name") -eq ''){$SampleTableName0 = "nyctaxisample"}else{}
 	$Script:TripTableName = $TripTableName0 + '_' + $RandomNumber
 	$Script:FareTableName = $FareTableName0 + '_' + $RandomNumber
 	$Script:SampleTableName = $SampleTableName0 + '_' + $RandomNumber
@@ -303,7 +304,7 @@ If (Test-Path $conf_file){
 }
 
 $DestURL = "http://$StorageAccountName.blob.core.windows.net/$ContainerName"
-Write-Host "DestURL: " $DestURL	
+#Write-Host "DestURL: " $DestURL	
 # The NYC Taxi dataset on public blob
 $Source = "http://getgoing.blob.core.windows.net/public/nyctaxidataset"
 	
@@ -372,12 +373,10 @@ try
 
 	$SQLCommand = New-Object System.Data.SqlClient.SqlCommand($qa2, $SQLConnection) 
     $SQLCommand.CommandTimeout = 0
-    $SQLCommand.ExecuteScalar() 
 	$qa2_result = $SQLCommand.ExecuteScalar()
 
 	$SQLCommand = New-Object System.Data.SqlClient.SqlCommand($qa3, $SQLConnection) 
     $SQLCommand.CommandTimeout = 0
-    $SQLCommand.ExecuteScalar() 
 	$qa3_result = $SQLCommand.ExecuteScalar()
 
 
@@ -404,6 +403,15 @@ try
         (gc ./SQLDW_Explorations.ipynb).replace('<password>', $Password) | sc ./SQLDW_Explorations.ipynb
         (gc ./SQLDW_Explorations.ipynb).replace('<database server>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations.ipynb
 
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations_Scripts.py
+
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<server name>', $Server) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<database name>', $Database) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<user name>', $Username) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<password>', $Password) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<database server>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations_Scripts.py
     }
     else
     {
@@ -420,8 +428,17 @@ try
         (gc ./SQLDW_Explorations.ipynb) -replace '<database name>', $Database
         (gc ./SQLDW_Explorations.ipynb) -replace '<user name>', $Username
         (gc ./SQLDW_Explorations.ipynb) -replace '<password>', $Password
-        (gc ./SQLDW_Explorations.ipynb) -replace '<database driver>', 'SQL Server Native Client 11.0'
+        (gc ./SQLDW_Explorations.ipynb) -replace '<database server>', 'SQL Server Native Client 11.0'
 
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_trip>', $TripTableName
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_fare>', $FareTableName
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_sample>', $SampleTableName
+		
+		(gc ./SQLDW_Explorations_Scripts.py) -replace '<server name>', $Server
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database name>', $Database
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<user name>', $Username
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<password>', $Password
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database server>', 'SQL Server Native Client 11.0'
     }
 
     $end_time = Get-Date
