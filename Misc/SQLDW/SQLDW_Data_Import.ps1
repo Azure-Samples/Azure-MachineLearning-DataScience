@@ -261,7 +261,7 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
         try 
         { 
             $SQLCommand = New-Object System.Data.SqlClient.SqlCommand($SQLCommandText, $SQLConnection) 
-            $SQLCommand.CommandTimeout = 0
+            $SQLCommand.CommandTimeout = 6000
             $SQLCommand.ExecuteScalar() 
         } 
         catch 
@@ -498,8 +498,14 @@ try
 
 
 	##If you want to drop the temporary tables you created, please execute the following line:
-	Invoke-Sqlcmd -ServerInstance $Server  -Database $Database -Username $Username -Password $Password -InputFile DeleteResourcesOnSQLDW.sql -QueryTimeout 200000
-	
+	#Invoke-Sqlcmd -ServerInstance $Server  -Database $Database -Username $Username -Password $Password -InputFile DeleteResourcesOnSQLDW.sql -QueryTimeout 200000
+	$start_time = Get-Date
+	ExecuteSQLFile $DeleteTable_file 0
+	$end_time = Get-Date
+    $time_span = $end_time - $start_time
+    $total_seconds = [math]::Round($time_span.TotalSeconds,2)
+    Write-Host "Deleting intermediate resources finished." -ForegroundColor "Yellow"
+    Write-Host "This step (deleting intermediate resources) takes $total_seconds seconds." -ForegroundColor "Green"
 }
 catch
 {

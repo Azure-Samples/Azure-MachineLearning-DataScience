@@ -122,9 +122,13 @@ This PowerShell script file will complete the following tasks:
 
 When the PowerShell script runs for the first time, you will be asked to input the information of your Azure SQL DW and your Azure blob storage account. After this PowerShell script completes running for the first time, the credentials you just input will be written to a configuration file SQLDW.conf in the present working directory. The future run of this PowerShell script file has the option to read all needed parameters from this configuration file. If you want to change some parameters, you can choose to input the parameters on the screen upon prompt, delete this configuration file, and input parameters as prompted. or change the parameters in the configuration file. 
 
-Please be noted that in order to avoid name conflicts with tables that already exist in your Azure SQL DW (it might happen if multiple users are using the same Azure SQL DW as you are using to practice on this walkthrough), a random number is added to the table names created by every run of this PowerShell script. The actual table names that are created by this run of this PowerShell script file are printed out on your screen and also output to the SQLDW.conf file. 
+Please be noted that in order to avoid name conflicts with tables that already exist in your Azure SQL DW (it might happen if multiple users are using the same Azure SQL DW as you are using to practice on this walkthrough), a 3-digit random number is added to the table names created by every run of this PowerShell script. The actual table names that are created by this run of this PowerShell script file are printed out on your screen and also output to the SQLDW.conf file. 
 
-Depending on the geographical location of your private blob storage account, the process of copying data from public blob to your private storage account could take about 15 minutes or longer,and the process of loading data from your storage account to your Azure SQL DW could takes about 20 minutes or longer.  
+Depending on the geographical location of your private blob storage account, the process of copying data from public blob to your private storage account could take about 15 minutes or longer,and the process of loading data from your storage account to your Azure SQL DW could takes about 20 minutes or longer. 
+
+[Azure Note] If the files to be copied from the public blob storage to your private blob storage account already exist in your private blob storage account, AzCopy will ask you whether you want to overwrite them. If you do not want to overwrite them, input **n** when prompted. If you want to overwrite **all** of them, input **a** when prompted. You can also input **y** to overwrite individually. 
+
+![Plot #21][21]
 
 This Powershell script also plugs in the Azure SQL DW information into the data exploration example files ([SQL](./SQLDW_Explorations.sql) and [IPython notebook](./SQLDW_Explorations.ipynb)) so that these two files are ready to be tried out instantly after the PowerShell script completes. 
 
@@ -333,9 +337,17 @@ When you are ready to proceed to Azure Machine Learning, you may either:
 ## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook
 
 In this section, we will perform data exploration and feature generation
-using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **SQLDW_Explorations.ipynb** has been downloaded to your local directory. It is also available on [GitHub](https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/SQLDW/SQLDW_Explorations.ipynb).
+using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **SQLDW_Explorations.ipynb** and a Python script file **SQLDW_Explorations_Scripts.py** have been downloaded to your local directory. They are also available on [GitHub](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/SQLDW). These two files are identical in Python scripts. The Python script file is provided to you in case you do not have an IPython Notebook server. These two sample Python files are designed under **Python 2.7**.
 
-The needed Azure SQL DW information in the IPython Notebook has been plugged in by the PowerShell script previously. You can open this notebook and run it directly.
+The needed Azure SQL DW information in the sample IPython Notebook and the Python script file has been plugged in by the PowerShell script previously. They are executable without any modification.
+
+In order to run the sample IPython Notebook or the Python script file, you need to have the following Python packages installed:
+
+	- pandas
+	- numpy
+	- matplotlib
+	- pyodbc
+	- PyTables
 
 The recommended sequence when working with large data is the following:
 
@@ -345,7 +357,7 @@ The recommended sequence when working with large data is the following:
 - For larger data exploration, data manipulation and feature engineering, use Python to issue SQL Queries directly against the SQL DW.
 - Decide the sample size to use for Azure Machine Learning model building.
 
-The followings are a few data exploration, data visualization, and feature engineering examples. More data explorations can be found in the sample IPython Notebook.
+The followings are a few data exploration, data visualization, and feature engineering examples. More data explorations can be found in the sample IPython Notebook and the sample Python script file.
 
 #### Initialize Database Credentials
 
@@ -681,6 +693,7 @@ This sample walkthrough and its accompanying scripts and IPython notebook(s) are
 [18]: ./media/machine-learning-data-science-process-sqldw-walkthrough/amlscoring.png
 [19]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ps_download_scripts.png
 [20]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ps_load_data.png
+[21]: ./media/machine-learning-data-science-process-sqldw-walkthrough/azcopy-overwrite.png
 
 
 <!-- Module References -->
