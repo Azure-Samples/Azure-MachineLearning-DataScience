@@ -89,7 +89,7 @@ To set up your Azure Data Science environment, follow the steps below.
 
 3. Make sure you can [connect to your Azure SQL DW with Visual Studio](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-get-started-connect/). As a prerequisite, you need to [install Visual Studio 2015 and/or SSDT (SQL Server Data Tools) for SQL Data Warehouse](https://azure.microsoft.com/en-us/documentation/articles/sql-data-warehouse-install-visual-studio/). 
 
-4. Create an Azure Machine Learning workspace under your Azure subscription. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/](https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/) to create an Azure Machine Learning workspace.
+4. Create an Azure Machine Learning (AML) workspace under your Azure subscription. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/](https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/) to create an Azure Machine Learning workspace.
 
 ## <a name="getdata"></a>Load the data into SQL Data Warehouse
 
@@ -103,10 +103,11 @@ Open a Windows PowerShell command console. Run the following PowerShell commands
 	$wc.DownloadFile($source, $ps1_dest) 
 	.\Download_Scripts_SQLDW_Walkthrough.ps1 –DestDir 'C:\tempSQLDW'
 
-After successful execution, your current working directory changes to _-DestDir_. You should be able to see screen like below:
+After successful execution, your current working directory changes to _DestDir_. You should be able to see screen like below:
+
 ![][19]
 
-In your _-DestDir_, execute the following PowerShell script in administrator mode:
+In your _DestDir_, execute the following PowerShell script in administrator mode:
 
 	./SQLDW_Data_Import.ps1
 
@@ -120,24 +121,31 @@ This PowerShell script file will complete the following tasks:
 	- Import the NYC taxi dataset from external tables into SQL DW tables
 	- Create a sample data table (NYCTaxi_Sample) and insert data to it from selecting SQL queries on the trip and fare tables. Some steps of this walkthrough needs to use this sample table. 
 
-When the PowerShell script runs for the first time, you will be asked to input the information of your Azure SQL DW and your Azure blob storage account. After this PowerShell script completes running for the first time, the credentials you just input will be written to a configuration file SQLDW.conf in the present working directory. The future run of this PowerShell script file has the option to read all needed parameters from this configuration file. If you want to change some parameters, you can choose to input the parameters on the screen upon prompt, delete this configuration file, and input parameters as prompted. or change the parameters in the configuration file. 
+When the PowerShell script runs for the first time, you will be asked to input the information of your Azure SQL DW and your Azure blob storage account, and the database schema name and table names you want to use for this walkthrough. After this PowerShell script completes running for the first time, the credentials you just input will be written to a configuration file SQLDW.conf in the present working directory. The future run of this PowerShell script file has the option to read all needed parameters from this configuration file, except that you will be asked to input a new schema name in order to avoid conflicts with existing schema. If you want to change some parameters, you can choose to input the parameters on the screen upon prompt, delete this configuration file, and input parameters as prompted. or change the parameters in the configuration file. 
 
-Please be noted that in order to avoid name conflicts with tables that already exist in your Azure SQL DW (it might happen if multiple users are using the same Azure SQL DW as you are using to practice on this walkthrough), a 3-digit random number is added to the table names created by every run of this PowerShell script. The actual table names that are created by this run of this PowerShell script file are printed out on your screen and also output to the SQLDW.conf file. 
+Please be noted that in order to avoid schema name conflicts with those that already exist in your Azure SQL DW, when reading parameters directly from the .conf file, a 3-digit random number is added to the schema name in the .conf file as the default schema name for each run.  
 
 Depending on the geographical location of your private blob storage account, the process of copying data from public blob to your private storage account could take about 15 minutes or longer,and the process of loading data from your storage account to your Azure SQL DW could takes about 20 minutes or longer. 
 
-[Azure Note] If the files to be copied from the public blob storage to your private blob storage account already exist in your private blob storage account, AzCopy will ask you whether you want to overwrite them. If you do not want to overwrite them, input **n** when prompted. If you want to overwrite **all** of them, input **a** when prompted. You can also input **y** to overwrite individually. 
+[Azure Note] If the files to be copied from the public blob storage to your private blob storage account already exist in your private blob storage account, AzCopy will ask you whether you want to overwrite them. If you do not want to overwrite them, input **n** when prompted. If you want to overwrite **all** of them, input **a** when prompted. You can also input **y** to overwrite individually.
 
-![Plot #21][21]
+![Plot #21][21] 
 
-This Powershell script also plugs in the Azure SQL DW information into the data exploration example files ([SQL](./SQLDW_Explorations.sql) and [IPython notebook](./SQLDW_Explorations.ipynb)) so that these two files are ready to be tried out instantly after the PowerShell script completes. 
+[Azure Tips] 
+
+- If your data is in your on-premis machine in your real life application, you can still use AzCopy to upload on-premis data to your private Azure blob storage. You only need to change the **Source** location to a local directory in the AzCopy command.	
+- If your data is already in your private Azure blob storage in your real life application, you can skip the AzCopy step and directly upload the data to Azure SQL DW. 
+
+
+This Powershell script also plugs in the Azure SQL DW information into the data exploration example files SQLDW_Explorations.sql, SQLDW_Explorations.ipynb, and SQLDW_Explorations_Scripts.py so that these three files are ready to be tried out instantly after the PowerShell script completes. 
 
 After successful execution, you will see screen like below:
+
 ![][20]
 
 ## <a name="dbexplore"></a>Data Exploration and Feature Engineering in Azure SQL Data Warehouse
 
-In this section, we will perform data exploration and feature generation by running SQL queries against Azure SQL DW directly **Visual Studio Data Tools**. All SQL queries used in this section can be found in the sample script named **SQLDW_Explorations.sql**. This file has already been downloaded to your local directory by the PowerShell script. You can also get it from [Github](https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/SQLDW/SQLDW_Explorations.sql).
+In this section, we will perform data exploration and feature generation by running SQL queries against Azure SQL DW directly **Visual Studio Data Tools**. All SQL queries used in this section can be found in the sample script named **SQLDW_Explorations.sql**. This file has already been downloaded to your local directory by the PowerShell script. You can also get it from [Github](https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/SQLDW/SQLDW_Explorations.sql). But the file in Github does not have the Azure SQL DW information plugged in.
 
 In this exercise, we will:
 
@@ -334,14 +342,32 @@ When you are ready to proceed to Azure Machine Learning, you may either:
 2. Persist the sampled and engineered data you plan to use for model building in a new SQL DW table and use the new table in the [Reader][reader] module in Azure Machine Learning. The PowerShell script in earlier step has done this for you. You can directly read from this table in the Reader module. 
 
 
-## <a name="ipnb"></a>Data Exploration and Feature Engineering in IPython Notebook
+## <a name="ipnb"></a>Data Exploration and Feature Engineering in Python
 
 In this section, we will perform data exploration and feature generation
 using both Python and SQL queries against the SQL DW created earlier. A sample IPython notebook named **SQLDW_Explorations.ipynb** and a Python script file **SQLDW_Explorations_Scripts.py** have been downloaded to your local directory. They are also available on [GitHub](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/SQLDW). These two files are identical in Python scripts. The Python script file is provided to you in case you do not have an IPython Notebook server. These two sample Python files are designed under **Python 2.7**.
 
 The needed Azure SQL DW information in the sample IPython Notebook and the Python script file has been plugged in by the PowerShell script previously. They are executable without any modification.
 
-In order to run the sample IPython Notebook or the Python script file, you need to have the following Python packages installed:
+If you have already set up an AzureML workspace, you can directly upload the sample IPython Notebook to the AzureML IPython Notebook service and start running it. Here are the steps to upload to AzureML IPython Notebook service:
+
+1. Log in to your AzureML workspace, click "Studio" at the top, and click "NOTEBOOKS" on the left side of the web page. 
+
+	![Plot #22][22]
+
+2. Click "NEW" on the left bottom corner of the web page, and select "Python 2". Then, provide a name to the notebook and click the check mark to create the new blank IPython Notebook. 
+
+	![Plot #23][23]
+
+3. Click the "Jupyter" symbol on the left top corner of the new IPython Notebook. 
+
+	![Plot #24][24]
+
+4. Drag and drop the sample IPython Notebook to the **tree** page of your AzureML IPython Notebook service, and click **Upload**. Then, the sample IPython Notebook will be uploaded to the AzureML IPython Notebook service. 
+
+	![Plot #25][25]
+
+In order to run the sample IPython Notebook or the Python script file, the following Python packages are needed. If you are using the AzureML IPython Notebook service, these packages have been pre-installed. 
 
 	- pandas
 	- numpy
@@ -349,13 +375,13 @@ In order to run the sample IPython Notebook or the Python script file, you need 
 	- pyodbc
 	- PyTables
 
-The recommended sequence when working with large data is the following:
+The recommended sequence when building advanced analytical solutions on AzureML with large data is the following:
 
 - Read in a small sample of the data into an in-memory data frame.
 - Perform some visualizations and explorations using the sampled data.
 - Experiment with feature engineering using the sampled data.
 - For larger data exploration, data manipulation and feature engineering, use Python to issue SQL Queries directly against the SQL DW.
-- Decide the sample size to use for Azure Machine Learning model building.
+- Decide the sample size to be suitable for Azure Machine Learning model building.
 
 The followings are a few data exploration, data visualization, and feature engineering examples. More data explorations can be found in the sample IPython Notebook and the sample Python script file.
 
@@ -694,6 +720,10 @@ This sample walkthrough and its accompanying scripts and IPython notebook(s) are
 [19]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ps_download_scripts.png
 [20]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ps_load_data.png
 [21]: ./media/machine-learning-data-science-process-sqldw-walkthrough/azcopy-overwrite.png
+[22]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ipnb-service-aml-1.png
+[23]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ipnb-service-aml-2.png
+[24]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ipnb-service-aml-3.png
+[25]: ./media/machine-learning-data-science-process-sqldw-walkthrough/ipnb-service-aml-4.png
 
 
 <!-- Module References -->

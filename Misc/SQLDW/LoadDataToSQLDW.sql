@@ -184,7 +184,6 @@ AS
 )
 ;
 
-
 '
 
 DECLARE @sql_script  varchar(8000)
