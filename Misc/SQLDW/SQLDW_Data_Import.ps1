@@ -443,7 +443,7 @@ try
         (gc ./SQLDW_Explorations.ipynb).replace('<database name>', $Database) | sc ./SQLDW_Explorations.ipynb
         (gc ./SQLDW_Explorations.ipynb).replace('<user name>', $Username) | sc ./SQLDW_Explorations.ipynb
         (gc ./SQLDW_Explorations.ipynb).replace('<password>', $Password) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<database server>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<database driver>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations.ipynb
 
         (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_trip>', "$SchemaName.$TripTableName") | sc ./SQLDW_Explorations_Scripts.py
         (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_fare>', "$SchemaName.$FareTableName") | sc ./SQLDW_Explorations_Scripts.py
