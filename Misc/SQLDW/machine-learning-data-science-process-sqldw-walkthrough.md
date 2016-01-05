@@ -167,17 +167,17 @@ In this exercise, we will:
 For a quick verification of the number of rows and columns in the tables populated earlier using parallel bulk import,
 
 	-- Report number of rows in table <nyctaxi_trip> without table scan
-	SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<nyctaxi_trip>')
+	SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_trip>')
 
 	-- Report number of columns in table <nyctaxi_trip>
-	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>'
+	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>' AND table_schema = '<schemaname>'
 
 #### Exploration: Trip distribution by medallion
 
 This example identifies the medallion (taxi numbers) with more than 100 trips within a given time period. The query would benefit from the partitioned table access since it is conditioned by the partition scheme of **pickup\_datetime**. Querying the full dataset will also make use of the partitioned table and/or index scan.
 
 	SELECT medallion, COUNT(*)
-	FROM <nyctaxi_fare>
+	FROM <schemaname>.<nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130331'
 	GROUP BY medallion
 	HAVING COUNT(*) > 100
@@ -185,7 +185,7 @@ This example identifies the medallion (taxi numbers) with more than 100 trips wi
 #### Exploration: Trip distribution by medallion and hack_license
 
 	SELECT medallion, hack_license, COUNT(*)
-	FROM <nyctaxi_fare>
+	FROM <schemaname>.<nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130131'
 	GROUP BY medallion, hack_license
 	HAVING COUNT(*) > 100
@@ -194,7 +194,7 @@ This example identifies the medallion (taxi numbers) with more than 100 trips wi
 
 This example investigates if any of the longitude and/or latitude fields either contain an invalid value (radian degrees should be between -90 and 90), or have (0, 0) coordinates.
 
-	SELECT COUNT(*) FROM <nyctaxi_trip>
+	SELECT COUNT(*) FROM <schemaname>.<nyctaxi_trip>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130331'
 	AND  (CAST(pickup_longitude AS float) NOT BETWEEN -90 AND 90
 	OR    CAST(pickup_latitude AS float) NOT BETWEEN -90 AND 90
@@ -209,7 +209,7 @@ This example finds the number of trips that were tipped vs. not tipped in a give
 
 	SELECT tipped, COUNT(*) AS tip_freq FROM (
 	  SELECT CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END AS tipped, tip_amount
-	  FROM <nyctaxi_fare>
+	  FROM <schemaname>.<nyctaxi_fare>
 	  WHERE pickup_datetime BETWEEN '20130101' AND '20131231') tc
 	GROUP BY tipped
 
@@ -225,7 +225,7 @@ This example computes the distribution of tip ranges in a given time period (or 
 			WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
 			ELSE 4
 		END AS tip_class
-	FROM <nyctaxi_fare>
+	FROM <schemaname>.<nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20131231') tc
 	GROUP BY tip_class
 
@@ -269,7 +269,7 @@ This example converts the pickup and drop-off longitude and latitude to SQL geog
 
 	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
 	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
-	FROM <nyctaxi_trip>
+	FROM <schemaname>.<nyctaxi_trip>
 	WHERE datepart("mi",pickup_datetime)=1
 	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
 	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
@@ -319,7 +319,7 @@ Here is an example to call this function to generate features in your SQL query:
 	-- Sample query to call the function to create features
 	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
 	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
-	FROM <nyctaxi_trip>
+	FROM <schemaname>.<nyctaxi_trip>
 	WHERE datepart("mi",pickup_datetime)=1
 	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
 	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
@@ -337,7 +337,7 @@ The following query joins the **nyctaxi\_trip** and **nyctaxi\_fare** tables, ge
 	        WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
 	        ELSE 4
 	    END AS tip_class
-	FROM <nyctaxi_trip> t, <nyctaxi_fare> f
+	FROM <schemaname>.<nyctaxi_trip> t, <schemaname>.<nyctaxi_fare> f
 	WHERE datepart("mi",t.pickup_datetime) = 1
 	AND   t.medallion = f.medallion
 	AND   t.hack_license = f.hack_license
@@ -411,14 +411,14 @@ Initialize your database connection settings in the following variables:
 
     nrows = pd.read_sql('''
 		SELECT SUM(rows) FROM sys.partitions
-		WHERE object_id = OBJECT_ID('<nyctaxi_trip>')
+		WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_trip>')
 	''', conn)
 
 	print 'Total number of rows = %d' % nrows.iloc[0,0]
 
     ncols = pd.read_sql('''
 		SELECT COUNT(*) FROM information_schema.columns
-		WHERE table_name = ('<nyctaxi_trip>')
+		WHERE table_name = ('<nyctaxi_trip>') AND table_schema = ('<schemaname>')
 	''', conn)
 
 	print 'Total number of columns = %d' % ncols.iloc[0,0]
@@ -430,14 +430,14 @@ Initialize your database connection settings in the following variables:
 
     nrows = pd.read_sql('''
 		SELECT SUM(rows) FROM sys.partitions
-		WHERE object_id = OBJECT_ID('<nyctaxi_fare>')
+		WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_fare>')
 	''', conn)
 
 	print 'Total number of rows = %d' % nrows.iloc[0,0]
 
     ncols = pd.read_sql('''
 		SELECT COUNT(*) FROM information_schema.columns
-		WHERE table_name = ('<nyctaxi_fare>')
+		WHERE table_name = ('<nyctaxi_fare>') AND table_schema = ('<schemaname>')
 	''', conn)
 
 	print 'Total number of columns = %d' % ncols.iloc[0,0]
@@ -452,7 +452,7 @@ Initialize your database connection settings in the following variables:
 	query = '''
 		SELECT TOP 10000 t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax,
 			f.tolls_amount, f.total_amount, f.tip_amount
-		FROM <nyctaxi_trip> t, <nyctaxi_fare> f
+		FROM <schemaname>.<nyctaxi_trip> t, <schemaname>.<nyctaxi_fare> f
 		WHERE datepart("mi",t.pickup_datetime) = 1
 		AND   t.medallion = f.medallion
 		AND   t.hack_license = f.hack_license
@@ -535,17 +535,17 @@ In this section, we explore data distributions using the sampled data which is p
 
 #### Exploration: Report number of rows and columns in the sampled table
 
-	nrows = pd.read_sql('''SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('nyctaxi_sample')''', conn)
+	nrows = pd.read_sql('''SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_sample>')''', conn)
 	print 'Number of rows in sample = %d' % nrows.iloc[0,0]
 
-	ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = ('nyctaxi_sample')''', conn)
+	ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = ('<nyctaxi_sample>') AND table_schema = '<schemaname>'''', conn)
 	print 'Number of columns in sample = %d' % ncols.iloc[0,0]
 
 #### Exploration: Tipped/Not Tipped Distribution
 
 	query = '''
         SELECT tipped, count(*) AS tip_freq
-        FROM nyctaxi_sample
+        FROM <schemaname>.<nyctaxi_sample>
         GROUP BY tipped
         '''
 
@@ -555,7 +555,7 @@ In this section, we explore data distributions using the sampled data which is p
 
 	query = '''
         SELECT tip_class, count(*) AS tip_freq
-        FROM nyctaxi_sample
+        FROM <schemaname>.<nyctaxi_sample>
         GROUP BY tip_class
 	'''
 
@@ -569,7 +569,7 @@ In this section, we explore data distributions using the sampled data which is p
 
     query = '''
 		SELECT CONVERT(date, dropoff_datetime) AS date, COUNT(*) AS c
-		FROM nyctaxi_sample
+		FROM <schemaname>.<nyctaxi_sample>
 		GROUP BY CONVERT(date, dropoff_datetime)
 	'''
 
@@ -579,7 +579,7 @@ In this section, we explore data distributions using the sampled data which is p
 
     query = '''
 		SELECT medallion,count(*) AS c
-		FROM nyctaxi_sample
+		FROM <schemaname>.<nyctaxi_sample>
 		GROUP BY medallion
 	'''
 
@@ -587,28 +587,28 @@ In this section, we explore data distributions using the sampled data which is p
 
 #### Exploration: Trip distribution by medallion and Hack License
 
-	query = '''select medallion, hack_license,count(*) from nyctaxi_sample group by medallion, hack_license'''
+	query = '''select medallion, hack_license,count(*) from <schemaname>.<nyctaxi_sample> group by medallion, hack_license'''
 	pd.read_sql(query,conn)
 
 
 #### Exploration: Trip Time Distribution
 
-	query = '''select trip_time_in_secs, count(*) from nyctaxi_sample group by trip_time_in_secs order by count(*) desc'''
+	query = '''select trip_time_in_secs, count(*) from <schemaname>.<nyctaxi_sample> group by trip_time_in_secs order by count(*) desc'''
 	pd.read_sql(query,conn)
 
 #### Exploration: Trip Distance Distribution
 
-	query = '''select floor(trip_distance/5)*5 as tripbin, count(*) from nyctaxi_sample group by floor(trip_distance/5)*5 order by count(*) desc'''
+	query = '''select floor(trip_distance/5)*5 as tripbin, count(*) from <schemaname>.<nyctaxi_sample> group by floor(trip_distance/5)*5 order by count(*) desc'''
 	pd.read_sql(query,conn)
 
 #### Exploration: Payment Type Distribution
 
-	query = '''select payment_type,count(*) from nyctaxi_sample group by payment_type'''
+	query = '''select payment_type,count(*) from <schemaname>.<nyctaxi_sample> group by payment_type'''
 	pd.read_sql(query,conn)
 
 #### Verify the final form of the featurized table
 
-    query = '''SELECT TOP 100 * FROM nyctaxi_sample'''
+    query = '''SELECT TOP 100 * FROM <schemaname>.<nyctaxi_sample>'''
     pd.read_sql(query,conn)
 
 We are now ready to proceed to model building and model deployment in [Azure Machine Learning](https://studio.azureml.net). The data is ready for any of the prediction problems identified earlier, namely:
