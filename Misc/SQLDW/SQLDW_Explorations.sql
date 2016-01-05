@@ -1,25 +1,25 @@
 	-- Report number of rows in table <nyctaxi_trip> without table scan
-	SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<nyctaxi_trip>')
+	SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_trip>')
 
 	-- Report number of columns in table <nyctaxi_trip>
-	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>'
+	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>' AND and table_schema = '<schemaname>'
 
 	-- Exploration: Trip distribution by medallion
 	SELECT medallion, COUNT(*)
-	FROM <nyctaxi_fare>
+	FROM <schemaname>.<nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130331'
 	GROUP BY medallion
 	HAVING COUNT(*) > 100
 
 	-- Exploration: Trip distribution by medallion and hack_license
 	SELECT medallion, hack_license, COUNT(*)
-	FROM <nyctaxi_fare>
+	FROM <schemaname>.<nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130131'
 	GROUP BY medallion, hack_license
 	HAVING COUNT(*) > 100
 
 	-- Data Quality Assessment: Verify records with incorrect longitude and/or latitude
-	SELECT COUNT(*) FROM <nyctaxi_trip>
+	SELECT COUNT(*) FROM <schemaname>.<nyctaxi_trip>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20130331'
 	AND  (CAST(pickup_longitude AS float) NOT BETWEEN -90 AND 90
 	OR    CAST(pickup_latitude AS float) NOT BETWEEN -90 AND 90
@@ -31,7 +31,7 @@
 	-- Exploration: Tipped vs. Not Tipped Trips distribution
 	SELECT tipped, COUNT(*) AS tip_freq FROM (
 	  SELECT CASE WHEN (tip_amount > 0) THEN 1 ELSE 0 END AS tipped, tip_amount
-	  FROM <nyctaxi_fare>
+	  FROM <schemaname>.<nyctaxi_fare>
 	  WHERE pickup_datetime BETWEEN '20130101' AND '20131231') tc
 	GROUP BY tipped
 
@@ -44,7 +44,7 @@
 			WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
 			ELSE 4
 		END AS tip_class
-	FROM <nyctaxi_fare>
+	FROM <schemaname>.<nyctaxi_fare>
 	WHERE pickup_datetime BETWEEN '20130101' AND '20131231') tc
 	GROUP BY tip_class
 
@@ -86,7 +86,7 @@
 	-- Sample query to call the function to create features
 	SELECT pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude, 
 	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) AS DirectDistance
-	FROM <nyctaxi_trip>
+	FROM <schemaname>.<nyctaxi_trip>
 	WHERE datepart("mi",pickup_datetime)=1
 	AND CAST(pickup_latitude AS float) BETWEEN -90 AND 90
 	AND CAST(dropoff_latitude AS float) BETWEEN -90 AND 90
@@ -101,7 +101,7 @@
 	        WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
 	        ELSE 4
 	    END AS tip_class
-	FROM <nyctaxi_trip> t, <nyctaxi_fare> f
+	FROM <schemaname>.<nyctaxi_trip> t, <schemaname>.<nyctaxi_fare> f
 	WHERE datepart("mi",t.pickup_datetime) = 1
 	AND   t.medallion = f.medallion
 	AND   t.hack_license = f.hack_license
@@ -109,7 +109,7 @@
 	AND   pickup_longitude != '0' AND dropoff_longitude != '0'
 
 	-- Persist query results in a sample table
-	CREATE TABLE <nyctaxi_sample>
+	CREATE TABLE <schemaname>.<nyctaxi_sample>
 	WITH 
 	(   
 	    CLUSTERED COLUMNSTORE INDEX,
@@ -125,7 +125,7 @@
                         WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
                         ELSE 4
                     END
-	    FROM <nyctaxi_trip> t, <nyctaxi_fare> f
+	    FROM <schemaname>.<nyctaxi_trip> t, <schemaname>.<nyctaxi_fare> f
     	WHERE datepart("mi",t.pickup_datetime) = 1
 	AND t.medallion = f.medallion
     	AND   t.hack_license = f.hack_license

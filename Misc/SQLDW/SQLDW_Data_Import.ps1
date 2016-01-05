@@ -429,15 +429,15 @@ try
     $start_time = Get-Date
     if($PSVersionTable.WSManStackVersion.Major -ge 3)
     {
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_trip>', "$SchemaName.$TripTableName") | sc ./SQLDW_Explorations.sql
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_fare>', "$SchemaName.$FareTableName") | sc ./SQLDW_Explorations.sql
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_sample>', "$SchemaName.$SampleTableName") | sc ./SQLDW_Explorations.sql
+        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.sql
+        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.sql
+        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.sql
         (gc ./SQLDW_Explorations.sql).replace('<schemaname>', $SchemaName) | sc ./SQLDW_Explorations.sql
 
 
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_trip>', "$SchemaName.$TripTableName") | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_fare>', "$SchemaName.$FareTableName") | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_sample>', "$SchemaName.$SampleTableName") | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.ipynb
+        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.ipynb
 
         (gc ./SQLDW_Explorations.ipynb).replace('<server name>', $Server) | sc ./SQLDW_Explorations.ipynb
         (gc ./SQLDW_Explorations.ipynb).replace('<database name>', $Database) | sc ./SQLDW_Explorations.ipynb
@@ -445,9 +445,9 @@ try
         (gc ./SQLDW_Explorations.ipynb).replace('<password>', $Password) | sc ./SQLDW_Explorations.ipynb
         (gc ./SQLDW_Explorations.ipynb).replace('<database driver>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations.ipynb
 
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_trip>', "$SchemaName.$TripTableName") | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_fare>', "$SchemaName.$FareTableName") | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_sample>', "$SchemaName.$SampleTableName") | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations_Scripts.py
+        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations_Scripts.py
 
         (gc ./SQLDW_Explorations_Scripts.py).replace('<server name>', $Server) | sc ./SQLDW_Explorations_Scripts.py
         (gc ./SQLDW_Explorations_Scripts.py).replace('<database name>', $Database) | sc ./SQLDW_Explorations_Scripts.py
@@ -458,14 +458,14 @@ try
     else
     {
 
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_trip>', "$SchemaName.$TripTableName"
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_fare>', "$SchemaName.$FareTableName"
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_sample>', "$SchemaName.$SampleTableName"
+        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_trip>', $TripTableName
+        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_fare>', $FareTableName
+        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_sample>', $SampleTableName
         (gc ./SQLDW_Explorations.sql) -replace '<schemaname>', $SchemaName
 
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_trip>', "$SchemaName.$TripTableName"
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_fare>', "$SchemaName.$FareTableName"
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_sample>', "$SchemaName.$SampleTableName"
+        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_trip>', $TripTableName
+        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_fare>', $FareTableName
+        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_sample>', $SampleTableName
 		
 		(gc ./SQLDW_Explorations.ipynb) -replace '<server name>', $Server
         (gc ./SQLDW_Explorations.ipynb) -replace '<database name>', $Database
@@ -473,9 +473,9 @@ try
         (gc ./SQLDW_Explorations.ipynb) -replace '<password>', $Password
         (gc ./SQLDW_Explorations.ipynb) -replace '<database server>', 'SQL Server Native Client 11.0'
 
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_trip>', "$SchemaName.$TripTableName"
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_fare>', "$SchemaName.$FareTableName"
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_sample>', "$SchemaName.$SampleTableName"
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_trip>', $TripTableName
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_fare>', $FareTableName
+        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_sample>', $SampleTableName
 		
 		(gc ./SQLDW_Explorations_Scripts.py) -replace '<server name>', $Server
         (gc ./SQLDW_Explorations_Scripts.py) -replace '<database name>', $Database
