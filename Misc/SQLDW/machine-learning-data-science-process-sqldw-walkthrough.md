@@ -91,6 +91,16 @@ To set up your Azure Data Science environment, follow the steps below.
 
 4. Create an Azure Machine Learning (AML) workspace under your Azure subscription. Follow the documentation at [https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/](https://azure.microsoft.com/en-us/documentation/articles/machine-learning-create-workspace/) to create an Azure Machine Learning workspace.
 
+5. Follow this [instruction](https://azure.microsoft.com/en-us/documentation/articles/sql-database-configure-firewall-settings/) to make sure your IP addresses are in the white list SQL Data Warehouse firewall. To locate your IP address in different Operation Systems: 
+
+   - Windows: run `ipconfig` from Windows PowerShell.
+   - Ubuntu: run `ifconfig` from a terminal window.
+   - Linux: run `ip addr show` from a terminal window.
+
+   When you run IPython Notebook (in Azure Machine Learning Studio Notebook or your own notebook server), add your IP address to the white list in this way: `xxx.xxx.0.0` to `xxx.xxx.255.255` in case your IPython notebook server runs on different nodes.
+
+ 
+
 ## <a name="getdata"></a>Load the data into SQL Data Warehouse
 
 Open a Windows PowerShell command console. Run the following PowerShell commands to download the example SQL script files that we share with you on Github to a local directory you specify by parameter _-DestDir_. You can change the value of parameter _-DestDir_ to any local directory. If _-DestDir_ does not exist, it will be created by the PowerShell script. 
