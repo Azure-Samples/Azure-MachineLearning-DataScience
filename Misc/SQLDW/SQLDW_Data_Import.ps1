@@ -278,13 +278,46 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
     Write-Host $sqlfile "execution done"
 }
 
+function PluginParameters($filename,$psversion)
+{
+    if ($psversion -ge 3){
+        (gc $filename).replace('<schemaname>.<nyctaxi_trip>', "$SchemaName.$TripTableName") | sc $filename
+        (gc $filename).replace('<schemaname>.<nyctaxi_fare>', "$SchemaName.$FareTableName") | sc $filename
+        (gc $filename).replace('<schemaname>.<nyctaxi_sample>', "$SchemaName.$SampleTableName") | sc $filename
+        (gc $filename).replace('<nyctaxi_trip>', "$TripTableName") | sc $filename
+        (gc $filename).replace('<nyctaxi_fare>', "$FareTableName") | sc $filename
+        (gc $filename).replace('<nyctaxi_sample>', "$SampleTableName") | sc $filename
+        (gc $filename).replace('<schemaname>', "$SchemaName") | sc $filename
+
+        (gc $filename).replace('<server name>', $Server) | sc $filename
+        (gc $filename).replace('<database name>', $Database) | sc $filename
+        (gc $filename).replace('<user name>', $Username) | sc $filename
+        (gc $filename).replace('<password>', $Password) | sc $filename
+        (gc $filename).replace('<database server>', 'SQL Server Native Client 11.0') | sc $filename
+    } 
+    else {
+        (gc $filename) -replace '<schemaname>.<nyctaxi_trip>', "$SchemaName.$TripTableName"
+        (gc $filename) -replace '<schemaname>.<nyctaxi_fare>', "$SchemaName.$FareTableName"
+        (gc $filename) -replace '<schemaname>.<nyctaxi_sample>', "$SchemaName.$SampleTableName"
+        (gc $filename) -replace '<nyctaxi_trip>', "$TripTableName"
+        (gc $filename) -replace '<nyctaxi_fare>', "$FareTableName"
+        (gc $filename) -replace '<nyctaxi_sample>', "$SampleTableName"
+        (gc $filename) -replace '<schemaname>', "$SchemaName"
+
+        		
+		(gc $filename) -replace '<server name>', $Server
+        (gc $filename) -replace '<database name>', $Database
+        (gc $filename) -replace '<user name>', $Username
+        (gc $filename) -replace '<password>', $Password
+        (gc $filename) -replace '<database server>', 'SQL Server Native Client 11.0'
+    }
+}
 
 
 #-------------------------------------------------------------------#
 # Main code starts from here
 #-------------------------------------------------------------------#
-# Get Azure storage account information and Azure SQL DW information
-# either from user input, or from a .conf file if it exists
+# Specify your storage account name
 $conf_file = "$PWD\SQLDW.conf"
 $StorageAccountName = ""
 $StorageAccountKey = ""
@@ -363,7 +396,6 @@ catch{
 
 try
 {
-    # AzCopy step to copy data from a data source to a private blob storage
     $AzCopy_path = SearchAzCopy
     if ($AzCopy_path -eq $null){
         Write-Host "AzCopy.exe is not found in C:\Program Files*. Now, start installing AzCopy..." -ForegroundColor "Yellow"
@@ -394,7 +426,6 @@ try
     Write-Host "AzCopy finished copying data. Please check your storage account to verify." -ForegroundColor "Yellow"
     Write-Host "This step (copying data from public blob to your storage account) takes $total_seconds seconds." -ForegroundColor "Green"
 
-    # Loading data from private blob storage to Azure SQL DW
 	$start_time = Get-Date
 	ExecuteSQLFile LoadDataToSQLDW.sql 1
 	$end_time = Get-Date
@@ -403,7 +434,7 @@ try
     Write-Host "SQL script execution finished." -ForegroundColor "Yellow"
     Write-Host "This step (loading data from your private blob to SQLDW) takes $total_seconds seconds." -ForegroundColor "Green"
 
-	# Quality check step to see the number of records in each of the three tables in Azure SQL DW
+	
 	$qa1 = "select count(*) from $SchemaName.$TripTableName"
 	$qa2 = "select count(*) from $SchemaName.$FareTableName"
 	$qa3 = "select count(*) from $SchemaName.$SampleTableName"
@@ -424,72 +455,20 @@ try
 	Write-Host "The numbers of records from $TripTableName, $FareTableName,$SampleTableName  are  $qa1_result, $qa2_result, and $qa3_result" -ForegroundColor "Yellow"
 	Write-Host "The data is loaded from your blob storage account to SQL DW." -ForegroundColor "Green"
 
-    # Step of replacing parameters in .sql, .ipnb and .py files with the parameters input by users
+
     Write-Host "Plug in the parameterized table names in SQL script file" -Foregroundcolor "Yellow"
     $start_time = Get-Date
-    if($PSVersionTable.WSManStackVersion.Major -ge 3)
-    {
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.sql
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.sql
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.sql
-        (gc ./SQLDW_Explorations.sql).replace('<schemaname>', $SchemaName) | sc ./SQLDW_Explorations.sql
-
-
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.ipynb
-
-        (gc ./SQLDW_Explorations.ipynb).replace('<server name>', $Server) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<database name>', $Database) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<user name>', $Username) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<password>', $Password) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<database driver>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations.ipynb
-
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations_Scripts.py
-
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<server name>', $Server) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<database name>', $Database) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<user name>', $Username) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<password>', $Password) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<database driver>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations_Scripts.py
-    }
-    else
-    {
-
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_trip>', $TripTableName
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_fare>', $FareTableName
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_sample>', $SampleTableName
-        (gc ./SQLDW_Explorations.sql) -replace '<schemaname>', $SchemaName
-
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_trip>', $TripTableName
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_fare>', $FareTableName
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_sample>', $SampleTableName
-		
-		(gc ./SQLDW_Explorations.ipynb) -replace '<server name>', $Server
-        (gc ./SQLDW_Explorations.ipynb) -replace '<database name>', $Database
-        (gc ./SQLDW_Explorations.ipynb) -replace '<user name>', $Username
-        (gc ./SQLDW_Explorations.ipynb) -replace '<password>', $Password
-        (gc ./SQLDW_Explorations.ipynb) -replace '<database server>', 'SQL Server Native Client 11.0'
-
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_trip>', $TripTableName
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_fare>', $FareTableName
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_sample>', $SampleTableName
-		
-		(gc ./SQLDW_Explorations_Scripts.py) -replace '<server name>', $Server
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database name>', $Database
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<user name>', $Username
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<password>', $Password
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database driver>', 'SQL Server Native Client 11.0'
-    }
-
+    
+    PluginParameters "./SQLDW_Explorations.sql" $PSVersionTable.WSManStackVersion.Major
+    PluginParameters "./SQLDW_Explorations.ipynb" $PSVersionTable.WSManStackVersion.Major
+    PluginParameters "./SQLDW_Explorations_Scripts.py" $PSVersionTable.WSManStackVersion.Major
+    
     $end_time = Get-Date
     $time_span = $end_time - $start_time
     $total_seconds = [math]::Round($time_span.TotalSeconds,2)
     Write-Host "This step (plugging in database information) takes $total_seconds seconds." -Foregroundcolor "Yellow"
 
-    # Step of deleting intermediate resources to save disk occupation on Azure SQL DW. 
+    
 	$DeleteTable_file = "$PWD\DeleteResourcesOnSQLDW.sql"
 	$DeleteTableSqlScript = "
 	DROP EXTERNAL TABLE $external_nyctaxi_fare
@@ -503,6 +482,8 @@ try
 	"
 	Out-File $DeleteTable_file -inputobject $DeleteTableSqlScript  -Encoding UTF8 -Force
 
+
+	##If you want to drop the temporary tables you created, please execute the following line:
 	$start_time = Get-Date
 	ExecuteSQLFile $DeleteTable_file 0
 	$end_time = Get-Date

@@ -2,7 +2,7 @@
 	SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_trip>')
 
 	-- Report number of columns in table <nyctaxi_trip>
-	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>' AND and table_schema = '<schemaname>'
+	SELECT COUNT(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>' AND table_schema = '<schemaname>'
 
 	-- Exploration: Trip distribution by medallion
 	SELECT medallion, COUNT(*)
