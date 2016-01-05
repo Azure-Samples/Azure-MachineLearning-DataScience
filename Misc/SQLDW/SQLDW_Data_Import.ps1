@@ -293,7 +293,7 @@ function PluginParameters($filename,$psversion)
         (gc $filename).replace('<database name>', $Database) | sc $filename
         (gc $filename).replace('<user name>', $Username) | sc $filename
         (gc $filename).replace('<password>', $Password) | sc $filename
-        (gc $filename).replace('<database server>', 'SQL Server Native Client 11.0') | sc $filename
+        (gc $filename).replace('<database driver>', 'SQL Server Native Client 11.0') | sc $filename
     } 
     else {
         (gc $filename) -replace '<schemaname>.<nyctaxi_trip>', "$SchemaName.$TripTableName"
@@ -309,7 +309,7 @@ function PluginParameters($filename,$psversion)
         (gc $filename) -replace '<database name>', $Database
         (gc $filename) -replace '<user name>', $Username
         (gc $filename) -replace '<password>', $Password
-        (gc $filename) -replace '<database server>', 'SQL Server Native Client 11.0'
+        (gc $filename) -replace '<database driver>', 'SQL Server Native Client 11.0'
     }
 }
 
