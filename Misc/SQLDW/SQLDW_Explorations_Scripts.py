@@ -63,14 +63,14 @@ conn = pyodbc.connect(CONNECTION_STRING)
 nrows = pd.read_sql('''SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_trip>')''', conn)
 print 'Total number of rows = %d' % nrows.iloc[0,0]
 
-ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_trip>' AND table_schema = '<schemaname>'''', conn)
+ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = ('<nyctaxi_trip>') AND table_schema = ('<schemaname>')''', conn)
 print 'Total number of columns = %d' % ncols.iloc[0,0]
 
 # Step 1.5. Report number of rows and columns in table <nyctaxi_fare> 
 nrows = pd.read_sql('''SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_fare>')''', conn)
 print 'Total number of rows = %d' % nrows.iloc[0,0]
 
-ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = '<nyctaxi_fare>' AND table_schema = '<schemaname>''', conn)
+ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = ('<nyctaxi_fare>') AND table_schema = ('<schemaname>')''', conn)
 print 'Total number of columns = %d' % ncols.iloc[0,0]
 
 # Step 1.6 Read-in data from SQL Data Warehouse 
@@ -142,7 +142,7 @@ df1[['trip_time_in_secs', 'trip_distance']].corr()
 nrows = pd.read_sql('''SELECT SUM(rows) FROM sys.partitions WHERE object_id = OBJECT_ID('<schemaname>.<nyctaxi_sample>')''', conn)
 print 'Number of rows in sample = %d' % nrows.iloc[0,0]
 
-ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = ('<nyctaxi_sample>') AND and table_schema = '<schemaname>''', conn)
+ncols = pd.read_sql('''SELECT count(*) FROM information_schema.columns WHERE table_name = ('<nyctaxi_sample>') AND table_schema = ('<schemaname>')''', conn)
 print 'Number of columns in sample = %d' % ncols.iloc[0,0]
 
 # Step 2.2. Check the tipped/not tipped distribution (outputs counts of trips in tipped/not tipped classes)
