@@ -649,7 +649,7 @@ A typical training experiment consists of the following steps:
 9. Evaluate the model(s) to compute the relevant metrics for the learning problem.
 10. Fine tune the model(s) and select the best model to deploy.
 
-In this exercise, we have already explored and engineered the data in SQL Server, and decided on the sample size to ingest in Azure ML. Here is the procedure to build one or more of the prediction models:
+In this exercise, we have already explored and engineered the data in SQL Data Warehouse, and decided on the sample size to ingest in Azure ML. Here is the procedure to build one or more of the prediction models:
 
 1. Get the data into Azure ML using the [Reader][reader] module, available in the **Data Input and Output** section. For more information, see the [Reader][reader] module reference page.
 
@@ -667,7 +667,7 @@ In this exercise, we have already explored and engineered the data in SQL Server
 
 7. In the **Database query** edit text area, paste the query which extracts the necessary database fields (including any computed fields such as the labels) and down samples the data to the desired sample size.
 
-An example of a binary classification experiment reading data directly from the SQL Server database is in the figure below (remember to replace the table names nyctaxi_trip and nyctaxi_fare by the schema name and the table names you used in your walkthrough). Similar experiments can be constructed for multiclass classification and regression problems.
+An example of a binary classification experiment reading data directly from the SQL Data Warehouse database is in the figure below (remember to replace the table names nyctaxi_trip and nyctaxi_fare by the schema name and the table names you used in your walkthrough). Similar experiments can be constructed for multiclass classification and regression problems.
 
 ![Azure ML Train][10]
 
