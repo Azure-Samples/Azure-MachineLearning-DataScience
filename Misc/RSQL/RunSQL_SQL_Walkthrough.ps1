@@ -166,6 +166,7 @@ $p = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($p1)
 $csvfilepath = Read-Host -Prompt 'Input the path to the csv file you want to upload to the database'
 
 # Check whether BCP is intalled on the computer. If no, install it.
+$web_client = new-object System.Net.WebClient
 try
 {
     $bcp_path = SearchBCP
