@@ -1,0 +1,13 @@
+PlotHistogram.sql
+PredictTip.sql
+PredictTipSingleMode.sql 
+TrainTipPredictionModel.sql
+create-db-tb-upload-data.sql
+fnCalculateDistance.sql
+fnEngineerFeatures.sql
+CallPredictTipStoredProcedure.sql
+PlotInOutputFiles.sql
+ExcelPowerQueryConsumePredict.xlsx
+RunSQL_SQL_Walkthrough.ps1
+varbinplot.fmt
+taxiimportfmt.xml
