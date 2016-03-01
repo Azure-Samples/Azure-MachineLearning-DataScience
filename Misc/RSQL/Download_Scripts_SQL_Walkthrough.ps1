@@ -35,8 +35,6 @@ function DownloadRawFromGitWithFileList($base_url, $file_list_name, $destination
             # download the file specified by this line...
             $url = $base_url + $line
             $destination = Join-Path $destination_dir $line
-			Write-Host $url
-			Write-Host $destination
             $web_client.DownloadFile($url, $destination)
         }
     }
@@ -57,10 +55,12 @@ if (!(Test-Path $DestDir)) {
     Write-Output "$DestDir does not exist and is created."
     mkdir $DestDir
 }
-
-Write-Output "Fetching the script files to $DestDir..."
-GetSampleFilesFromGit "SQLDW" "FilestoDownload_SQLDW_Walkthrough.txt" $DestDir
+Write-Output "Start downloading the data file to $DestDir. It may take a while..."
+$file_url = "http://getgoing.blob.core.windows.net/public/nyctaxi1pct.csv"
+$file_dest = Join-Path $DestDir "nyctaxi1pct.csv"
+$web_client.DownloadFile($file_url, $file_dest)
+Write-Output "Fetching the sample script files to $DestDir..."
+GetSampleFilesFromGit "RSQL" "FilestoDownload_SQL_Walkthrough.txt" $DestDir
 Write-Output "Fetching the sample script files completed."
 Write-Output "Now entering the destination directory $DestDir."
 cd $DestDir
-

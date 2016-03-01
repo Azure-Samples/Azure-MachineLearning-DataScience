@@ -1,3 +1,6 @@
 SQLDW_Data_Import.ps1
-LoadDataWithPolyBase.sql
+LoadDataToSQLDW.sql
 DeleteResourcesOnSQLDW.sql
+SQLDW_Explorations.sql
+SQLDW_Explorations.ipynb
+SQLDW_Explorations_Scripts.py
