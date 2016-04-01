@@ -33,6 +33,7 @@ while true; do
         --menu "Get more info on data science tools pre-installed on this machine." "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" \
         --ok-button "More Info" \
         --cancel-button "Close" \
+        "Setup graphical desktop" "Connect to the VM using X2Go graphical desktop client" \
         "Anaconda Python Distribution" "Enterprise ready Python distribution with several data analytics libraries" \
         "Azure Machine Learning Libraries" "Libraries to work with Azure Machine Learning in the cloud" \
         "Azure Tools" "Tools and libraries to work with Azure services" \
@@ -47,6 +48,9 @@ while true; do
       exit 1
   elif [ $RET -eq 0 ]; then
       case "$CHOICE" in
+          Setup*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/x2gosetup"
+              ;;
           Anaconda*)
               show_info "$CHOICE" "/usr/share/dsvm-more-info/anaconda"
               ;;
