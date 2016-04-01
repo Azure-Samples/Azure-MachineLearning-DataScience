@@ -1,0 +1,73 @@
+The VM comes with a few ML tools/algorithms pre-compiled and pre-installed. This includes:
+
+* CNTK (Computational Network Toolkit from Microsoft Research) - A deep learning toolkit
+* Vowpal Wabbit - A fast online learning algorithm
+* xgboost - A tool which provides optimized  boosted tree algorithms
+* Python -  Anaconda Python comes bundled with ML algorithms with libraries like Scikit-learn. You can install other libraries running pip install
+* R - R comes with a rich library of ML functions. Some of the libraries that are pre-installed are lm, glm, randomForest, rpart. 
+      Other libraries can be installed by running install.packages(<lib name>)
+
+Here is more description on CNTK, Vowpal Wabbit and xgboost. 
+
+CNTK:
+This is an open source  deep learning toolkit. It is a command line tool (cntk) and is already in the PATH. 
+
+To run a basic sample do the following in shell:
+
+# Copy samples to your home directory and execute cntk
+	cp -r /dsvm/tools/CNTK-2016-02-08-Linux-64bit-CPU-Only/Examples/Other/Simple2d cntkdemo 
+	cd cntkdemo/Data
+	cntk configFile=../Config/Simple.cntk
+
+You will find the model output in ~/cntkdemo/Output/Models
+
+More Info on CNTK: https://github.com/Microsoft/CNTK
+https://github.com/Microsoft/CNTK/wiki
+
+
+Vowpal Wabbit(vw):
+
+Vowpal Wabbit is a machine learning system which pushes the frontier of machine learning with techniques such as online, hashing, allreduce, reductions, learning2search, active, and interactive learning.
+
+To run the tool on a very basic example do the following: 
+
+cp -r /dsvm/tools/VowpalWabbit/demo vwdemo
+cd vwdemo
+vw house_dataset
+
+There are other larger demos in that directory. Please refer to VW documentation referred below for more info. 
+
+More info on vw: https://github.com/JohnLangford/vowpal_wabbit
+
+
+xgboost: 
+This is a library that is designed, and optimized for boosted (tree) algorithms. The goal of this library is to push the extreme of the computation limits of machines to provide a scalable, portable and accurate for large scale tree boosting.
+
+It is provided as a command line as well as a R library. 
+
+To use this library in R, you can start interactive R session ( just by typing R in the shell) and loading the library.
+
+Here is a simple example you can run in R prompt:
+
+library(xgboost)
+
+data(agaricus.train, package='xgboost')
+data(agaricus.test, package='xgboost')
+train <- agaricus.train
+test <- agaricus.test
+bst <- xgboost(data = train$data, label = train$label, max.depth = 2,
+                    eta = 1, nthread = 2, nround = 2, objective = "binary:logistic")
+pred <- predict(bst, test$data)
+
+
+To run the xgboost command line, here are the steps to execute in shell:
+
+cp -r /dsvm/tools/xgboost/demo/binary_classification/ xgboostdemo
+cd xgboostdemo
+xgboost mushroom.conf
+
+A .model file is written to that directory. Info about this demo example can be found at: https://github.com/dmlc/xgboost/tree/master/demo/binary_classification 
+
+More Info on xgboost: https://xgboost.readthedocs.org/en/latest/
+https://github.com/dmlc/xgboost
+

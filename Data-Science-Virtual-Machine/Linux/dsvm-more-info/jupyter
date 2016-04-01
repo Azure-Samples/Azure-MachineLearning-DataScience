@@ -1,0 +1,27 @@
+Jupyter Notebook Server
+======================
+
+Anaconda Python distribution comes with a Jupyter notebook, an browser based environment to explore data, share code and analysis.
+
+Setting up password for Notebook Server
+=======================================
+
+The notebook server comes with a default password that you need to update as a one time task. Here are the steps to set a strong password for the Jupyter notebook server. 
+ 
+Run the following command from the shell on the Data Science Virtual Machine to create your own strong password for the Jupyter notebook server installed on the machine.
+
+	python.exe -c "import IPython;print IPython.lib.passwd()"
+
+Choose a strong password when prompted.
+
+You will see the password hash in the format "sha1:xxxxxx" in the output. Copy this password hash and replace the existing hash that is in your notebook config file located at: "/usr/local/etc/jupyter/jupyter_notebook_config.py" with a parameter name "c.NotebookApp.password". You will need to edit this file as root. 
+
+You should only replace the existing hash value that is within the quotes. The quotes and the sha1: prefix for the parameter value need to be retained.
+
+Finally, you need to stop and restart the Jupyter service that is installed in /etc/init.d/jupyter. If your new password is not accepted after restarting jupyter or you have issues stopping jupyter, try restarting the virtual machine.
+
+Accessing the notebook:
+
+A Jupyter notebook server has been pre-configured with Python 2, Python 3 and R kernels. If you are on the VM through X2go client, you can click on a desktop icon named "Jupyter" to launch the browser to access the Notebook server. You can also visit the URL -  https://localhost:9999/ from a web browser to access the Jupyter notebook server (Note: Continue if you get any certificate warnings.). You can access the Jupyter notebook server from any remote host by  just entering the URL -  https://<VM DNS name or IP Address>:9999/. We have packaged a few sample notebooks. You can see the link to the samples on the notebook home page after you authenticate to the Jupyter notebook using the password you created in earlier step. You can create a new notebook by selecting "New" and then the language kernel. If you dont see the "New" button, click on the Jupyter icon on the top left to go to the home page of the notebook server. 
+
+The Jupyter notebook server listening on port 9999 is setup to run from /etc/init.d/jupyter and will be started automatically when you boot up the VM.  If you want to reconfigure the notebook server you can edit the file "/usr/local/etc/jupyter/jupyter_notebook_config.py" as root/sudo. 

@@ -1,0 +1,80 @@
+#!/bin/bash
+
+
+calculate_dimensions() {
+  WT_HEIGHT=20
+  WT_WIDTH=$(tput cols)
+
+  if [ -z "$WT_WIDTH" ] || [ "$WT_WIDTH" -lt 60 ]; then
+    WT_WIDTH=80
+  fi
+  if [ "$WT_WIDTH" -gt 178 ]; then
+    WT_WIDTH=160
+  else
+      WT_WIDTH=$(($WT_WIDTH-4))
+  fi
+
+  WT_H=$(tput lines)
+
+  if [ "$WT_H" -gt 35 ]; then
+    WT_HEIGHT=35
+  fi
+
+  WT_MENU_HEIGHT=10
+}
+
+show_info() {
+    whiptail --title "$1" --scrolltext --textbox "$2" $WT_HEIGHT $WT_WIDTH
+}
+
+while true; do
+    calculate_dimensions
+    CHOICE=$(whiptail --title "Linux Data Science Virtual Machine" \
+        --menu "Get more info on data science tools pre-installed on this machine." "$WT_HEIGHT" "$WT_WIDTH" "$WT_MENU_HEIGHT" \
+        --ok-button "More Info" \
+        --cancel-button "Close" \
+        "Anaconda Python Distribution" "Enterprise ready Python distribution with several data analytics libraries" \
+        "Azure Machine Learning Libraries" "Libraries to work with Azure Machine Learning in the cloud" \
+        "Azure Tools" "Tools and libraries to work with Azure services" \
+        "Database Tools" "Manage and query relational databases" \
+        "Development Tools" "IDEs and code editors" \
+        "Jupyter Notebook Server(R, Python)" "Browser based interactive data science and scientific computing " \
+        "Machine Learning Tools" "Tools to run ML algorithms locally(CNTK, R,  Scikit-learn, Vowpal Wabbit, xgboost and more)" \
+        "Microsoft R Open" "Open Source, Enhanced distribution of R with Math Kernel Library" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+  if [ $RET -eq 1 ]; then
+      exit 1
+  elif [ $RET -eq 0 ]; then
+      case "$CHOICE" in
+          Anaconda*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/anaconda"
+              ;;
+          Azure\ Machine\ Learning*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/azureml"
+              ;;
+          Azure\ Tools*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/azure"
+              ;;
+          Database*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/dbtools"
+              ;;
+          Development*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/devtools"
+              ;;
+          Jupyter*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/jupyter"
+              ;;
+          Machine\ Learning*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/mltools"
+              ;;
+          Microsoft\ R*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/microsoftR"
+              ;;
+          More*)
+              show_info "$CHOICE" "/usr/share/dsvm-more-info/more"
+              ;;
+      esac
+  fi
+done
+

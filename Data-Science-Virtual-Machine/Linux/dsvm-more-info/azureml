@@ -1,0 +1,14 @@
+Azure Machine Learning (ML) is a fully managed cloud service that enables you to easily build, deploy, and share predictive analytics solutions. You build your experiments and models from the Azure Machine Learning Studio. It can be accessed from a web browser on the data science virtual machine by visiting https://studio.azureml.net.
+
+Once you login to the Azure Machine Learning Studio, you will have access to an experimentation canvas where you can build your ML workflows. You also have access to a Jupyter Notebook hosted on Azure ML and can work seamlessly with the Experimentation. Azure ML lets you build your ML models and wrap them in a web service interface for operationalization. This enables clients written in any language to invoke predictions from the ML models. You can find more information about Azure ML on the documentation page:
+https://azure.microsoft.com/documentation/services/machine-learning/
+
+You can also build your models in R or Python on the VM and deploy it in production on Azure ML. We have installed libraries in R and Python to enable this functionality. 
+
+The library in R is called "AzureML". In Python it is called "azureml". 
+
+For information on how to deploy models in R and Python into Azure ML please refer to the following article (written for the Windows version of the Data Science VM. This item is applicable to the Linux VM too):
+
+https://azure.microsoft.com/en-us/documentation/articles/machine-learning-data-science-vm-do-ten-things/#3-build-models-using-r-or-python-and-operationalize-them-using-azure-machine-learning
+
+

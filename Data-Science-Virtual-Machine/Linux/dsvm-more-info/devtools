@@ -1,0 +1,10 @@
+Software Development tools on the Data Science Virtual Machine
+==============================================================
+
+You have choice of several code editors. This includes vi/VIM, Emacs, gEdit and Eclipse. gEdit and Eclipse are graphical editors and need you to be logged in to a graphical desktop. These editors have desktop and application menu shortcuts to launch them. 
+
+VIM and Emacs are text based editors. Emacs has an add-on package called ESS (Emacs Speaks Statistics) that makes working with R easier within Emacs. More info can be found at: http://ess.r-project.org/. 
+
+Eclipse is an open source, extensible IDE supporting multiple languages. This instance is the Java developers edition. There are plugins available for several popular languages that you can install to extend the Eclipse environment. We also have a plugin installed in Eclipse called Azure Toolkit for Eclipse which allows you to easily create, develop, test, and deploy Azure applications using the Eclipse development environment supporting languages like Java. There is also Azure SDK for Java that allows access to different Azure services from a Java environment. More information on Azure toolkit for Eclipse can be found at: https://azure.microsoft.com/documentation/articles/azure-toolkit-for-eclipse/.
+
+LaTex is installed through the texlive package along with an Emacs add-on package "auctex" (https://www.gnu.org/software/auctex/manual/auctex/auctex.html) which simplifies authoring your LaTex documents within Emacs.  
