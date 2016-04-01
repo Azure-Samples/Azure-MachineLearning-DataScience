@@ -8,3 +8,7 @@ VIM and Emacs are text based editors. Emacs has an add-on package called ESS (Em
 Eclipse is an open source, extensible IDE supporting multiple languages. This instance is the Java developers edition. There are plugins available for several popular languages that you can install to extend the Eclipse environment. We also have a plugin installed in Eclipse called Azure Toolkit for Eclipse which allows you to easily create, develop, test, and deploy Azure applications using the Eclipse development environment supporting languages like Java. There is also Azure SDK for Java that allows access to different Azure services from a Java environment. More information on Azure toolkit for Eclipse can be found at: https://azure.microsoft.com/documentation/articles/azure-toolkit-for-eclipse/.
 
 LaTex is installed through the texlive package along with an Emacs add-on package "auctex" (https://www.gnu.org/software/auctex/manual/auctex/auctex.html) which simplifies authoring your LaTex documents within Emacs.  
+
+In addition to Python, R, and Java you can also use node.js, Perl, PHP, Ruby to build your applications on the VM. Azure SDK for node.js, PHP and Ruby are installed. You can find more information about the Azure SDK for all supported platforms and languages at: https://azure.microsoft.com/en-us/downloads/. 
+
+For other platforms or languages you can explore the REST APIs provided by Azure. You can find pointers to  REST API of various  Azure services at: https://msdn.microsoft.com/en-us/library/azure/mt420159.aspx
