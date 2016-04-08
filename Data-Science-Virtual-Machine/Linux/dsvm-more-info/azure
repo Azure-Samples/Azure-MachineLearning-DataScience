@@ -1,0 +1,14 @@
+The Data Science VM comes with tools and libraries to access various services in Azure. The following are the key tools and libraries:
+
+* Azure Command Line Interface: Azure command line interface (CLI) allows you to create and manage Azure resources through the shell. To invoke the Azure tools just type "azure help". For more information, please refer to the Azure CLI documentation page found at: https://azure.microsoft.com/documentation/articles/virtual-machines-command-line-tools/.
+
+* Microsoft Azure Storage Explorer : The Microsoft Azure Storage Explorer is a graphical tool used to browse through the objects that you have stored within your Azure Storage Account, upload/download data in Azure blobs. You can access the Storage Explorer from desktop shortcut icon. You can invoke it from a shell prompt by typing "StorageExplorer". You need to be logged in from X2go client or have X11 forwarding setup. 
+
+* Azure Libraries: We have installed several libraries. The following are the some of the librariues available for you:
+    - Python: The Azure related libraries in Python that are installed are "azure", "azureml", "pydocumentdb", "pyodbc". These libraries allow you to access Azure storage services, Azure Machine Learning, Azure DocumentDB (a NoSQL database on Azure). pyodbc along with Microsoft ODBC driver for SQL Server enables access to Microsoft SQL Server, Azure SQL Database and Azure SQL Datawarehouse from Python using ODBC interface. Please enter "pip list" to see all the listed library. Be sure to run this command in both Python 2.7 and 3.5 environment. 
+
+    - R: The Azure related libraries in R that are installed are "AzureML" The "RODBC" library provides access ODBC data sources like Azure SQL Datawarehouse, Azure SQL Databases. 
+
+    - Java: The list of Azure Java libraries can be found in the directory "/dsvm/sdk/AzureSDKJava" on the VM. The key libraries are Azure storage and management APIs, DocumentDB and JDBC drivers for SQL Server.  
+
+You can access the Azure portal (https://portal.azure.com) from the pre-installed Firefox browser. You can install other browsers. On the Azure portal you can create, manage and monitor Azure resources. 

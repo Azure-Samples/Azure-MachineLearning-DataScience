@@ -13,41 +13,37 @@ function ReadHostInput(){
 
 	$Script:RandomNumber = Get-Random -minimum 100 -maximum 999
 
+	#Intermediate resources 
 	$Script:KeyAlias = 'KeyAlias' + '_' + $RandomNumber
-    
+    $Script:ContainerName = $ContainerName0 + '-' + $RandomNumber
     $Script:nyctaxi_trip_storage = 'nyctaxi_trip_storage' + '_' + $RandomNumber
 	$Script:nyctaxi_fare_storage = 'nyctaxi_fare_storage' + '_' + $RandomNumber
 	$Script:csv_file_format = 'csv_file_format' + '_' + $RandomNumber
 	$Script:external_nyctaxi_trip = 'external_nyctaxi_trip' + '_' + $RandomNumber
 	$Script:external_nyctaxi_fare = 'external_nyctaxi_fare' + '_' + $RandomNumber
 
-	#Specify your table names
+	#Specify your schema and table names
+	$Script:SchemaName = Read-Host -Prompt 'Input the schema name for your NYC Taxi data to avoid conflict with other users of the same SQL Data Warehouse' 
+
+	#if(($Script:SchemaName = Read-Host "Input the schema name for your NYC Taxi data[nyctaxischema]") -eq ''){
+    #    $Script:SchemaName = "nyctaxischema"
+    #    Write-Host "Taking default schema $SchemaName for NYC Taxi Trip table." -ForegroundColor "Yellow"
+    #}
 	
-	if(($TripTableName0 = Read-Host "Input the NYC Taxi Trip table name[nyctaxitrip]") -eq ''){
-        $TripTableName0 = "nyctaxitrip"
-        Write-Host "Taking default name $TripTableName0 for NYC Taxi Trip table." -ForegroundColor "Yellow"
+	if(($Script:TripTableName = Read-Host "Input the NYC Taxi Trip table name[nyctaxitrip]") -eq ''){
+        $Script:TripTableName = "nyctaxitrip"
+        Write-Host "Taking default name $TripTableName for NYC Taxi Trip table." -ForegroundColor "Yellow"
     }
-	if(($FareTableName0 = Read-Host "Input the NYC Taxi Fare table name[nyctaxifare]") -eq ''){
-        $FareTableName0 = "nyctaxifare"
-        Write-Host "Taking default name $FareTableName0 for NYC Taxi Fare table." -ForegroundColor "Yellow"
+	if(($Script:FareTableName = Read-Host "Input the NYC Taxi Fare table name[nyctaxifare]") -eq ''){
+        $Script:FareTableName = "nyctaxifare"
+        Write-Host "Taking default name $FareTableName for NYC Taxi Fare table." -ForegroundColor "Yellow"
     }
-	if(($SampleTableName0 = Read-Host "Input the NYC Taxi Sample table name[nyctaxisample]") -eq ''){
-        $SampleTableName0 = "nyctaxisample"
-        Write-Host "Taking default name $SampleTableName0 for NYC Taxi Sample table." -ForegroundColor "Yellow"
+	if(($Script:SampleTableName = Read-Host "Input the NYC Taxi Sample table name[nyctaxisample]") -eq ''){
+        $Script:SampleTableName = "nyctaxisample"
+        Write-Host "Taking default name $SampleTableName for NYC Taxi Sample table." -ForegroundColor "Yellow"
     }
-    $yesorno = Read-Host -Prompt "Do you want to add random numbers between 100 and 999 to the end ot container and table names to avoid conflict with other users of the same Azure storage account and/or SQL Data Warehouse?Y/[N]"
-    if ($yesorno -eq "" -Or $yesorno.ToLower() -eq 'n'){
-        $Script:ContainerName = $ContainerName0
-	    $Script:TripTableName = $TripTableName0
-	    $Script:FareTableName = $FareTableName0
-	    $Script:SampleTableName = $SampleTableName0
-    } else{
-        $Script:ContainerName = $ContainerName0 + '-' + $RandomNumber
-        $Script:TripTableName = $TripTableName0 + '_' + $RandomNumber
-	    $Script:FareTableName = $FareTableName0 + '_' + $RandomNumber
-	    $Script:SampleTableName = $SampleTableName0 + '_' + $RandomNumber
-    }
-	Write-host "The tables created in your SQL DW are $TripTableName , $FareTableName and $SampleTableName. " -ForegroundColor "Yellow"
+
+	Write-host "The tables created in your SQL DW are $SchemaName.$TripTableName , $SchemaName.$FareTableName and $SchemaName.$SampleTableName. " -ForegroundColor "Yellow"
 
 }
 
@@ -68,13 +64,14 @@ function ReadConfFile(){
             "Database" {$Script:Database = $ParmValue}
             "Username" {$Script:Username = $ParmValue}
             "Password" {$Script:Password = $ParmValue}
+			"SchemaName" {$Script:SchemaName = $ParmValue}
 			"TripTableName" {$Script:TripTableName = $ParmValue}
             "FareTableName" {$Script:FareTableName = $ParmValue}
 			"SampleTableName" {$Script:SampleTableName = $ParmValue}
 
         }
     }
-    return $ContainerName, $TripTableName, $FareTableName, $SampleTableName
+    return $ContainerName, $TripTableName, $FareTableName, $SampleTableName, $SchemaName
 
 }
 
@@ -88,6 +85,7 @@ function WriteConfFile(){
             "Database : $Database",
             "Username : $Username",
             "Password : $Password",
+			"SchemaName : $SchemaName",
 			"TripTableName : $TripTableName",
 			"FareTableName : $FareTableName",
 			"SampleTableName : $SampleTableName"
@@ -191,6 +189,11 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
 				    $SQLPacket += "SET @external_nyctaxi_fare = '" + $external_nyctaxi_fare + "'`n"
                     #Write-host "$external_nyctaxi_fare"
 				}	
+				Elseif($SQLString.ToLower() -match "set @schemaname")
+				{
+				    $SQLPacket += "SET @schemaname = '" + $SchemaName + "'`n"
+                    #Write-host "$SchemaName"
+				}				
 				Elseif($SQLString.ToLower() -match "set @nyctaxi_trip")
 				{
 				    $SQLPacket += "SET @nyctaxi_trip = '" + $TripTableName + "'`n"
@@ -261,7 +264,7 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
         try 
         { 
             $SQLCommand = New-Object System.Data.SqlClient.SqlCommand($SQLCommandText, $SQLConnection) 
-            $SQLCommand.CommandTimeout = 0
+            $SQLCommand.CommandTimeout = 6000
             $SQLCommand.ExecuteScalar() 
         } 
         catch 
@@ -275,6 +278,40 @@ function ExecuteSQLFile($sqlfile,$go_or_not)
     Write-Host $sqlfile "execution done"
 }
 
+function PluginParameters($filename,$psversion)
+{
+    if ($psversion -ge 3){
+        (gc $filename).replace('<schemaname>.<nyctaxi_trip>', "$SchemaName.$TripTableName") | sc $filename
+        (gc $filename).replace('<schemaname>.<nyctaxi_fare>', "$SchemaName.$FareTableName") | sc $filename
+        (gc $filename).replace('<schemaname>.<nyctaxi_sample>', "$SchemaName.$SampleTableName") | sc $filename
+        (gc $filename).replace('<nyctaxi_trip>', "$TripTableName") | sc $filename
+        (gc $filename).replace('<nyctaxi_fare>', "$FareTableName") | sc $filename
+        (gc $filename).replace('<nyctaxi_sample>', "$SampleTableName") | sc $filename
+        (gc $filename).replace('<schemaname>', "$SchemaName") | sc $filename
+
+        (gc $filename).replace('<server name>', $Server) | sc $filename
+        (gc $filename).replace('<database name>', $Database) | sc $filename
+        (gc $filename).replace('<user name>', $Username) | sc $filename
+        (gc $filename).replace('<password>', $Password) | sc $filename
+        (gc $filename).replace('<database driver>', 'SQL Server Native Client 11.0') | sc $filename
+    } 
+    else {
+        (gc $filename) -replace '<schemaname>.<nyctaxi_trip>', "$SchemaName.$TripTableName"
+        (gc $filename) -replace '<schemaname>.<nyctaxi_fare>', "$SchemaName.$FareTableName"
+        (gc $filename) -replace '<schemaname>.<nyctaxi_sample>', "$SchemaName.$SampleTableName"
+        (gc $filename) -replace '<nyctaxi_trip>', "$TripTableName"
+        (gc $filename) -replace '<nyctaxi_fare>', "$FareTableName"
+        (gc $filename) -replace '<nyctaxi_sample>', "$SampleTableName"
+        (gc $filename) -replace '<schemaname>', "$SchemaName"
+
+        		
+		(gc $filename) -replace '<server name>', $Server
+        (gc $filename) -replace '<database name>', $Database
+        (gc $filename) -replace '<user name>', $Username
+        (gc $filename) -replace '<password>', $Password
+        (gc $filename) -replace '<database driver>', 'SQL Server Native Client 11.0'
+    }
+}
 
 
 #-------------------------------------------------------------------#
@@ -295,6 +332,7 @@ $nyctaxi_fare_storage = ""
 $external_nyctaxi_fare = ""
 $external_nyctaxi_trip = ""
 $csv_file_format = ""
+$SchemaName = ""
 $TripTableName = ""
 $FareTableName = ""
 $SampleTableName = ""
@@ -312,19 +350,17 @@ If (Test-Path $conf_file){
     $external_nyctaxi_fare = 'external_nyctaxi_fare' + '_' + $New_RandomNumber
     $external_nyctaxi_trip = 'external_nyctaxi_trip' + '_' + $New_RandomNumber
     $csv_file_format = 'csv_file_format' + '_' + $New_RandomNumber
-    $yesorno = Read-Host -Prompt "Do you want to add random numbers between 100 and 999 to the end of table names to avoid conflict with other users of the same SQL Data Warehouse?Y/[N]"
-    if ($yesorno -eq "" -Or $yesorno.ToLower() -eq 'n'){
-	    $TripTableName = $ConfResults[1]
-	    $FareTableName = $ConfResults[2]
-	    $SampleTableName = $ConfResults[3]
-    } else{
-        $TripTableName = Generate_new_names $ConfResults[1] $New_RandomNumber '_'
-        $FareTableName = Generate_new_names $ConfResults[2] $New_RandomNumber '_' 
-        $SampleTableName = Generate_new_names $ConfResults[3] $New_RandomNumber '_'
-        Write-host "The tables created in your SQL DW are $TripTableName , $FareTableName and $SampleTableName. " -ForegroundColor "Yellow"
-        Write-Host "Overwriting existing configuration file $conf_file..." -ForegroundColor "Yellow"
-        WriteConfFile
+    $TripTableName = $ConfResults[1]
+	$FareTableName = $ConfResults[2]
+	$SampleTableName = $ConfResults[3]
+    $SchemaName0 = Generate_new_names $ConfResults[4] $New_RandomNumber '_'
+    $SchemaName = Read-Host -Prompt "Please input a new schema name [$SchemaName0]"
+    if ($SchemaName -eq ""){
+        $SchemaName = $SchemaName0
     }
+    Write-host "The tables created in your SQL DW are $SchemaName.$TripTableName , $SchemaName.$FareTableName and $SchemaName.$SampleTableName. " -ForegroundColor "Yellow"
+    Write-Host "Overwriting existing configuration file $conf_file..." -ForegroundColor "Yellow"
+    WriteConfFile
     
   } else{
     ReadHostInput
@@ -399,9 +435,9 @@ try
     Write-Host "This step (loading data from your private blob to SQLDW) takes $total_seconds seconds." -ForegroundColor "Green"
 
 	
-	$qa1 = "select count(*) from $TripTableName"
-	$qa2 = "select count(*) from $FareTableName"
-	$qa3 = "select count(*) from $SampleTableName"
+	$qa1 = "select count(*) from $SchemaName.$TripTableName"
+	$qa2 = "select count(*) from $SchemaName.$FareTableName"
+	$qa3 = "select count(*) from $SchemaName.$SampleTableName"
 
 	$SQLCommand = New-Object System.Data.SqlClient.SqlCommand($qa1, $SQLConnection) 
     $SQLCommand.CommandTimeout = 0
@@ -422,61 +458,11 @@ try
 
     Write-Host "Plug in the parameterized table names in SQL script file" -Foregroundcolor "Yellow"
     $start_time = Get-Date
-    if($PSVersionTable.WSManStackVersion.Major -ge 3)
-    {
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.sql
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.sql
-        (gc ./SQLDW_Explorations.sql).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.sql
-
-
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations.ipynb
-
-        (gc ./SQLDW_Explorations.ipynb).replace('<server name>', $Server) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<database name>', $Database) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<user name>', $Username) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<password>', $Password) | sc ./SQLDW_Explorations.ipynb
-        (gc ./SQLDW_Explorations.ipynb).replace('<database server>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations.ipynb
-
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_trip>', $TripTableName) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_fare>', $FareTableName) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<nyctaxi_sample>', $SampleTableName) | sc ./SQLDW_Explorations_Scripts.py
-
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<server name>', $Server) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<database name>', $Database) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<user name>', $Username) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<password>', $Password) | sc ./SQLDW_Explorations_Scripts.py
-        (gc ./SQLDW_Explorations_Scripts.py).replace('<database driver>', 'SQL Server Native Client 11.0') | sc ./SQLDW_Explorations_Scripts.py
-    }
-    else
-    {
-
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_trip>', $TripTableName
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_fare>', $FareTableName
-        (gc ./SQLDW_Explorations.sql) -replace '<nyctaxi_sample>', $SampleTableName
-
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_trip>', $TripTableName
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_fare>', $FareTableName
-        (gc ./SQLDW_Explorations.ipynb) -replace '<nyctaxi_sample>', $SampleTableName
-		
-		(gc ./SQLDW_Explorations.ipynb) -replace '<server name>', $Server
-        (gc ./SQLDW_Explorations.ipynb) -replace '<database name>', $Database
-        (gc ./SQLDW_Explorations.ipynb) -replace '<user name>', $Username
-        (gc ./SQLDW_Explorations.ipynb) -replace '<password>', $Password
-        (gc ./SQLDW_Explorations.ipynb) -replace '<database server>', 'SQL Server Native Client 11.0'
-
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_trip>', $TripTableName
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_fare>', $FareTableName
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<nyctaxi_sample>', $SampleTableName
-		
-		(gc ./SQLDW_Explorations_Scripts.py) -replace '<server name>', $Server
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database name>', $Database
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<user name>', $Username
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<password>', $Password
-        (gc ./SQLDW_Explorations_Scripts.py) -replace '<database driver>', 'SQL Server Native Client 11.0'
-    }
-
+    
+    PluginParameters "./SQLDW_Explorations.sql" $PSVersionTable.WSManStackVersion.Major
+    PluginParameters "./SQLDW_Explorations.ipynb" $PSVersionTable.WSManStackVersion.Major
+    PluginParameters "./SQLDW_Explorations_Scripts.py" $PSVersionTable.WSManStackVersion.Major
+    
     $end_time = Get-Date
     $time_span = $end_time - $start_time
     $total_seconds = [math]::Round($time_span.TotalSeconds,2)
@@ -498,8 +484,13 @@ try
 
 
 	##If you want to drop the temporary tables you created, please execute the following line:
-	Invoke-Sqlcmd -ServerInstance $Server  -Database $Database -Username $Username -Password $Password -InputFile DeleteResourcesOnSQLDW.sql -QueryTimeout 200000
-	
+	$start_time = Get-Date
+	ExecuteSQLFile $DeleteTable_file 0
+	$end_time = Get-Date
+    $time_span = $end_time - $start_time
+    $total_seconds = [math]::Round($time_span.TotalSeconds,2)
+    Write-Host "Deleting intermediate resources finished." -ForegroundColor "Yellow"
+    Write-Host "This step (deleting intermediate resources) takes $total_seconds seconds." -ForegroundColor "Green"
 }
 catch
 {

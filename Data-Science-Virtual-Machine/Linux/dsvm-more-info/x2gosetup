@@ -1,0 +1,50 @@
+Remote Graphical desktop
+========================
+
+You can connect to the Linux Data Science Virtual Machine (DSVM) using a graphical desktop. In order to achieve good performance, we recommend using the X2go client on you client computer from where you will connect to the remote server (the data science virtual machine).
+
+Installing X2go Client
+======================
+
+As per documentation (http://wiki.x2go.org/doku.php/doc:newtox2go#installation_and_use)  from X2go website : "The X2Go Client is the application that allows one to connect to a remote server and display a graphical desktop / application on the client machine. X2Go Client requires a local X11 server to display the remote sessions. On MS Windows such an X11 server is shipped with X2Go Client. On Linux, the client part of X2Go uses the local Xorg server, on Mac OS X, the XQuartz X11 server needs to be installed as an extra component."
+
+We have already pre-instaled and configured the X2go server on the Linux DSVM.
+
+To install the client please follow the instruction for your client platform (Windows, OS X, Linux) found at: http://wiki.x2go.org/doku.php/doc:installation:x2goclient
+
+Briefly we summarize the steps below:
+
+Windows
+=======
+
+1. Download the latest X2go client from the link found on http://wiki.x2go.org/doku.php/doc:installation:x2goclient.
+
+2. Run the latest EXE (installer) that you download from code.x2go.org.
+
+3. On the start menu, type "X2go client" and execute the desktop app that has been installed on your client machine.
+
+4. Create a new session and enter following parameters:
+        Host: Enter the DNS name or IP address of the VM
+        SSH Port: Leave it at default. (Port 22)
+        Session Type: MUST CHOOSE XFCE ONLY (Since that is the only window manager installed on the VM).
+
+        You can turn off audio and client printing (on the Media tab of the X2Go client).
+
+Now you are ready to connect to the Linux DSVM from the X2go client.
+
+
+Mac / OS X
+==========
+
+1. Install Xquartz since X2go client uses the Xquartz as the X11 server
+
+2. Download the latest binary (.dmg file) for your OS X version from http://code.x2go.org/releases/binary-macosx/x2goclient/releases/
+
+3. Open the .dmg and install
+
+Please use the official X2go documentation to install X2Go client on your distribution of Linux. You can find this info at: http://wiki.x2go.org/doku.php/doc:installation:x2goclient#ubuntu_debian
+
+NOTE: X2Go client can be configured for slower internet connections on the "Connection" tab when you create or edit a session.
+
+As an alternative, you can use your SSH client X11 forwarding. In our tests, we found the interface over X11 forwarding to be quite slow in responding to input and refreshing screens.
+

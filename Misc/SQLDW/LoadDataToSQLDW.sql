@@ -1,4 +1,3 @@
-
 DECLARE @StorageAccountKey varchar(255)
 SET @StorageAccountKey = 'x'
 
@@ -27,6 +26,9 @@ SET @external_nyctaxi_trip = 'x'
 DECLARE @external_nyctaxi_fare varchar(255)
 SET @external_nyctaxi_fare = 'x'
 
+DECLARE @schemaname varchar(255)
+SET @schemaname = 'x'
+
 DECLARE @nyctaxi_trip varchar(255)
 SET @nyctaxi_trip = 'x'
 
@@ -39,13 +41,9 @@ SET @nyctaxi_sample = 'x'
 DECLARE @load_data_template varchar(8000)
 SET @load_data_template = '
 
-BEGIN TRY
-	--Try to create the master key
-    CREATE MASTER KEY
-END TRY
-BEGIN CATCH
-	--If the master key exists, do nothing
-END CATCH;
+--Create a schema
+--CREATE SCHEMA {schemaname}; 
+EXEC (''CREATE SCHEMA {schemaname};'');
 
 -- Create a database scoped credential
 CREATE DATABASE SCOPED CREDENTIAL {KeyAlias} 
@@ -136,7 +134,7 @@ with (
 )
 -- Load data from Azure blob storage to SQL Data Warehouse 
 
-CREATE TABLE {nyctaxi_fare}
+CREATE TABLE {schemaname}.{nyctaxi_fare}
 WITH 
 (   
     CLUSTERED COLUMNSTORE INDEX,
@@ -147,7 +145,7 @@ SELECT *
 FROM   {external_nyctaxi_fare}
 ;
 
-CREATE TABLE {nyctaxi_trip}
+CREATE TABLE {schemaname}.{nyctaxi_trip}
 WITH 
 (   
     CLUSTERED COLUMNSTORE INDEX,
@@ -159,7 +157,7 @@ FROM   {external_nyctaxi_trip}
 ;
 
 --- Create sample table using Trip and Fare table
-CREATE TABLE {nyctaxi_sample}
+CREATE TABLE {schemaname}.{nyctaxi_sample}
 WITH 
 (   
     CLUSTERED COLUMNSTORE INDEX,
@@ -176,7 +174,7 @@ AS
                         WHEN (tip_amount > 10 AND tip_amount <= 20) THEN 3
                         ELSE 4
                     END
-	    FROM {nyctaxi_trip} t, {nyctaxi_fare} f
+	    FROM {schemaname}.{nyctaxi_trip} t, {schemaname}.{nyctaxi_fare} f
     	WHERE datepart("mi",t.pickup_datetime) = 1
 		AND t.medallion = f.medallion
     	AND   t.hack_license = f.hack_license
@@ -185,7 +183,6 @@ AS
         AND   dropoff_longitude <> ''0''
 )
 ;
-
 
 '
 
@@ -199,6 +196,7 @@ SET @sql_script = REPLACE(@sql_script, '{nyctaxi_fare_storage}', @nyctaxi_fare_s
 SET @sql_script = REPLACE(@sql_script, '{csv_file_format}', @csv_file_format)
 SET @sql_script = REPLACE(@sql_script, '{external_nyctaxi_trip}', @external_nyctaxi_trip)
 SET @sql_script = REPLACE(@sql_script, '{external_nyctaxi_fare}', @external_nyctaxi_fare)
+SET @sql_script = REPLACE(@sql_script, '{schemaname}', @schemaname)
 SET @sql_script = REPLACE(@sql_script, '{nyctaxi_trip}', @nyctaxi_trip)
 SET @sql_script = REPLACE(@sql_script, '{nyctaxi_fare}', @nyctaxi_fare)
 SET @sql_script = REPLACE(@sql_script, '{nyctaxi_sample}', @nyctaxi_sample)

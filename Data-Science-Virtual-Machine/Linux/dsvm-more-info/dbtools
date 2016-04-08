@@ -1,0 +1,41 @@
+The open source database Postgres is available on the VM with the services running and initdb already completed. You still need to create databases and users. Please refer to Postgres documentation found at http://www.postgresql.org/docs/9.2/static/index.html. 
+
+In order access SQL Server databases on-prem or on the cloud OR Azure SQL Data Warehouse, we have provided ODBC, JDBC drivers. 
+
+SQuirreL SQL Client:
+====================
+
+A graphical SQL client - SQuirrel SQL has been provided to connect to  different databases (Microsoft SQL Server, Postgres, MySQL etc) and run SQL queries. You can run this from a graphical desktop session (using X2Go client) or a SSH session with X11 forwarding. To invoke SQuirrel SQL you can either launch it from the icon on the desktop OR  run the following command on the shell. 
+
+/usr/local/squirrel-sql-3.7/squirrel-sql.sh 
+
+
+The first time you need to setup your drivers and database aliases. The JDBC drivers are located at:
+
+/usr/share/java/jdbcdrivers
+
+More information on SQuirrel SQL can be found at: http://squirrel-sql.sourceforge.net/index.php?page=screenshots
+
+Command Line tools for accessing Microsoft SQL Server:
+======================================================
+
+The ODBC driver package for Microsoft SQL Server also comes with two command line tools:
+
+bcp - The bcp utility bulk copies data between an instance of Microsoft SQL Server and a data file in a user-specified format. The bcp utility can be used to import large numbers of new rows into SQL Server tables or to export data out of tables into data files. To import data into a table, you must either use a format file created for that table or understand the structure of the table and the types of data that are valid for its columns. 
+
+More Info: https://msdn.microsoft.com/en-us/library/hh568446(v=sql.110).aspx
+
+sqlcmd - The sqlcmd utility lets you enter Transact-SQL statements, system procedures, and script files at the command prompt. This utility uses ODBC to execute Transact-SQL batches.
+
+More info: https://msdn.microsoft.com/en-us/library/hh568447(v=sql.110).aspx
+
+Note: There are some differences in this utility between Linux and Windows platform. Please see the documentation page above for details. 
+
+
+Database Access Libraries:
+==========================
+
+There are libraries available in Python and R to access databases. In R, the RODBC package or dplyr package allows you to query or execute SQL statements on the database server. In Python, the pyodbc library provides database access with ODBC as the underlying layer.  To access Postgres from Python you can also use the "psycopg2" library. For accessing Postgres from R you can also use the package "RPostgreSQL".
+
+
+

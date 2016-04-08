@@ -1,0 +1,8 @@
+Microsoft R Open
+================
+
+R is one of the most popular language for data analysis and machine learning. If you wish to use R for your analytics, the VM has Microsoft R Open (MRO) with the Math Kernel Library (MKL) which optimizes the math operations common in analytical algorithms. MRO is 100% compatible with CRAN-R and you can install any of the R libraries published in CRAN on the MRO installation.  You can edit your R programs in one of the default editors like vi, emacs or gedit. You can  download and use other IDEs as well such as RStudio (http://www.rstudio.com). For your convenience, a simple script (installRStudio.sh) is provided in the "/dsvm/tools" directory to allow you to install RStudio. In addition we have also installed the Emacs package ESS (Emacs Speaks Statistics) that simplifies working with R files within Emacs editor.  
+
+To launch R, you just type R in the shell. You will be taken to an interactive environment. To develop you R program you will typical use an editor like Emacs or vi or gedit and then run the scripts within R. If you install RStudio you will have a full graphical IDE environment to develop  your R program. 
+
+There is also a R script to install the top 20 R packages (from http://www.kdnuggets.com/2015/06/top-20-r-packages.html). This script can be run once you are in the R interactive interface which can be entered by typing R in the shell.  

@@ -1,0 +1,36 @@
+Anaconda is a popular Python distribution containing several pre-built and tested scientific and analytic Python packages that include NumPy, Pandas, SciPy, Matplotlib, and IPython. It also provides a package management to easily download many more Python libraries just by entering "conda install <package name>".
+
+This installation contains both Python 2.7 and Python 3.5. Python 3.5 is the the instance in the default PATH. You can change this in the profile file (/etc/profile.d/dsvm.sh). 
+
+To activate Python 2.7 run the following from the shell:
+
+source /anaconda/bin/activate root
+
+Python 2.7 is installed at /anaconda/bin. 
+
+You can look at packages installed by running:
+pip list
+
+To activate Python 3.5 run the following from the shell:
+
+source /anaconda/bin/activate py35
+
+Python 3.5 is installed at /anaconda/envs/py35/bin
+
+You can look at packages installed in Python 3.5 by running:
+pip list
+
+
+To install any package try in the following order:
+
+conda install <package name>
+
+pip install <package name>
+
+You will be installing the package in the currently activated environment. 
+
+To run python interactively just type "python" in shell to run the currently activated version. If you are on a graphical (X2go) client, you can also use the Spyder IDE by typing "spyder". In addition you can use text editors like VIM, Emacs or gedit. 
+
+More info : https://docs.continuum.io/
+
+
