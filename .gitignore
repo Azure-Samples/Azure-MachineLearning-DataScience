@@ -191,3 +191,5 @@ ModelManifest.xml
 /Apps/Demos/SentimentChat/SentimentChat/Scripts/Chart.min.js
 /Apps/Demos/SentimentChat/SentimentChat/Scripts/Chart.Scatter.js
 Misc/DataScienceProcess/iPythonNotebooks/machine-Learning-data-science-process-sql-walkthrough.ipynb
+Misc/DataScienceProcess/iPythonNotebooks/machine-Learning-data-science-process-sql-walkthrough.ipynb
+*.ipynb
