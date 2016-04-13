@@ -1,0 +1,315 @@
+---
+title: "Scalable Data Analysis using Microsoft R Server (MRS) on Hadoop MapReduce: Using MRS on Azure HDInsight (Premium) for Exploring and Modeling the 2013 New York City Taxi Trip and Fare Data"
+date: "Tuesday, February April 19, 2016"
+output:
+  html_document:
+    fig_caption: yes
+    fig_width: 6
+    keep_md: yes
+    number_sections: yes
+    theme: journal
+    toc: yes
+---
+
+#### Authors: Debraj GuhaThakurta (deguhath@microsoft.com), Shauheen Zahirazami (shzahira@microsoft.com)
+
+##INTRODUCTION:
+
+###Context
+
+When it comes to scalable data analysis and ML, many data scientists are blocked or hindered by a variety of issues, such as the limitations of available functions to handle large data-sets efficiently, access to or knowledge about the appropriate infrastructure, and ability to produce operationalized pipelines and models that can be consumed easily in production. In this write-up we will try to show how Microsoft R server and HDInsight can help solve these issues. If you intend to follow the steps, it is worth noting that data preparation, setup as well as execution of these steps can take several hours, which may also depend on the size of the provisioned HDInsight cluster. <p>Most functions in open-source R operate on data-sets that fit in memory and cannot be distributed easily to run in Hadoop/MapReduce context. This creates severe challenges for data scientists to use these open-source R functions for scalable data analysis with big data-sets which are in the order of 10’s of Gbs or Terabytes. Microsoft’s R-server (MRS) runnning on distributed computing environments, such as Hadoop MapReduce and Spark, can be a valuable solution for scalable data analytics using R.
+
+Here we show an example of how to do data exploration and modeling with Microsoft R server (MRS) on a HDInsight Hadoop cluster using MapReduce. The data used for this exercise is the public NYC Taxi Trip and Fare data-set (2013, ~40 Gb, ~170 million rows) available from: http://www.andresmh.com/nyctaxitrips.
+
+We show examples of modeling with one set of hyper-parameters for each model. For optimal accuracy and speed, we advise sweeping over a hyper-parameter set with cross-validation to identify the best paramet-set. However keep in mind that this may take some time, so you may want to pour yourself a fresh cup of coffee or prepare a pot!
+
+
+###Highlights
+
+We will highlight the following with the examples shown here:
+
+1. Data exploration and plotting.
+
+2. Training machine learning models.
+
+3. Prediction and evaluation of accuracy.
+
+
+
+##PRE-MODELING STEPS: CLUSTER PROVISIONING, DATA-PREPARATION, AND PROBLEM ANALYSIS
+
+###Provisioning and setup of Premium HDInsight Hadoop cluster running MRS and R-studio server
+
+The premium tier offering for HDInsight includes R Server as part of your HDInsight cluster. This allows R scripts to use MapReduce to run distributed computations. The following link provides information on how to create a new R Server on HDInsight, then run R scripts using MapReduce: https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-get-started (Expected time for completion: about 2 hours)
+
+A HDInsight Hadoop R Server was provisioned using the instructions above with 2 head nodes (D12), 4 worker nodes (D12), and 1 R-server node (D4). Depending on size of the data-sets being processed, cluter may need to be scaled and configured appropriartely for processing and modeling data efficiently.
+
+R-studio server was installed on the R-server node using instructions provided here: https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-install-r-studio (Expected time for completion: 10 Minutes)
+
+Scripts were run by logging onto the R-studio server using http as described above.
+
+
+###Data preparation in Hive prior to ingestion into MRS
+
+The 2013 NYC taxi and fare data are available as a set of comma-separated values (CSV) files (~40GB uncompressed), comprising more than ~170 million individual trips and the fares paid for each trip. Each trip record includes the pickup and drop-off location and time, anonymized hack (driver’s) license number and medallion (taxi’s unique id) number. The data covers all trips in the year 2013 and is provided in the following datasets, called trip and fare, for each month.
+
+The fare and trip files were uploaded to blob-storage as per instructions provided in a previously published walkthrough: https://azure.microsoft.com/en-us/documentation/articles/machine-learning-data-science-process-hive-walkthrough (Expected time for completion (NYC Taxi data): about 3 hours)
+
+We used Hive queries to create two Hive tables for taxi and fare files, and join the two tables to get one file. The joined file was copied to HDFS of the HDI cluster from where it was ingested into MRS for exploration and modeling. Files were converted to composite xdfs format prior to modeling.
+
+
+###Problem Analysis and prediction tasks
+
+####Regression - predicting the tip amount ($) for taxi trips
+Here the task is to predict the amount of tip paid for each taxi trip using features of the taxi trip, such as trip distance, fare amount, number of passengers in trip, payment type (credit card, cash etc.), and time of the day for a trip.
+
+####Binary classification - predicting whether a taxi trip was tipped or not
+Here the task is to predict whether or not a tip was paid for a trip (binary classification). A tip amount that is greater than $0 is a positive example, while a tip amount of $0 is a negative example.
+
+
+One can use multiple modeling approaches for each task, we show one example for each.
+
+
+##DATA EXPLORATION, MODELING AND EVALUATION
+
+In this section we show the following steps with full NYC taxi and fare data (about 170 mil rows, 40 Gb):
+
+1. Setting compute context to MapReduce
+
+2. Data ingestion, conversion to xdf format
+
+3. Performing data exploration at scale using plotting functions
+
+4. Splitting data randomly into training and testing sets
+
+5. Building linear regression and binary classification models using training set
+
+6. Evaluation of the accuracy of the models on the test set
+
+
+
+###Set compute context to MapReduce and set input/output to HDFS
+
+```{r Setting MR Context}
+## This diverts outputs and messages to a sink file on the R-server node (where R-studio server is installed)
+system("rm /home/remoteuser/sinkFile.txt")
+sinkFile <- file("/home/remoteuser/sinkFile.txt", open = "wt")
+sink(sinkFile)
+
+bigDataDirRoot <- "/share" ;
+myNameNode <- "default";
+myPort <- 0;
+myHadoopCluster <- RxHadoopMR(
+  hdfsShareDir = bigDataDirRoot,
+  nameNode = myNameNode,
+  port= myPort,
+  hadoopSwitches = '-Dmapred.task.timeout=86400000 -Dmapreduce.input.fileinputformat.split.minsize=110000000 -libjars /etc/hadoop/conf',
+  consoleOutput    = TRUE);
+
+rxSetComputeContext(myHadoopCluster);
+hdfsFS <- RxHdfsFileSystem(hostName=myNameNode, port=myPort)
+```
+
+###Preparation of xdf files in HDFS
+####Note: We use the capture.output function to divert lengthly messages/outputs from MapReduce jobs to a sink file.
+```{r Create XDF Files}
+# Specify path to input file in HDFS
+inputFile <-file.path(bigDataDirRoot,"Data/JoinedTaxiTripFare.100.tsv");
+xdfOutFile <- file.path(bigDataDirRoot,"Data/taxiDSXdf");
+
+# Define coumn classes
+taxiColClasses <- c(medallion = "character", hack_license = "character",
+                    vendor_id =  "factor", rate_code = "factor",
+                    store_and_fwd_flag = "character", pickup_datetime = "character",
+                    dropoff_datetime = "character", pickup_hour = "numeric",
+                    pickup_week = "numeric", weekday = "numeric",
+                    passenger_count = "numeric", trip_time_in_secs = "numeric",
+                    trip_distance = "numeric", pickup_longitude = "numeric",
+                    pickup_latitude = "numeric", dropoff_longitude = "numeric",
+                    dropoff_latitude = "numeric", direct_distance = "numeric",
+                    payment_type = "factor", fare_amount = "numeric",
+                    surcharge = "numeric", mta_tax = "numeric", tip_amount = "numeric",
+                    tolls_amount = "numeric", total_amount = "numeric",
+                    tipped = "factor", tip_class = "factor");
+
+# Create xdf file
+taxiDS <- RxTextData(file = inputFile, colClasses  = taxiColClasses,
+                     fileSystem = hdfsFS, delimiter = "\t", firstRowIsColNames = TRUE);
+xdfOut <- RxXdfData(file = xdfOutFile, fileSystem = hdfsFS);
+capture.output(taxiDSXdf <- rxImport(inData = taxiDS, outFile = xdfOut,
+                                     fileSystem = hdfsFS, createCompositeSet = TRUE,
+                                     overwrite = TRUE),
+                                     file=sinkFile);
+```
+
+
+###Split data into train and test sets
+```{r Split Data into Train/Test & Drop Some Variables}
+# Assign each observation randomly to training or testing (75% training and 25% testing)
+# We also delete some variables not used for modeling, and filter observations which are likely to be invalid or outliers.
+taxiSplitXdfFile <- file.path(bigDataDirRoot,"Data/taxiSplitXdf");
+taxiSplitXdf <- RxXdfData(file = taxiSplitXdfFile, fileSystem = hdfsFS);
+capture.output(
+            rxDataStep(inData = taxiDSXdf, outFile = taxiSplitXdf,
+            varsToDrop = c("medallion", "hack_license","store_and_fwd_flag",
+                           "pickup_datetime", "rate_code",
+                           "dropoff_datetime","pickup_longitude",
+                           "pickup_latitude", "dropoff_longitude",
+                           "dropoff_latitude ", "direct_distance", "surcharge",
+                           "mta_tax", "tolls_amount", "tip_class", "total_amount"),
+            rowSelection = (passenger_count > 0 & passenger_count < 8 &
+                              tip_amount >= 0 & tip_amount <= 40 &
+                              fare_amount > 0 & fare_amount <= 200 &
+                              trip_distance > 0 & trip_distance <= 100 &
+                              trip_time_in_secs > 10 & trip_time_in_secs <= 7200),
+            transforms = list( testSplitVar = ( runif( .rxNumRows ) > 0.25 ) ),
+                            # 25% test, %75 into training
+                            overwrite = TRUE),
+            file=sinkFile
+            );
+
+# Create training data xdf
+taxiTrainXdfFile <- file.path(bigDataDirRoot,"Data/taxiTrainXdf");
+trainDS <- RxXdfData(file = taxiTrainXdfFile,  fileSystem = hdfsFS);
+capture.output(
+            rxDataStep( inData = taxiSplitXdf, outFile = trainDS,
+            varsToDrop = c( "testSplitVar"),
+            rowSelection = ( testSplitVar == 1),
+            overwrite = TRUE), file=sinkFile
+            );
+
+# Create testing data xdf
+taxiTestXdfFile <- file.path(bigDataDirRoot,"Data/taxiTestXdf");
+testDS <- RxXdfData(file= taxiTestXdfFile,  fileSystem = hdfsFS);
+capture.output(
+            rxDataStep( inData = taxiSplitXdf, outFile = testDS,
+            varsToDrop = c( "testSplitVar"),
+            rowSelection = ( testSplitVar == 0),
+            overwrite = TRUE), file=sinkFile
+            )
+```
+
+### Get summary of variable information from training file
+```{r Get Training File and Variable Info}
+capture.output(fileInfo <- rxGetInfo (trainDS, getVarInfo = TRUE,
+                                      computeInfo=TRUE, getBlockSizes = TRUE),
+                                      file = sinkFile
+               );
+fileInfo
+```
+
+
+###Data exploration through plotting: Generate a histogram of tip amount grouped by passenger counts
+
+####Just one example is shown here, further plots can be developed using functions in RevoScaleeR
+```{r Create Histogram of Tip Amounts}
+capture.output(
+    histPlot <- rxHistogram(~tip_amount | passenger_count, numBreaks=20, data = trainDS,
+                            title = "Histogram of Tip Amount"),
+                file = sinkFile
+    )
+```
+
+
+
+
+###Regression: Perform linear regression and compute correlation between predicted and actual tip amounts
+```{r Create Linear Regression Model}
+## Model building
+pt1 <- proc.time();
+capture.output (
+              model.rxLinMod <- rxLinMod(tip_amount ~ fare_amount + vendor_id +
+                                       pickup_hour + pickup_week + weekday +
+                                       passenger_count	+ trip_time_in_secs +
+                                       trip_distance + payment_type, data = trainDS),
+                                       file=sinkFile
+              )
+
+## Get model summary
+summary(model.rxLinMod);
+
+## Get elapsed run time on training data: Elapsed time is reported in seconds
+pt2 <- proc.time();
+runtime_rxLinMod <- pt2-pt1; runtime_rxLinMod;
+```
+
+```{r Predict on Test Data using Linear Regression Model and Evaluate Correlation}
+# Predict on test data-set, get AUC, accuracy etc.
+outputLinMod  <- RxXdfData(file.path(bigDataDirRoot, "Results/PredictedLinMod"), fileSystem=RxFileSystem(fileSystem = "hdfs"));
+
+capture.output (
+                taxiDxPredictLinMod <- rxPredict(modelObject = model.rxLinMod, checkFactorLevels = TRUE,
+                                                data = testDS, outData = outputLinMod,
+                                                type = "response",
+                                                extraVarsToWrite = as.vector(c("tip_amount")),
+                                                predVarNames = "predicted_tipped_amount",
+                                                overwrite = TRUE),
+                                      file = sinkFile
+                )
+
+capture.output (linModDF <- rxImport(inData = outputLinMod, outFile = NULL), file = sinkFile);
+
+rxSetComputeContext("local");
+## Sample a subset of rows for plotting, otherwise plot looks busy
+overallCorr <- round(cor.test(linModDF$tip_amount, linModDF$predicted_tipped_amount)$estimate, 3);
+linModDFSampled <- linModDF[sample(dim(linModDF)[1], 10000),];
+linePlot <- rxLinePlot(predicted_tipped_amount ~ tip_amount,
+                       data = linModDFSampled, type = 'p',
+                       title = 'Actual vs. Predicted Tip Amount',
+                       xTitle = 'Actual Tip Amount',
+                       yTitle = 'Predicted Tip Amount',
+                       subtitle = paste0('Corr: ', overallCorr)
+                       )
+
+```
+
+
+
+###Binary Classification: Create Boosted decision tree model and compute AUC on test data
+```{r Create Boosted Decision Tree Model}
+## Model building
+pt1 <- proc.time();
+rxSetComputeContext(myHadoopCluster);
+
+capture.output (
+                model.gbm <- rxBTrees(tipped ~ fare_amount + vendor_id +
+                                        pickup_hour + pickup_week + weekday +
+                                        passenger_count	+ trip_time_in_secs +
+                                        trip_distance + payment_type,
+                                        nTree = 5, maxDepth = 3, mTry = 4,
+                                        minSplit = 10000, minBucket = 3300,
+                                        learningRate = 0.1,
+                                        seed  = 1, data = trainDS),
+                                        file = sinkFile
+                )
+
+## Get elapsed run time on training data: Elapsed time is reported in seconds
+pt2 <- proc.time();
+runtime_gbm <- pt2-pt1; runtime_gbm;
+```
+
+```{r Predict on Test Data using Boosted Tree Model and Evaluate Accuracy}
+# Predict on test data-set, get AUC, accuracy etc.
+outputGBM  <- RxXdfData(file.path(bigDataDirRoot, "Results/PredictedGBM"), fileSystem=RxFileSystem(fileSystem = "hdfs"));
+
+capture.output (
+                taxiDxPredictGBM <- rxPredict(modelObject = model.gbm, data = testDS,
+                                              outData = outputGBM , type = "prob",
+                                              extraVarsToWrite = as.vector(c("tipped")),
+                                              predVarNames = "predicted_tipped_prob",
+                                              overwrite = TRUE),
+                                              file = sinkFile
+                );
+
+capture.output (gbmDF <- rxImport(inData = taxiDxPredictGBM, outFile = NULL), file=sinkFile);
+gbmDF$tipped <- as.numeric(gbmDF$tipped);
+gbmDF$tipped <- ifelse(gbmDF$tipped == 1, 0, 1);
+
+rxSetComputeContext("local");
+rocData <- rxRocCurve(actualVarName = "tipped", predVarNames = "predicted_tipped_prob", data = gbmDF)
+```
+
+
+##SUMMARY & CONCLUSION
+Here we have shown an example of data exploration and modeling at scale in the MapReduce compute context using Microsoft R server (MRS) on a HDInsight Hadoop cluster. Many other related functions are available in RevoScaleR to perform exloration and modeling at scale: http://www.rdocumentation.org/packages/RevoScaleR/functions/revoAnalytics-package.
+
