@@ -11,6 +11,8 @@ output:
     toc: yes
 ---
 
+#### Authors: Debraj GuhaThakurta (deguhath@microsoft.com), Shauheen Zahirazami (shzahira@microsoft.com)
+
 ##INTRODUCTION:
 
 ###Context
