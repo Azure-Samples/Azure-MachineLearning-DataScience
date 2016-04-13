@@ -119,10 +119,10 @@ $(document).ready(function () {
 <li><a href="#context"><span class="toc-section-number">0.1.1</span> Context</a></li>
 <li><a href="#highlights"><span class="toc-section-number">0.1.2</span> Highlights</a></li>
 </ul></li>
-<li><a href="#pre-modeling-steps-cluster-provisioning-data-preparation-and-problem-definition"><span class="toc-section-number">0.2</span> PRE-MODELING STEPS: CLUSTER PROVISIONING, DATA-PREPARATION, AND PROBLEM DEFINITION</a><ul>
+<li><a href="#pre-modeling-steps-cluster-provisioning-data-preparation-and-problem-definition"><span class="toc-section-number">0.2</span> PRE-MODELING STEPS: CLUSTER PROVISIONING, DATA-PREPARATION, AND PROBLEM ANALYSIS</a><ul>
 <li><a href="#provisioning-and-setup-of-premium-hdinsight-hadoop-cluster-running-mrs-and-r-studio-server"><span class="toc-section-number">0.2.1</span> Provisioning and setup of Premium HDInsight Hadoop cluster running MRS and R-studio server</a></li>
 <li><a href="#data-preparation-in-hive-prior-to-ingestion-into-mrs"><span class="toc-section-number">0.2.2</span> Data preparation in Hive prior to ingestion into MRS</a></li>
-<li><a href="#modeling-and-prediction"><span class="toc-section-number">0.2.3</span> Modeling and prediction tasks</a></li>
+<li><a href="#modeling-and-prediction"><span class="toc-section-number">0.2.3</span> Problem Analysis and Defining Prediction Task</a></li>
 </ul></li>
 <li><a href="#data-exploration-modeling-and-evaluation"><span class="toc-section-number">0.3</span> DATA EXPLORATION, MODELING AND EVALUATION</a><ul>
 <li><a href="#set-compute-context-to-mapreduce-and-set-inputoutput-to-hdfs"><span class="toc-section-number">0.3.1</span> Set compute context to MapReduce and set input/output to HDFS</a></li>
@@ -141,9 +141,9 @@ $(document).ready(function () {
 <h2><span class="header-section-number">0.1</span> INTRODUCTION:</h2>
 <div id="context" class="section level3">
 <h3><span class="header-section-number">0.1.1</span> Context</h3>
-<p>Most functions in open-source R operate on data-sets that fit in memory and cannot be distributed easily to run in Hadoop/MapReduce context. This creates severe challenges for data scientists to use these open-source R functions for scalable data analysis with big data-sets which are in the order of 10’s of Gbs or Terabytes. Microsoft’s R-server (MRS) runnning on distributed computing environments, such as Hadoop MapReduce and Spark, can be a valuable solution for scalable data analytics using R.</p>
+<p>When it comes to scalable data analysis and ML, many data scientists are blocked or hindered by a variety of issues, such as the limitations of available functions to handle large data-sets efficiently, access to or knowledge about the appropriate infrastructure, and ability to produce operationalized pipelines and models that can be consumed easily in production. In this write-up we will try to show how Microsoft R server and HDInsight can help solve these issues. If you intend to follow the steps, it is worth noting that data preparation, setup as well as execution of these steps can take several hours, which may also depend on the size of the provisioned HDInsight cluster. <p>Most functions in open-source R operate on data-sets that fit in memory and cannot be distributed easily to run in Hadoop/MapReduce context. This creates severe challenges for data scientists to use these open-source R functions for scalable data analysis with big data-sets which are in the order of 10’s of Gbs or Terabytes. Microsoft’s R-server (MRS) runnning on distributed computing environments, such as Hadoop MapReduce and Spark, can be a valuable solution for scalable data analytics using R.</p>
 <p>Here we show an example of how to do data exploration and modeling with Microsoft R server (MRS) on a HDInsight Hadoop cluster using MapReduce. The data used for this exercise is the public NYC Taxi Trip and Fare data-set (2013, ~40 Gb, ~170 million rows) available from: <a href="http://www.andresmh.com/nyctaxitrips" class="uri">http://www.andresmh.com/nyctaxitrips</a>.</p>
-<p>We show examples of modeling with one set of hyper-parameters for each model. For optimal accuracy and speed, we advise sweeping over a hyper-parameter set with cross-validation to identify the best paramet-set.</p>
+<p>We show examples of modeling with one set of hyper-parameters for each model. For optimal accuracy and speed, we advise sweeping over a hyper-parameter set with cross-validation to identify the best paramet-set. However keep in mind that this may take some time, so you may want to pour yourself a fresh cup of coffee or prepare a pot!</p>
 </div>
 <div id="highlights" class="section level3">
 <h3><span class="header-section-number">0.1.2</span> Highlights</h3>
@@ -156,25 +156,25 @@ $(document).ready(function () {
 </div>
 </div>
 <div id="pre-modeling-steps-cluster-provisioning-data-preparation-and-problem-definition" class="section level2">
-<h2><span class="header-section-number">0.2</span> PRE-MODELING STEPS: CLUSTER PROVISIONING, DATA-PREPARATION, AND PROBLEM DEFINITION</h2>
+<h2><span class="header-section-number">0.2</span> PRE-MODELING STEPS: CLUSTER PROVISIONING, DATA-PREPARATION, AND PROBLEM ANALYSIS</h2>
 <div id="provisioning-and-setup-of-premium-hdinsight-hadoop-cluster-running-mrs-and-r-studio-server" class="section level3">
 <h3><span class="header-section-number">0.2.1</span> Provisioning and setup of Premium HDInsight Hadoop cluster running MRS and R-studio server</h3>
-<p>The premium tier offering for HDInsight includes R Server as part of your HDInsight cluster. This allows R scripts to use MapReduce to run distributed computations. The following link provides information on how to create a new R Server on HDInsight, then run R scripts using MapReduce: <a href="https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-get-started" class="uri">https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-get-started</a></p>
+<p>The premium tier offering for HDInsight includes R Server as part of your HDInsight cluster. This allows R scripts to use MapReduce to run distributed computations. The following link provides information on how to create a new R Server on HDInsight, then run R scripts using MapReduce: <a href="https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-get-started" class="uri">https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-get-started</a> (Expected time for completion: about 2 hours)</p>
 <p>A HDInsight Hadoop R Server was provisioned using the instructions above with 2 head nodes (D12), 4 worker nodes (D12), and 1 R-server node (D4). Depending on size of the data-sets being processed, cluter may need to be scaled and configured appropriartely for processing and modeling data efficiently.</p>
-<p>R-studio server was installed on the R-server node using instructions provided here: <a href="https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-install-r-studio" class="uri">https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-install-r-studio</a></p>
+<p>R-studio server was installed on the R-server node using instructions provided here: <a href="https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-install-r-studio" class="uri">https://azure.microsoft.com/en-us/documentation/articles/hdinsight-hadoop-r-server-install-r-studio</a> (Expected time for completion: 10 Minutes)</p>
 <p>Scripts were run by logging onto the R-studio server using http as described above.</p>
 </div>
 <div id="data-preparation-in-hive-prior-to-ingestion-into-mrs" class="section level3">
 <h3><span class="header-section-number">0.2.2</span> Data preparation in Hive prior to ingestion into MRS</h3>
 <p>The 2013 NYC taxi and fare data are available as a set of comma-separated values (CSV) files (~40GB uncompressed), comprising more than ~170 million individual trips and the fares paid for each trip. Each trip record includes the pickup and drop-off location and time, anonymized hack (driver’s) license number and medallion (taxi’s unique id) number. The data covers all trips in the year 2013 and is provided in the following datasets, called trip and fare, for each month.</p>
-<p>The fare and trip files were uploaded to blob-storage as per instructions provided in a previously published walkthrough: <a href="https://azure.microsoft.com/en-us/documentation/articles/machine-learning-data-science-process-hive-walkthrough" class="uri">https://azure.microsoft.com/en-us/documentation/articles/machine-learning-data-science-process-hive-walkthrough</a></p>
+<p>The fare and trip files were uploaded to blob-storage as per instructions provided in a previously published walkthrough: <a href="https://azure.microsoft.com/en-us/documentation/articles/machine-learning-data-science-process-hive-walkthrough" class="uri">https://azure.microsoft.com/en-us/documentation/articles/machine-learning-data-science-process-hive-walkthrough</a> (Expected time for completion (NYC Taxi data): about 3 hours)</p>
 <p>We used Hive queries to create two Hive tables for taxi and fare files, and join the two tables to get one file. The joined file was copied to HDFS of the HDI cluster from where it was ingested into MRS for exploration and modeling. Files were converted to composite xdfs format prior to modeling.</p>
 </div>
 <div id="modeling-and-prediction" class="section level3">
-<h3><span class="header-section-number">0.2.3</span> Modeling and prediction tasks</h3>
+<h3><span class="header-section-number">0.2.3</span> Problem Analysis and Defining Prediction Task</h3>
 <div id="regression---predicting-the-tip-amount-for-taxi-trips" class="section level4">
 <h4><span class="header-section-number">0.2.3.1</span> Regression - predicting the tip amount ($) for taxi trips</h4>
-<p>Here the task is to predict the amount of tip paid for each taxi trip using features of the taxi trip, such as trip distance, fare amount, number of passengers in trip, payment type (credit card, cash etc.), and time of the day for a trip.</p> 
+<p>Here the task is to predict the amount of tip paid for each taxi trip using features of the taxi trip, such as trip distance, fare amount, number of passengers in trip, payment type (credit card, cash etc.), and time of the day for a trip.</p>
 <h4><span class="header-section-number">0.2.3.2</span> Binary classification - predicting whether a taxi trip was tipped or not</h4>
 <p>Here the task is to predict whether or not a tip was paid for a trip (binary classification). A tip amount that is greater than $0 is a positive example, while a tip amount of $0 is a negative example.</p>
 
@@ -223,27 +223,27 @@ inputFile &lt;-file.path(bigDataDirRoot,&quot;Data/JoinedTaxiTripFare.100.tsv&qu
 xdfOutFile &lt;- file.path(bigDataDirRoot,&quot;Data/taxiDSXdf&quot;);
 
 # Define coumn classes
-taxiColClasses &lt;- c(medallion = &quot;character&quot;, hack_license = &quot;character&quot;, 
-                    vendor_id =  &quot;factor&quot;, rate_code = &quot;factor&quot;, 
+taxiColClasses &lt;- c(medallion = &quot;character&quot;, hack_license = &quot;character&quot;,
+                    vendor_id =  &quot;factor&quot;, rate_code = &quot;factor&quot;,
                     store_and_fwd_flag = &quot;character&quot;, pickup_datetime = &quot;character&quot;,
                     dropoff_datetime = &quot;character&quot;, pickup_hour = &quot;numeric&quot;,
-                    pickup_week = &quot;numeric&quot;, weekday = &quot;numeric&quot;, 
-                    passenger_count = &quot;numeric&quot;, trip_time_in_secs = &quot;numeric&quot;, 
+                    pickup_week = &quot;numeric&quot;, weekday = &quot;numeric&quot;,
+                    passenger_count = &quot;numeric&quot;, trip_time_in_secs = &quot;numeric&quot;,
                     trip_distance = &quot;numeric&quot;, pickup_longitude = &quot;numeric&quot;,
-                    pickup_latitude = &quot;numeric&quot;, dropoff_longitude = &quot;numeric&quot;, 
-                    dropoff_latitude = &quot;numeric&quot;, direct_distance = &quot;numeric&quot;, 
-                    payment_type = &quot;factor&quot;, fare_amount = &quot;numeric&quot;, 
-                    surcharge = &quot;numeric&quot;, mta_tax = &quot;numeric&quot;, tip_amount = &quot;numeric&quot;, 
-                    tolls_amount = &quot;numeric&quot;, total_amount = &quot;numeric&quot;, 
+                    pickup_latitude = &quot;numeric&quot;, dropoff_longitude = &quot;numeric&quot;,
+                    dropoff_latitude = &quot;numeric&quot;, direct_distance = &quot;numeric&quot;,
+                    payment_type = &quot;factor&quot;, fare_amount = &quot;numeric&quot;,
+                    surcharge = &quot;numeric&quot;, mta_tax = &quot;numeric&quot;, tip_amount = &quot;numeric&quot;,
+                    tolls_amount = &quot;numeric&quot;, total_amount = &quot;numeric&quot;,
                     tipped = &quot;factor&quot;, tip_class = &quot;factor&quot;);
 
 # Create xdf file
-taxiDS &lt;- RxTextData(file = inputFile, colClasses  = taxiColClasses, 
+taxiDS &lt;- RxTextData(file = inputFile, colClasses  = taxiColClasses,
                      fileSystem = hdfsFS, delimiter = &quot;\t&quot;, firstRowIsColNames = TRUE);
 xdfOut &lt;- RxXdfData(file = xdfOutFile, fileSystem = hdfsFS);
-capture.output(taxiDSXdf &lt;- rxImport(inData = taxiDS, outFile = xdfOut, 
-                                     fileSystem = hdfsFS, createCompositeSet = TRUE, 
-                                     overwrite = TRUE), 
+capture.output(taxiDSXdf &lt;- rxImport(inData = taxiDS, outFile = xdfOut,
+                                     fileSystem = hdfsFS, createCompositeSet = TRUE,
+                                     overwrite = TRUE),
                                      file=sinkFile);</code></pre>
 </div>
 </div>
@@ -255,20 +255,20 @@ taxiSplitXdfFile &lt;- file.path(bigDataDirRoot,&quot;Data/taxiSplitXdf&quot;);
 taxiSplitXdf &lt;- RxXdfData(file = taxiSplitXdfFile, fileSystem = hdfsFS);
 capture.output(
             rxDataStep(inData = taxiDSXdf, outFile = taxiSplitXdf,
-            varsToDrop = c(&quot;medallion&quot;, &quot;hack_license&quot;,&quot;store_and_fwd_flag&quot;, 
+            varsToDrop = c(&quot;medallion&quot;, &quot;hack_license&quot;,&quot;store_and_fwd_flag&quot;,
                            &quot;pickup_datetime&quot;, &quot;rate_code&quot;,
-                           &quot;dropoff_datetime&quot;,&quot;pickup_longitude&quot;, 
+                           &quot;dropoff_datetime&quot;,&quot;pickup_longitude&quot;,
                            &quot;pickup_latitude&quot;, &quot;dropoff_longitude&quot;,
-                           &quot;dropoff_latitude &quot;, &quot;direct_distance&quot;, &quot;surcharge&quot;, 
+                           &quot;dropoff_latitude &quot;, &quot;direct_distance&quot;, &quot;surcharge&quot;,
                            &quot;mta_tax&quot;, &quot;tolls_amount&quot;, &quot;tip_class&quot;, &quot;total_amount&quot;),
-            rowSelection = (passenger_count &gt; 0 &amp; passenger_count &lt; 8 &amp; 
-                              tip_amount &gt;= 0 &amp; tip_amount &lt;= 40 &amp; 
-                              fare_amount &gt; 0 &amp; fare_amount &lt;= 200 &amp; 
-                              trip_distance &gt; 0 &amp; trip_distance &lt;= 100 &amp; 
+            rowSelection = (passenger_count &gt; 0 &amp; passenger_count &lt; 8 &amp;
+                              tip_amount &gt;= 0 &amp; tip_amount &lt;= 40 &amp;
+                              fare_amount &gt; 0 &amp; fare_amount &lt;= 200 &amp;
+                              trip_distance &gt; 0 &amp; trip_distance &lt;= 100 &amp;
                               trip_time_in_secs &gt; 10 &amp; trip_time_in_secs &lt;= 7200),
             transforms = list( testSplitVar = ( runif( .rxNumRows ) &gt; 0.25 ) ),
                             # 25% test, %75 into training
-                            overwrite = TRUE), 
+                            overwrite = TRUE),
             file=sinkFile
             );
 
@@ -295,18 +295,18 @@ capture.output(
 <div id="get-summary-of-variable-information-from-training-file" class="section level3">
 <h3><span class="header-section-number">0.3.4</span> Get summary of variable information from training file</h3>
 <pre class="r"><code>capture.output(fileInfo &lt;- rxGetInfo (trainDS, getVarInfo = TRUE,
-                                      computeInfo=TRUE, getBlockSizes = TRUE), 
+                                      computeInfo=TRUE, getBlockSizes = TRUE),
                                       file = sinkFile
                );
 fileInfo</code></pre>
-<pre><code>## File name: /share/Data/taxiTrainXdf 
-## Number of composite data files: 72 
-## Number of observations: 126566620 
-## Number of variables: 11 
-## Number of blocks: 359 
+<pre><code>## File name: /share/Data/taxiTrainXdf
+## Number of composite data files: 72
+## Number of observations: 126566620
+## Number of variables: 11
+## Number of blocks: 359
 ## Rows per block in first data file: 372757 373113 372459 373052 270623
-## Compression type: zlib 
-## Variable information: 
+## Compression type: zlib
+## Variable information:
 ## Var 1: vendor_id
 ##        2 factor levels: VTS CMT
 ## Var 2: pickup_hour, Type: numeric, Low/High: (0.0000, 23.0000)
@@ -328,7 +328,7 @@ fileInfo</code></pre>
 <h4><span class="header-section-number">0.3.5.1</span> Just one example is shown here, further plots can be developed using functions in RevoScaleR</h4>
 <pre class="r"><code>capture.output(
     histPlot &lt;- rxHistogram(~tip_amount | passenger_count, numBreaks=20, data = trainDS,
-                            title = &quot;Histogram of Tip Amount&quot;), 
+                            title = &quot;Histogram of Tip Amount&quot;),
                 file = sinkFile
     )</code></pre>
 <div class="figure">
@@ -342,20 +342,20 @@ fileInfo</code></pre>
 <pre class="r"><code>## Model building
 pt1 &lt;- proc.time();
 capture.output (
-              model.rxLinMod &lt;- rxLinMod(tip_amount ~ fare_amount + vendor_id + 
-                                       pickup_hour + pickup_week + weekday + 
-                                       passenger_count  + trip_time_in_secs + 
-                                       trip_distance + payment_type, data = trainDS), 
+              model.rxLinMod &lt;- rxLinMod(tip_amount ~ fare_amount + vendor_id +
+                                       pickup_hour + pickup_week + weekday +
+                                       passenger_count  + trip_time_in_secs +
+                                       trip_distance + payment_type, data = trainDS),
                                        file=sinkFile
               )
 
 ## Get model summary
 summary(model.rxLinMod);</code></pre>
 <pre><code>## Call:
-## rxLinMod(formula = tip_amount ~ fare_amount + vendor_id + pickup_hour + 
-##     pickup_week + weekday + passenger_count + trip_time_in_secs + 
+## rxLinMod(formula = tip_amount ~ fare_amount + vendor_id + pickup_hour +
+##     pickup_week + weekday + passenger_count + trip_time_in_secs +
 ##     trip_distance + payment_type, data = trainDS)
-## 
+##
 ## Linear Regression Results for: tip_amount ~ fare_amount +
 ##     vendor_id + pickup_hour + pickup_week + weekday +
 ##     passenger_count + trip_time_in_secs + trip_distance +
@@ -365,14 +365,14 @@ summary(model.rxLinMod);</code></pre>
 ## Dependent variable(s): tip_amount
 ## Total independent variables: 15 (Including number dropped: 2)
 ## Number of valid observations: 126566620
-## Number of missing observations: 0 
-##  
+## Number of missing observations: 0
+##
 ## Coefficients: (2 not defined because of singularities)
-##                     Estimate Std. Error t value Pr(&gt;|t|)    
+##                     Estimate Std. Error t value Pr(&gt;|t|)
 ## (Intercept)        1.169e+00  3.415e-03  342.31 2.22e-16 ***
 ## fare_amount        1.039e-01  4.405e-05 2358.03 2.22e-16 ***
 ## vendor_id=VTS     -5.030e-02  2.419e-04 -207.97 2.22e-16 ***
-## vendor_id=CMT        Dropped    Dropped Dropped  Dropped    
+## vendor_id=CMT        Dropped    Dropped Dropped  Dropped
 ## pickup_hour        4.007e-03  1.767e-05  226.74 2.22e-16 ***
 ## pickup_week        4.956e-04  7.625e-06   65.00 2.22e-16 ***
 ## weekday           -1.257e-02  5.896e-05 -213.21 2.22e-16 ***
@@ -383,30 +383,30 @@ summary(model.rxLinMod);</code></pre>
 ## payment_type=CRD   4.371e-02  3.376e-03   12.95 2.22e-16 ***
 ## payment_type=NOC  -2.423e+00  4.378e-03 -553.59 2.22e-16 ***
 ## payment_type=DIS  -2.611e+00  5.799e-03 -450.29 2.22e-16 ***
-## payment_type=UNK     Dropped    Dropped Dropped  Dropped    
+## payment_type=UNK     Dropped    Dropped Dropped  Dropped
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
+##
 ## Residual standard error: 1.291 on 126566607 degrees of freedom
-## Multiple R-squared: 0.6073 
-## Adjusted R-squared: 0.6073 
-## F-statistic: 1.631e+07 on 12 and 126566607 DF,  p-value: &lt; 2.2e-16 
+## Multiple R-squared: 0.6073
+## Adjusted R-squared: 0.6073
+## F-statistic: 1.631e+07 on 12 and 126566607 DF,  p-value: &lt; 2.2e-16
 ## Condition number: 1401.157</code></pre>
 <pre class="r"><code>## Get elapsed run time on training data: Elapsed time is reported in seconds
 pt2 &lt;- proc.time();
 runtime_rxLinMod &lt;- pt2-pt1; runtime_rxLinMod;</code></pre>
-<pre><code>##    user  system elapsed 
+<pre><code>##    user  system elapsed
 ##  13.636   4.936 174.738</code></pre>
 <pre class="r"><code># Predict on test data-set, get AUC, accuracy etc.
 outputLinMod  &lt;- RxXdfData(file.path(bigDataDirRoot, &quot;Results/PredictedLinMod&quot;), fileSystem=RxFileSystem(fileSystem = &quot;hdfs&quot;));
 
 capture.output (
-                taxiDxPredictLinMod &lt;- rxPredict(modelObject = model.rxLinMod, checkFactorLevels = TRUE, 
-                                                data = testDS, outData = outputLinMod, 
-                                                type = &quot;response&quot;, 
-                                                extraVarsToWrite = as.vector(c(&quot;tip_amount&quot;)), 
-                                                predVarNames = &quot;predicted_tipped_amount&quot;, 
-                                                overwrite = TRUE), 
+                taxiDxPredictLinMod &lt;- rxPredict(modelObject = model.rxLinMod, checkFactorLevels = TRUE,
+                                                data = testDS, outData = outputLinMod,
+                                                type = &quot;response&quot;,
+                                                extraVarsToWrite = as.vector(c(&quot;tip_amount&quot;)),
+                                                predVarNames = &quot;predicted_tipped_amount&quot;,
+                                                overwrite = TRUE),
                                       file = sinkFile
                 )
 
@@ -416,9 +416,9 @@ rxSetComputeContext(&quot;local&quot;);
 ## Sample a subset of rows for plotting, otherwise plot looks busy
 overallCorr &lt;- round(cor.test(linModDF$tip_amount, linModDF$predicted_tipped_amount)$estimate, 3);
 linModDFSampled &lt;- linModDF[sample(dim(linModDF)[1], 10000),];
-linePlot &lt;- rxLinePlot(predicted_tipped_amount ~ tip_amount, 
-                       data = linModDFSampled, type = 'p', 
-                       title = 'Actual vs. Predicted Tip Amount', 
+linePlot &lt;- rxLinePlot(predicted_tipped_amount ~ tip_amount,
+                       data = linModDFSampled, type = 'p',
+                       title = 'Actual vs. Predicted Tip Amount',
                        xTitle = 'Actual Tip Amount',
                        yTitle = 'Predicted Tip Amount',
                        subtitle = paste0('Corr: ', overallCorr)
@@ -436,29 +436,29 @@ rxSetComputeContext(myHadoopCluster);
 
 capture.output (
                 model.gbm &lt;- rxBTrees(tipped ~ fare_amount + vendor_id +
-                                        pickup_hour + pickup_week + weekday + 
-                                        passenger_count + trip_time_in_secs + 
-                                        trip_distance + payment_type, 
-                                        nTree = 5, maxDepth = 3, mTry = 4, 
+                                        pickup_hour + pickup_week + weekday +
+                                        passenger_count + trip_time_in_secs +
+                                        trip_distance + payment_type,
+                                        nTree = 5, maxDepth = 3, mTry = 4,
                                         minSplit = 10000, minBucket = 3300,
-                                        learningRate = 0.1, 
-                                        seed  = 1, data = trainDS), 
+                                        learningRate = 0.1,
+                                        seed  = 1, data = trainDS),
                                         file = sinkFile
                 )</code></pre>
 <pre class="r"><code>## Get elapsed run time on training data: Elapsed time is reported in seconds
 pt2 &lt;- proc.time();
 runtime_gbm &lt;- pt2-pt1; runtime_gbm;</code></pre>
-<pre><code>##     user   system  elapsed 
+<pre><code>##     user   system  elapsed
 ##   80.564  722.044 8099.785</code></pre>
 <pre class="r"><code># Predict on test data-set, get AUC, accuracy etc.
 outputGBM  &lt;- RxXdfData(file.path(bigDataDirRoot, &quot;Results/PredictedGBM&quot;), fileSystem=RxFileSystem(fileSystem = &quot;hdfs&quot;));
 
 capture.output (
-                taxiDxPredictGBM &lt;- rxPredict(modelObject = model.gbm, data = testDS, 
-                                              outData = outputGBM , type = &quot;prob&quot;, 
-                                              extraVarsToWrite = as.vector(c(&quot;tipped&quot;)), 
-                                              predVarNames = &quot;predicted_tipped_prob&quot;, 
-                                              overwrite = TRUE), 
+                taxiDxPredictGBM &lt;- rxPredict(modelObject = model.gbm, data = testDS,
+                                              outData = outputGBM , type = &quot;prob&quot;,
+                                              extraVarsToWrite = as.vector(c(&quot;tipped&quot;)),
+                                              predVarNames = &quot;predicted_tipped_prob&quot;,
+                                              overwrite = TRUE),
                                               file = sinkFile
                 );
 
