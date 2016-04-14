@@ -1,5 +1,7 @@
 # COPY THIS SCRIPT INTO THE SPARK CLUSTER SO IT CAN BE TRIGGERED WHENEVER WE WANT TO SCORE A FILE BASED ON PREBUILT MODEL
 # MODEL CAN BE BUILT USING ONE OF THE TWO EXAMPLE NOTEBOOKS: Simple - Modeling with One Param Set Only.ipynb OR Detailed - Modeling with CV and Param Sweeps.ipynb
+# This script is a stripped down version of what is in "Consumption - Score Test Sets in Blob.ipynb" in this directory to do a single model scoring only
+
 # # Scoring wtih Saved ML Models Generated from the Sampled NYC Taxi Trip and Fare Dataset 
 # ## Here we show some how to load models that are stored in blobs, and score data-sets with these stored models.
 # 
