@@ -1,12 +1,11 @@
 # COPY THIS SCRIPT INTO THE SPARK CLUSTER SO IT CAN BE TRIGGERED WHENEVER WE WANT TO SCORE A FILE BASED ON PREBUILT MODEL
-# MODEL CAN BE BUILT USING ONE OF THE TWO EXAMPLE NOTEBOOKS: Simple - Modeling with One Param Set Only.ipynb OR Detailed - Modeling with CV and Param Sweeps.ipynb
-# This script is a stripped down version of what is in "Consumption - Score Test Sets in Blob.ipynb" in this directory to do a single model scoring only
+# MODEL CAN BE BUILT USING ONE OF THE TWO EXAMPLE NOTEBOOKS: machine-learning-data-science-spark-data-exploration-modeling.ipynb OR machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb
+# This script is a stripped down version of what is in "machine-learning-data-science-spark-model-consumption.ipynb" in this directory to do a single model scoring only
 
 # # Scoring wtih Saved ML Models Generated from the Sampled NYC Taxi Trip and Fare Dataset 
 # ## Here we show some how to load models that are stored in blobs, and score data-sets with these stored models.
 # 
 # OBJECTIVE: To use models and files to be scroed, that are stored in blob storage, to produce scored data and save that data to blob storage.
-
 # ## Settting Directory Paths in Mapped Blob Storage Prior to Running
 # 
 # Where models/files are being saved in the blob, the path needs to be specified properly. Default container which is attached to the Spark cluster can be referenced as: "wasb//".
@@ -14,24 +13,23 @@
 # Models are saved in: "wasb:///user/remoteuser/NYCTaxi/Models". If this path is not set properly, models will not be loaded for scoring.
 # 
 # We save scored results in: "wasb:///user/remoteuser/NYCTaxi/ScoredResults". If the path to folder is incorrect, rsutls will not be saved in that folder.
-
-# ### Set directory paths and location of files
-
-# 1. Location of data to be scored
+# ### Set directory paths to models (input), data to be scored (input), and scored result files (output)
+# 1. LOCATION OF DATA TO BE SCORED (TEST DATA)
 taxi_test_file_loc = "wasb://mllibwalkthroughs@cdspsparksamples.blob.core.windows.net/Data/NYCTaxi/JoinedTaxiTripFare.Point1Pct.Test.tsv";
 
-# 2. Set model storage directory path
+# 2. PATH TO BLOB STORAGE WHICH HAS STORED MODELS WITH WHICH TEST DATA IS TO BE SCORED
 modelDir = "wasb:///user/remoteuser/NYCTaxi/Models/"; # The last backslash is needed;
 
-# 3. Set scored result directory path
+# 3. PATH TO BLOB STORAGE WHERE SCORED RESUTLS WILL BE OUTPUT 
 scoredResultDir = "wasb:///user/remoteuser/NYCTaxi/ScoredResults/"; # The last backslash is needed;
 
-## 4. MODEL FILE LOCATIONS -- REPLACE WITH ***LOCATION*** WHERE YOUR MODEL IS SAVED FROM YOUR JUPYTER NOTEBOOK WHERE MODEL IS BUILT
+# ### Path to specific models to be used for scoring (copy and paste from the bottom of the model training notebook)
 BoostedTreeRegressionFileLoc = modelDir + "GradientBoostingTreeRegression_2016-04-0116_26_52.098590";
 
 import datetime
 
 # ## Set spark context and import necessary libraries
+
 import pyspark
 from pyspark import SparkConf
 from pyspark import SparkContext
@@ -51,6 +49,7 @@ atexit.register(lambda: sc.stop())
 sc.defaultParallelism
 
 # ## Data ingestion: Read in joined 0.1% taxi trip and fare file (as tsv), format and clean data, and create data-frame
+
 ## IMPORT FILE FROM PUBLIC BLOB
 
 taxi_test_file = sc.textFile(taxi_test_file_loc)
@@ -86,31 +85,41 @@ taxi_schema = StructType(fields)
 taxi_df_test = sqlContext.createDataFrame(taxi_temp, taxi_schema)
 
 ## CREATE A CLEANED DATA-FRAME BY DROPPING SOME UN-NECESSARY COLUMNS & FILTERING FOR UNDESIRED VALUES OR OUTLIERS
-taxi_df_test_cleaned = taxi_df_test.drop('medallion').drop('hack_license').drop('store_and_fwd_flag').drop('pickup_datetime')    .drop('dropoff_datetime').drop('pickup_longitude').drop('pickup_latitude').drop('dropoff_latitude')    .drop('dropoff_longitude').drop('tip_class').drop('total_amount').drop('tolls_amount').drop('mta_tax')    .drop('direct_distance').drop('surcharge')    .filter("passenger_count > 0 AND passenger_count < 8 AND payment_type in('CSH','CRD') AND tip_amount >= 0 AND fare_amount > 0")
+taxi_df_test_cleaned = taxi_df_test.drop('medallion').drop('hack_license').drop('store_and_fwd_flag').drop('pickup_datetime')    .drop('dropoff_datetime').drop('pickup_longitude').drop('pickup_latitude').drop('dropoff_latitude')    .drop('dropoff_longitude').drop('tip_class').drop('total_amount').drop('tolls_amount').drop('mta_tax')    .drop('direct_distance').drop('surcharge')    .filter("passenger_count > 0 and passenger_count < 8 AND payment_type in ('CSH', 'CRD') AND tip_amount >= 0 AND tip_amount < 30 AND fare_amount >= 1 AND fare_amount < 150 AND trip_distance > 0 AND trip_distance < 100 AND trip_time_in_secs > 30 AND trip_time_in_secs < 7200" )
 
-# #### Creating labeledpoint RDD objects for input into models
+## CACHE DATA-FRAME IN MEMORY & MATERIALIZE DF IN MEMORY
+taxi_df_test_cleaned.cache()
+taxi_df_test_cleaned.count()
 
-from pyspark.mllib.regression import LabeledPoint
-from pyspark.mllib.linalg import Vectors
-from pyspark.mllib.feature import StandardScaler, StandardScalerModel
-from pyspark.mllib.util import MLUtils
-from numpy import array
-
-# ONE-HOT ENCODING OF CATEGORICAL TEXT VARIABLES FOR INPUT INTO TREE-BASED MODELS
-def parseRowIndexingRegression(line):
-    features = np.array([line.paymentIndex, line.vendorIndex, line.rateIndex, line.pickup_hour, line.weekday,
-                         line.passenger_count, line.trip_time_in_secs, line.trip_distance, line.fare_amount])
-    labPt = LabeledPoint(line.tip_amount, features)
-    return  labPt
+## REGISTER DATA-FRAME AS A TEMP-TABLE IN SQL-CONTEXT
+taxi_df_test_cleaned.registerTempTable("taxi_test")
 
 # ## Feature transformation and data prep for scoring with models
-# #### Indexing and one-hot encoding of categorical features
 
-from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorAssembler, OneHotEncoder, VectorIndexer
+# #### Create traffic time feature, and indexing and one-hot encode categorical features
+from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorAssembler, VectorIndexer
 
+### CREATE FOUR BUCKETS FOR TRAFFIC TIMES
+sqlStatement = """
+    SELECT *,
+    CASE
+     WHEN (pickup_hour <= 6 OR pickup_hour >= 20) THEN "Night" 
+     WHEN (pickup_hour >= 7 AND pickup_hour <= 10) THEN "AMRush" 
+     WHEN (pickup_hour >= 11 AND pickup_hour <= 15) THEN "Afternoon"
+     WHEN (pickup_hour >= 16 AND pickup_hour <= 19) THEN "PMRush"
+    END as TrafficTimeBins
+    FROM taxi_test 
+"""
+taxi_df_test_with_newFeatures = sqlContext.sql(sqlStatement)
+
+## CACHE DATA-FRAME IN MEMORY & MATERIALIZE DF IN MEMORY
+taxi_df_test_with_newFeatures.cache()
+taxi_df_test_with_newFeatures.count()
+
+## INDEX AND ONE-HOT ENCODING
 stringIndexer = StringIndexer(inputCol="vendor_id", outputCol="vendorIndex")
-model = stringIndexer.fit(taxi_df_test_cleaned)
-indexed = model.transform(taxi_df_test_cleaned)
+model = stringIndexer.fit(taxi_df_test_with_newFeatures) # Input data-frame is the cleaned one from above
+indexed = model.transform(taxi_df_test_with_newFeatures)
 encoder = OneHotEncoder(dropLast=False, inputCol="vendorIndex", outputCol="vendorVec")
 encoded1 = encoder.transform(indexed)
 
@@ -124,45 +133,48 @@ stringIndexer = StringIndexer(inputCol="payment_type", outputCol="paymentIndex")
 model = stringIndexer.fit(encoded2)
 indexed = model.transform(encoded2)
 encoder = OneHotEncoder(dropLast=False, inputCol="paymentIndex", outputCol="paymentVec")
+encoded3 = encoder.transform(indexed)
+
+stringIndexer = StringIndexer(inputCol="TrafficTimeBins", outputCol="TrafficTimeBinsIndex")
+model = stringIndexer.fit(encoded3)
+indexed = model.transform(encoded3)
+encoder = OneHotEncoder(dropLast=False, inputCol="TrafficTimeBinsIndex", outputCol="TrafficTimeBinsVec")
 encodedFinal = encoder.transform(indexed)
 
+# #### Creating RDD objects with feature arrays for input into models
 
-# #### Creating labeledpoint RDD objects for input into models
-
-from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.linalg import Vectors
 from pyspark.mllib.feature import StandardScaler, StandardScalerModel
 from pyspark.mllib.util import MLUtils
 from numpy import array
 
-
-# ONE-HOT ENCODING OF CATEGORICAL TEXT VARIABLES FOR INPUT INTO TREE-BASED MODELS
+# ONE-HOT ENCODING OF CATEGORICAL TEXT FEATURES FOR INPUT INTO TREE-BASED MODELS
 def parseRowIndexingRegression(line):
-    features = np.array([line.paymentIndex, line.vendorIndex, line.rateIndex, line.pickup_hour, line.weekday,
-                         line.passenger_count, line.trip_time_in_secs, line.trip_distance, line.fare_amount])
-    labPt = LabeledPoint(line.tip_amount, features)
-    return  labPt
+    features = np.array([line.paymentIndex, line.vendorIndex, line.rateIndex, line.TrafficTimeBinsIndex, 
+                         line.pickup_hour, line.weekday, line.passenger_count, line.trip_time_in_secs, 
+                         line.trip_distance, line.fare_amount])
+    return  features
 
-################################################
 # FOR REGRESSION CLASSIFICATION TRAINING AND TESTING
-################################################
 indexedTESTreg = encodedFinal.map(parseRowIndexingRegression)
 
-from pyspark.mllib.util import MLUtils
-
-# ### Scoring with saved Gradient Boosting Tree Models, and saving output to blob
+# CACHE RDDS IN MEMORY
+indexedTESTreg.cache();
 
 from pyspark.mllib.tree import GradientBoostedTrees, GradientBoostedTreesModel
-
-####################################
+####################################################################
 ## REGRESSION: LOAD SAVED MODEL, SCORE AND SAVE RESULTS BACK TO BLOB
-####################################
 savedModel = GradientBoostedTreesModel.load(sc, BoostedTreeRegressionFileLoc)
-predictions = savedModel.predict(indexedTESTreg.map(lambda x: x.features))
-predictionAndLabels = indexedTESTreg.map(lambda lp: lp.label).zip(predictions)
+predictions = savedModel.predict(indexedTESTreg)
 
 # SAVE RESULTS
 datestamp = unicode(datetime.datetime.now()).replace(' ','').replace(':','_');
-filename = "GradientBoostingTreeRegression_" + datestamp + ".txt";
-dirfilename = scoredResultDir + filename;
-predictionAndLabels.saveAsTextFile(dirfilename)
+btregressionfilename = "GradientBoostingTreeRegression_" + datestamp + ".txt";
+dirfilename = scoredResultDir + btregressionfilename;
+predictions.saveAsTextFile(dirfilename)
+
+# ## Cleanup objects from memory, print final time, and print scored output file locations
+
+# #### Unpersist objects cached in memory
+taxi_df_test_cleaned.unpersist()
+indexedTESTreg.unpersist();
