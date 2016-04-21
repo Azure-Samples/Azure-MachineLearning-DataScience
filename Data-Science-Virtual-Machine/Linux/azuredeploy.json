@@ -169,7 +169,7 @@
                     "plan": {
                         "name": "linux-data-science-vm",
                         "publisher": "microsoft-ads",
-                        "product": "linuxdsvm"
+                        "product": "linux-data-science-vm"
                     },
                     "tags": {
                         "Application": "DataScience"
