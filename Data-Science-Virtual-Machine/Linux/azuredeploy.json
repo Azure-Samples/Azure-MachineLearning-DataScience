@@ -166,6 +166,11 @@
                     "type": "Microsoft.Compute/virtualMachines",
                     "name": "[variables('vmName')]",
                     "location": "[variables('location')]",
+                    "plan": {		
+                         "name": "linux-data-science-vm",		
+                         "publisher": "microsoft-ads",		
+                         "product": "linux-data-science-vm"		
+                     },                    
                     "tags": {
                         "Application": "DataScience"
                     },
