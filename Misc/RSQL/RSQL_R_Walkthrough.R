@@ -46,7 +46,7 @@ inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = c
 # Summarize the inDataSource
 rxGetVarInfo(data = inDataSource)
 start.time <- proc.time()
-rxSummary(~fare_amount:F(passenger_count), data = inDataSource)
+rxSummary(~fare_amount:F(passenger_count,1,6), data = inDataSource)
 used.time <- proc.time() - start.time
 print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2)," seconds, Elapsed Time=", 
             round(used.time[3],2), " seconds to summarize the inDataSource.", sep=""))
