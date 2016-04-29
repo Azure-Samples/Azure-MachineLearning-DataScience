@@ -24,7 +24,7 @@
         "vmName": {
             "type": "string",
             "metadata": {
-                "description": "Name for the Virtual Machine."
+                "description": "Name Prefix for the Virtual Machine."
             }
         },
         "vmSize": {
@@ -58,7 +58,7 @@
         "imageOffer": "linux-data-science-vm",
         "OSDiskName": "osdiskforlinuxsimple",
         "sku": "linuxdsvm",
-        "nicName": "myVMNic",
+        "nicName": "[parameters('vmName')]",
         "addressPrefix": "10.0.0.0/16",
         "subnetName": "Subnet",
         "subnetPrefix": "10.0.0.0/24",
@@ -69,7 +69,7 @@
         "vmStorageAccountContainerName": "vhds",
         "vmName": "[parameters('vmName')]",
         "vmSize": "[parameters('vmSize')]",
-        "virtualNetworkName": "MyVNET",
+        "virtualNetworkName": "[parameters('vmName')]",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]"
     },
