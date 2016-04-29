@@ -88,7 +88,7 @@
             "resources": [
                 {
                     "type": "Microsoft.Storage/storageAccounts",
-                    "name": "[parameters('storageAccountName')]",
+                    "name": "[variables('storageAccountName')]",
                     "apiVersion": "2015-05-01-preview",
                     "location": "[variables('location')]",
                     "properties": {
@@ -180,7 +180,7 @@
                         "Application": "DataScience"
                     },
                     "dependsOn": [
-                        "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
                     ],
                     "properties": {
@@ -202,7 +202,7 @@
                             "osDisk": {
                                 "name": "osdisk",
                                 "vhd": {
-                                    "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                                    "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
                                 },
                                 "caching": "ReadWrite",
                                 "createOption": "FromImage"
@@ -218,7 +218,7 @@
                         "diagnosticsProfile": {
                             "bootDiagnostics": {
                                 "enabled": "true",
-                                "storageUri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net')]"
+                                "storageUri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net')]"
                             }
                         }
                     }
