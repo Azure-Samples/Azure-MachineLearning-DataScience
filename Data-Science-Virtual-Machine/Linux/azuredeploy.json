@@ -167,7 +167,7 @@
                     "name": "[variables('vmName')]",
                     "location": "[variables('location')]",
                     "plan": {		
-                         "name": "linux-data-science-vm",		
+                         "name": "linuxdsvm",		
                          "publisher": "microsoft-ads",		
                          "product": "linux-data-science-vm"		
                      },                    
