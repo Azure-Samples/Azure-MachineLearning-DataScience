@@ -56,7 +56,7 @@
         "numberOfInstances": "[int(parameters('numberOfInstances'))]",
         "imagePublisher": "microsoft-ads",
         "imageOffer": "linux-data-science-vm",
-        "OSDiskName": "osdiskforlinuxsimple",
+        "OSDiskName": "[parameters('vmName')]",
         "sku": "linuxdsvm",
         "nicName": "[parameters('vmName')]",
         "addressPrefix": "10.0.0.0/16",
