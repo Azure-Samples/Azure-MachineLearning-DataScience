@@ -1,6 +1,7 @@
 ### Welcome to the Linux Data Science Virtual Machine
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FAzure-MachineLearning-DataScience%2Fmaster%2FData-Science-Virtual-Machine%2FLinux%2Fmultiazuredeploy.json" target="_blank" id="deploy-to-azure"><img src="http://azuredeploy.net/deploybutton.png"/></a>
+
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.svg)](https://deploy.azure.com/?repository=https://github.com/Azure/Azure-MachineLearning-DataScience?ptmpl=https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Data-Science-Virtual-Machine/Linux/multiazuredeploy.json)
 
 This Linux based virtual machine contains popular tools for data science modeling and development activities. The main tools include Microsoft R Open, Anaconda Python distribution, Jupyter notebooks for Python and R, Postgres database, Azure command line tools, libraries to access various Azure services like AzureML, databases, Azure storage and big data services. It also has machine learning tools and algorithms like CNTK (a deep learning toolkit from Microsoft Research), Vowpal Wabbit and xgboost.
 
@@ -10,5 +11,5 @@ For more information on provisioning and using the Linux Data Science VM, please
 
 You can click on the "Deploy to Azure" button to immediately try out the VM (Azure subscription required. Hardware compute [fees](https://azure.microsoft.com/en-us/marketplace/partners/microsoft-ads/linux-data-science-vm/) applies. [Free Trial](https://azure.microsoft.com/free/) available for new customers). 
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2FAzure-MachineLearning-DataScience%2Fmaster%2FData-Science-Virtual-Machine%2FLinux%2Fmultiazuredeploy.json" target="_blank" id="deploy-to-azure"><img src="http://azuredeploy.net/deploybutton.png"/></a>
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.svg)](https://deploy.azure.com/?repository=https://github.com/Azure/Azure-MachineLearning-DataScience?ptmpl=https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Data-Science-Virtual-Machine/Linux/multiazuredeploy.json)
 
