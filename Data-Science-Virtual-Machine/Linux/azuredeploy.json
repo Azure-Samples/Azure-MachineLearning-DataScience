@@ -17,13 +17,6 @@
                                     "description": "Location where resources will be deployed"
                         }
                 },
-                                     
-                "newStorageAccountName": {
-                    "type": "string",
-                    "metadata": {
-                        "description": "Unique DNS Name for the Storage Account where the Virtual Machine's disks will be placed."
-                    }
-                },
                 "adminUsername": {
                     "type": "string",
                     "metadata": {
@@ -36,11 +29,11 @@
                         "description": "Password for the Virtual Machine."
                     }
                 },
-                "dnsNameForPublicIP": {
-                    "type": "string",
-                    "metadata": {
-                        "description": "Unique DNS Name Prefix for the Public IP used to access the Virtual Machine."
-                    }
+                "numberOfInstances": {
+                             "type": "int",
+                             "metadata": {
+                              "description": "Number of VMs to deploy."
+                             }
                 },
                 "vmName": {
                     "type": "string",
@@ -83,7 +76,7 @@
                 "subnetName": "Subnet",
                 "subnetPrefix": "10.0.0.0/24",
                 "storageAccountType": "Standard_LRS",
-                "publicIPAddressName": "myPublicIP",
+                "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'lindsvm')]",                
                 "publicIPAddressType": "Dynamic",
                 "vmStorageAccountContainerName": "vhds",
                 "vmName": "[parameters('vmName')]",
@@ -95,7 +88,7 @@
             "resources": [
                 {
                     "type": "Microsoft.Storage/storageAccounts",
-                    "name": "[parameters('newStorageAccountName')]",
+                    "name": "[parameters('storageAccountName')]",
                     "apiVersion": "2015-05-01-preview",
                     "location": "[variables('location')]",
                     "properties": {
@@ -105,12 +98,16 @@
                 {
                     "apiVersion": "2015-05-01-preview",
                     "type": "Microsoft.Network/publicIPAddresses",
-                    "name": "[variables('publicIPAddressName')]",
-                    "location": "[variables('location')]",
+                    "name": "[concat(variables('vmName'), copyindex())]",
+                    "location": "[variables('location')]",      
+                    "copy": {
+                        "name": "publicIPLoop",
+                        "count": "[parameters('numberOfInstances')]"
+                    },
                     "properties": {
                         "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
                         "dnsSettings": {
-                            "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+                            "domainNameLabel": "[concat(variables('vmName'), copyindex())]"
                         }
                     }
                 },
@@ -138,8 +135,12 @@
                 {
                     "apiVersion": "2015-05-01-preview",
                     "type": "Microsoft.Network/networkInterfaces",
-                    "name": "[variables('nicName')]",
+                    "name": "[concat(variables('nicName'), copyindex())]",
                     "location": "[variables('location')]",
+                    "copy": {
+                                "name": "nicLoop",
+                                "count": "[parameters('numberOfInstances')]"
+                    },                    
                     "dependsOn": [
                         "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
                         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
@@ -164,8 +165,12 @@
                 {
                     "apiVersion": "2015-06-15",
                     "type": "Microsoft.Compute/virtualMachines",
-                    "name": "[variables('vmName')]",
-                    "location": "[variables('location')]",
+                    "name": "[concat(variables('vmName'), copyIndex())]",
+                    "location": "[variables('location')]",      
+                    "copy": {
+                           "name": "virtualMachineLoop",
+                            "count": "[parameters('numberOfInstances')]"
+                    },
                     "plan": {		
                          "name": "linuxdsvm",		
                          "publisher": "microsoft-ads",		
@@ -175,7 +180,7 @@
                         "Application": "DataScience"
                     },
                     "dependsOn": [
-                        "[concat('Microsoft.Storage/storageAccounts/', parameters('newStorageAccountName'))]",
+                        "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
                         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
                     ],
                     "properties": {
@@ -183,7 +188,7 @@
                             "vmSize": "[variables('vmSize')]"
                         },
                         "osProfile": {
-                            "computername": "[variables('vmName')]",
+                           "computerName": "[concat(variables('vmName'), copyIndex())]",
                             "adminUsername": "[parameters('adminUsername')]",
                             "adminPassword": "[parameters('adminPassword')]"
                         },
@@ -197,7 +202,7 @@
                             "osDisk": {
                                 "name": "osdisk",
                                 "vhd": {
-                                    "uri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                                    "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
                                 },
                                 "caching": "ReadWrite",
                                 "createOption": "FromImage"
@@ -206,14 +211,14 @@
                         "networkProfile": {
                             "networkInterfaces": [
                                 {
-                                    "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+                                    "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'), copyindex()))]"
                                 }
                             ]
                         },
                         "diagnosticsProfile": {
                             "bootDiagnostics": {
                                 "enabled": "true",
-                                "storageUri": "[concat('http://',parameters('newStorageAccountName'),'.blob.core.windows.net')]"
+                                "storageUri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net')]"
                             }
                         }
                     }
