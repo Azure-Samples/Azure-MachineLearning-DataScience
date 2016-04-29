@@ -56,7 +56,7 @@
         "numberOfInstances": "[int(parameters('numberOfInstances'))]",
         "imagePublisher": "microsoft-ads",
         "imageOffer": "linux-data-science-vm",
-        "OSDiskName": "[parameters('vmName')]",
+        "OSDiskName": "osdiskforlinuxsimple",
         "sku": "linuxdsvm",
         "nicName": "[parameters('vmName')]",
         "addressPrefix": "10.0.0.0/16",
@@ -190,7 +190,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'), copyIndex(), '.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'), variables('vmName'), copyIndex(), '.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
