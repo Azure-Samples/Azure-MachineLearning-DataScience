@@ -1,0 +1,11 @@
+[Unit]
+Description=Jupyterhub
+After=network-online.target
+
+[Service]
+User=root
+ExecStart=/anaconda/envs/py35/bin/jupyterhub --log-file=/var/log/jupyterhub.log
+WorkingDirectory=/etc/jupyterhub
+
+[Install]
+WantedBy=multi-user.target
