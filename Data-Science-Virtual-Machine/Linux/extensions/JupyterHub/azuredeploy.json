@@ -195,11 +195,11 @@
       "resources": [
         {
           "type": "extensions",
-          "name": "[concat(variables('vmName'), '-Script', copyIndex())]",
+          "name": "[variables('vmName')]",
           "apiVersion": "[variables('apiVersion')]",
           "location": "[variables('location')]",
           "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), copyIndex())]"
+            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
           ],
           "properties": {
             "publisher": "Microsoft.OSTCExtensions",
