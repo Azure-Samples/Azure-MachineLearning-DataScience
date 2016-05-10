@@ -210,7 +210,7 @@
 # Use with ssl_cert
 # c.JupyterHub.ssl_key = ''
 c.JupyterHub.ssl_key = '/etc/jupyterhub/srv/server.key'
-c.JupyterHub.ssl_cert = '/etc/jupyterhub/srv/server.cert'
+c.JupyterHub.ssl_cert = '/etc/jupyterhub/srv/server.crt'
 # Host to send statds metrics to
 # c.JupyterHub.statsd_host = ''
 
