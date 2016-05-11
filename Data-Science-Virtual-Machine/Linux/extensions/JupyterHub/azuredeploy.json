@@ -62,7 +62,7 @@
         "vmName": "[parameters('vmName')]",
         "vmSize": "[parameters('vmSize')]",
         "virtualNetworkName": "[parameters('vmName')]",
-        "networkSecurityGroupName": "[concat(parameters('vmName'),'_NSG')],
+        "networkSecurityGroupName": "[concat(parameters('vmName'),'_NSG')]",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
         "fileUris": "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Data-Science-Virtual-Machine/Linux/extensions/JupyterHub/installjupyterhub.sh",
