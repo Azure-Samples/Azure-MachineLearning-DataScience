@@ -14,6 +14,7 @@ mkdir /etc/jupyterhub/srv
 cd /etc/jupyterhub/srv
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt -subj '/CN=dsvm/O=YY/C=XX'
 mkdir /etc/skel/notebooks
+cp /dsvm/Notebooks/*.ipynb /etc/skel/notebooks/
 
 systemctl daemon-reload
 systemctl start jupyterhub
