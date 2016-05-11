@@ -1,3 +1,4 @@
+#!/bin/bash
 npm install -g configurable-http-proxy
 /anaconda/envs/py35/bin/pip install jupyterhub
 mkdir /etc/jupyterhub
