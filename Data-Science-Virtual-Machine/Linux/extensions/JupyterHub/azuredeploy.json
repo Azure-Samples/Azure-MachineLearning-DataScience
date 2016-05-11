@@ -65,7 +65,8 @@
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
         "fileUris": "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Data-Science-Virtual-Machine/Linux/extensions/JupyterHub/installjupyterhub.sh",
-        "commandToExecute": "./installjupyterhub.sh"
+        "commandToExecute": "./installjupyterhub.sh",
+        "apiVersion": "2015-06-15"
     },
     "resources": [
         {
@@ -196,7 +197,7 @@
         {
           "type": "extensions",
           "name": "[variables('vmName')]",
-          "apiVersion": "2015-06-15",
+          "apiVersion": "[variables('apiVersion')]",
           "location": "[variables('location')]",
           "dependsOn": [
             "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
