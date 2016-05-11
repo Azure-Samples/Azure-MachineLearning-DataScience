@@ -62,6 +62,7 @@
         "vmName": "[parameters('vmName')]",
         "vmSize": "[parameters('vmSize')]",
         "virtualNetworkName": "[parameters('vmName')]",
+        "networkSecurityGroupName": "[concat(parameters('vmName'),'_NSG')],
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
         "fileUris": "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Data-Science-Virtual-Machine/Linux/extensions/JupyterHub/installjupyterhub.sh",
@@ -112,13 +113,50 @@
             }
         },
         {
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[variables('networkSecurityGroupName')]",
+          "apiVersion": "2015-05-01-preview",
+          "location": "[variables('location')]",
+          "properties": {
+            "securityRules": [
+              {
+                "name": "jupyterhub",
+                "properties": {
+                  "priority": 1010,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "8000",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "default-allow-ssh",
+                "properties": {
+                  "priority": 1020,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "22",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              }
+            ]
+          }
+        },        
+        {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicName')]",
             "location": "[variables('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -134,7 +172,10 @@
                             }
                         }
                     }
-                ]
+                ],
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                }                
             }
         },
         {
