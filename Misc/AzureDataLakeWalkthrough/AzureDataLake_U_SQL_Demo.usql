@@ -1,0 +1,353 @@
+﻿//////////////////////////////////////////////
+///Read in Trip data
+
+@trip0 =
+    EXTRACT 
+    medallion string,
+    hack_license string,
+    vendor_id string,
+    rate_code string,
+    store_and_fwd_flag string,
+    pickup_datetime string,
+    dropoff_datetime string,
+    passenger_count string,
+    trip_time_in_secs string,
+    trip_distance string,
+    pickup_longitude string,
+    pickup_latitude string,
+    dropoff_longitude string,
+    dropoff_latitude string
+    // This is reading 12 trip data from blob
+    FROM "wasb://test1@weigstoragefordsvm.blob.core.windows.net/nyctaxitrip/trip_data_{*}.csv"
+    USING Extractors.Csv();
+
+// change data types
+@trip =
+    SELECT 
+    medallion,
+    hack_license,
+    vendor_id,
+    rate_code,
+    store_and_fwd_flag,
+    DateTime.Parse(pickup_datetime) AS pickup_datetime,
+    DateTime.Parse(dropoff_datetime) AS dropoff_datetime,
+    Int32.Parse(passenger_count) AS passenger_count,
+    Double.Parse(trip_time_in_secs) AS trip_time_in_secs,
+    Double.Parse(trip_distance) AS trip_distance,
+    (pickup_longitude==string.Empty ? 0: float.Parse(pickup_longitude)) AS pickup_longitude,
+    (pickup_latitude==string.Empty ? 0: float.Parse(pickup_latitude)) AS pickup_latitude,
+    (dropoff_longitude==string.Empty ? 0: float.Parse(dropoff_longitude)) AS dropoff_longitude,
+    (dropoff_latitude==string.Empty ? 0: float.Parse(dropoff_latitude)) AS dropoff_latitude
+    FROM @trip0
+    WHERE medallion != "medallion";
+////Output data to blob
+OUTPUT @trip   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_trip.csv"
+USING Outputters.Csv();  
+////output data to ADL
+OUTPUT @trip   
+TO "swebhdfs://cdsp.azuredatalakestore.net/nyctaxi_weig/demo_trip.csv"
+USING Outputters.Csv(); 
+
+
+///////////////////////////////////////////////////////
+///Read in fare data
+
+@fare0 =
+    EXTRACT 
+    medallion string,
+    hack_license string,
+    vendor_id string,
+    pickup_datetime string,
+    payment_type string,
+    fare_amount string,
+    surcharge string,
+    mta_tax string,
+    tip_amount string,
+    tolls_amount string,
+    total_amount string
+    FROM "wasb://test1@weigstoragefordsvm.blob.core.windows.net/nyctaxifare/trip_fare_{*}.csv"
+    USING Extractors.Csv();
+
+@fare =
+    SELECT 
+    medallion,
+    hack_license,
+    vendor_id,
+    DateTime.Parse(pickup_datetime) AS pickup_datetime,
+    payment_type,
+    Double.Parse(fare_amount) AS fare_amount,
+    Double.Parse(surcharge) AS surcharge,
+    Double.Parse(mta_tax) AS mta_tax,
+    Double.Parse(tip_amount) AS tip_amount,
+    Double.Parse(tolls_amount) AS tolls_amount,
+    Double.Parse(total_amount) AS total_amount
+    FROM @fare0
+    WHERE medallion != "medallion";
+//// output to blob
+OUTPUT @fare   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_fare.csv"
+USING Outputters.Csv();  
+////output data to ADL
+OUTPUT @fare   
+TO "swebhdfs://cdsp.azuredatalakestore.net/nyctaxi_weig/demo_fare.csv"
+////TO adl
+USING Outputters.Csv();
+
+//// Some data checks
+
+
+///check the number of medallions and unique number of medallions
+@trip2 =
+    SELECT
+    medallion,
+    vendor_id,
+    pickup_datetime.Month AS pickup_month
+    FROM @trip;
+
+@ex_1 =
+    SELECT
+    pickup_month, 
+    COUNT(medallion) AS cnt_medallion,
+    COUNT(DISTINCT(medallion)) AS unique_medallion
+    FROM @trip2
+    GROUP BY pickup_month;
+    OUTPUT @ex_1   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_1.csv"
+USING Outputters.Csv(); 
+
+
+///find those medallions that had more than 100 trips
+@ex_2 =
+    SELECT medallion,
+           COUNT(medallion) AS cnt_medallion
+    FROM @trip2
+    //where pickup_datetime >= "2013-01-01t00:00:00.0000000" and pickup_datetime <= "2013-04-01t00:00:00.0000000"
+    GROUP BY medallion
+    HAVING COUNT(medallion) > 100;
+    OUTPUT @ex_2   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_2.csv"
+USING Outputters.Csv(); 
+
+
+///find those invalid records in terms of pickup_longitude
+@ex_3 =
+    SELECT COUNT(medallion) AS cnt_invalid_pickup_longitude
+    FROM @trip
+    WHERE
+    pickup_longitude <- 90 OR pickup_longitude > 90;
+    OUTPUT @ex_3   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_3.csv"
+USING Outputters.Csv(); 
+
+
+///tipped vs. not tipped distribution
+@tip_or_not =
+    SELECT *,
+           (tip_amount > 0 ? 1: 0) AS tipped
+    FROM @fare;
+
+@ex_4 =
+    SELECT tipped,
+           COUNT(*) AS tip_freq
+    FROM @tip_or_not
+    GROUP BY tipped;
+    OUTPUT @ex_4   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_4.csv"
+USING Outputters.Csv(); 
+
+
+//tip class/range distribution
+@tip_class =
+    SELECT *,
+           (tip_amount >20? 4: (tip_amount >10? 3:(tip_amount >5 ? 2:(tip_amount > 0 ? 1: 0)))) AS tip_class
+    FROM @fare;
+@ex_5 =
+    SELECT tip_class,
+           COUNT(*) AS tip_freq
+    FROM @tip_class
+    GROUP BY tip_class;
+    OUTPUT @ex_5   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_5.csv"
+USING Outputters.Csv(); 
+
+
+//pick up the top 1000 records by medallion
+@trip_data_1000 =
+    SELECT *
+    FROM @trip
+    ORDER BY medallion ASC
+    FETCH 1000 ROWS;
+    OUTPUT @trip_data_1000   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_6.csv"
+USING Outputters.Csv(); 
+
+
+//join trip and fare table
+@model_data_full =
+SELECT t.*, f.payment_type, f.fare_amount, f.surcharge, f.mta_tax, f.tolls_amount,  f.total_amount, f.tip_amount,
+(f.tip_amount > 0 ? 1: 0) AS tipped,
+(f.tip_amount >20? 4: (f.tip_amount >10? 3:(f.tip_amount >5 ? 2:(f.tip_amount > 0 ? 1: 0)))) AS tip_class
+FROM @trip AS t JOIN  @fare AS f
+ON   (t.medallion == f.medallion AND t.hack_license == f.hack_license AND t.pickup_datetime == f.pickup_datetime)
+WHERE   (pickup_longitude != 0 AND dropoff_longitude != 0 
+//and datepart("mi",t.pickup_datetime) = 1
+);
+//// output to blob
+OUTPUT @model_data_full   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_7_full_data.csv"
+USING Outputters.Csv(); 
+////output data to ADL
+OUTPUT @model_data_full   
+TO "swebhdfs://cdsp.azuredatalakestore.net/nyctaxi_weig/demo_ex_7_full_data.csv"
+USING Outputters.Csv(); 
+
+
+//random select 1/1000 data for modeling purpose
+@addrownumberres_randomsample =
+SELECT *,
+        ROW_NUMBER() OVER() AS rownum
+FROM @model_data_full;
+
+@model_data_random_sample_1_1000 =
+SELECT *
+FROM @addrownumberres_randomsample
+WHERE rownum % 1000 == 0;
+
+OUTPUT @model_data_random_sample_1_1000   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_7_random_1_1000.csv"
+USING Outputters.Csv(); 
+
+
+//check random sampled data
+@random_sample_check =
+    SELECT tip_class,
+           COUNT( * ) AS tip_class_freq
+FROM @model_data_random_sample_1_1000
+GROUP BY tip_class;
+OUTPUT @random_sample_check
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_8.csv"
+USING Outputters.Csv(); 
+
+
+//stratified random select 1/1000 data for modeling purpose
+@addrownumberres_stratifiedsample =
+SELECT *,
+        ROW_NUMBER() OVER(PARTITION BY tip_class) AS rownum
+FROM @model_data_full;
+
+@model_data_stratified_sample_1_1000 =
+SELECT *
+FROM @addrownumberres_stratifiedsample
+WHERE rownum % 1000 == 0;
+//// output to blob
+OUTPUT @model_data_stratified_sample_1_1000   
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_9_stratified_1_1000.csv"
+USING Outputters.Csv(); 
+////output data to ADL
+OUTPUT @model_data_stratified_sample_1_1000   
+TO "swebhdfs://cdsp.azuredatalakestore.net/nyctaxi_weig/demo_ex_9_stratified_1_1000.csv"
+USING Outputters.Csv(); 
+
+
+//check stratified sampled data
+@stratified_sample_check =
+    SELECT tip_class,
+           COUNT( * ) AS tip_class_freq
+FROM @model_data_stratified_sample_1_1000
+GROUP BY tip_class;
+OUTPUT @stratified_sample_check
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_10.csv"
+USING Outputters.Csv(); 
+
+
+//summary of variables in data set
+@trip_summary1 =
+    SELECT DISTINCT(vendor_id) AS vendor_id,
+           COUNT(vendor_id) AS cnt_vendor_id
+FROM @trip
+GROUP BY vendor_id;
+OUTPUT @trip_summary1
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_11.csv"
+USING Outputters.Csv(); 
+
+
+@trip_summary2 =
+    SELECT DISTINCT(passenger_count) AS passenger_count,
+           COUNT(passenger_count) AS cnt_passenger_count
+FROM @trip
+GROUP BY passenger_count;
+OUTPUT @trip_summary2
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_12.csv"
+USING Outputters.Csv(); 
+
+
+// find percentiles of trip_distance
+@trip_summary3 =
+    SELECT DISTINCT vendor_id AS vendor,
+                    PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY trip_distance) OVER(PARTITION BY vendor_id) AS median_trip_distance_cont,//very slow
+                    PERCENTILE_DISC(0.5) WITHIN GROUP(ORDER BY trip_distance) OVER(PARTITION BY vendor_id) AS median_trip_distance_disc//use this one
+    FROM @trip;
+   // group by vendor_id;
+OUTPUT @trip_summary3
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_13.csv"
+USING Outputters.Csv(); 
+
+
+// find basic statistics for trip_distance
+@trip_summary4 =
+    SELECT 
+        vendor_id,
+        COUNT(*) AS cnt_row,
+        MIN(trip_distance) AS min_trip_distance,
+        MAX(trip_distance) AS max_trip_distance,
+        AVG(trip_distance) AS avg_trip_distance 
+    FROM @trip
+    GROUP BY vendor_id;
+OUTPUT @trip_summary4
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_14.csv"
+USING Outputters.Csv();
+
+
+@trip_summary5 =
+    SELECT DISTINCT vendor_id AS vendor,
+           PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY trip_distance) OVER(PARTITION BY vendor_id) AS median_trip_distance_disc
+    FROM @trip;
+   // group by vendor_id;
+OUTPUT @trip_summary5
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_15.csv"
+USING Outputters.Csv(); 
+
+
+//check missing values
+@res =
+    SELECT *,
+           (medallion == null? 1 : 0) AS missing_medallion
+    FROM @trip;
+
+@trip_summary6 =
+    SELECT 
+        vendor_id,
+    SUM(missing_medallion) AS medallion_empty, 
+    COUNT(medallion) AS medallion_total,
+    COUNT(DISTINCT(medallion)) AS medallion_total_unique  
+    FROM @res
+    GROUP BY vendor_id;
+OUTPUT @trip_summary6
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_16.csv"
+USING Outputters.Csv();
+
+
+// contigency table
+@trip_summary8 =
+    SELECT passenger_count,
+           COUNT(*) AS cnt,
+           AVG(tip_amount) AS avg_tip_amount,
+           VAR(tip_amount) AS var_tip_amount,
+           SUM(tipped) AS cnt_tipped,
+           (float)SUM(tipped)/COUNT(*) AS pct_tipped
+    FROM @model_data_full
+    GROUP BY passenger_count;
+    OUTPUT @trip_summary8
+TO "wasb://test1@weigstoragefordsvm.blob.core.windows.net/demo_ex_17.csv"
+USING Outputters.Csv();
