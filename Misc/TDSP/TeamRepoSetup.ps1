@@ -40,7 +40,7 @@ Write-host "Currently it is empty. You need to determine the content of it..." -
 git clone $teamrepourl
 Write-host "Team repository cloned." -ForegroundColor "Green"
 
-Write-host "Copying the entire directory in "$rootdir"\"$generalreponame+" except .git directory to "$rootdir"\"$teamreponame"..." -ForegroundColor "Yellow"
+Write-host "Copying the entire directory in "+$rootdir+"\"+$generalreponame+" except .git directory to "+$rootdir+"\"+$teamreponame"..." -ForegroundColor "Yellow"
 $SourceDirectory = $rootdir+"\"+$generalreponame
 $DestinationDirectory = $rootdir+"\"+$teamreponame
 $ExcludeSubDirectory = $SourceDirectory+'\.git'
