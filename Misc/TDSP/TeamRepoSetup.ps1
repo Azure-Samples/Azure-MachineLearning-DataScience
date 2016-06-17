@@ -1,7 +1,7 @@
 ﻿$server = Read-Host -Prompt 'Input the VSTS server name'
 $generalreponame = Read-Host -Prompt 'Input the name of the general repository'
 $teamreponame  = Read-Host -Prompt 'Input the repo name of your team'
-$rootdir = $PWD
+$rootdir = $PWD.Path
 
 $generalreponame = [uri]::EscapeDataString($generalreponame)
 $teamreponame = [uri]::EscapeDataString($teamreponame)
@@ -40,7 +40,7 @@ Write-host "Currently it is empty. You need to determine the content of it..." -
 git clone $teamrepourl
 Write-host "Team repository cloned." -ForegroundColor "Green"
 
-Write-host "Copying the entire directory in "+$rootdir+"\"+$generalreponame+" except .git directory to "+$rootdir+"\"+$teamreponame"..." -ForegroundColor "Yellow"
+Write-host "Copying the entire directory in "$rootdir"\"$generalreponame" except .git directory to "$rootdir"\"$teamreponame"..." -ForegroundColor "Yellow"
 $SourceDirectory = $rootdir+"\"+$generalreponame
 $DestinationDirectory = $rootdir+"\"+$teamreponame
 $ExcludeSubDirectory = $SourceDirectory+'\.git'
