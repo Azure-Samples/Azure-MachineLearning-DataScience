@@ -1,7 +1,7 @@
 ﻿$server = Read-Host -Prompt 'Input the VSTS server name'
 $generalreponame = Read-Host -Prompt 'Input the name of the general repository'
 $teamreponame  = Read-Host -Prompt 'Input the repo name of your team'
-$rootdir = Read-Host -Prompt 'Input the root directory path that you want to clone repositories to'
+$rootdir = $PWD
 
 $generalreponame = [uri]::EscapeDataString($generalreponame)
 $teamreponame = [uri]::EscapeDataString($teamreponame)
@@ -29,13 +29,6 @@ Write-host "Chocolatey installed." -ForegroundColor "Green"
 Write-host "Installing Git Credential manager..." -ForegroundColor "Yellow"
 choco install git-credential-manager-for-windows -y
 Write-host "Git Credential manager installed." -ForegroundColor "Green"
-
-if(-Not(Test-Path $rootdir)){
-    Write-host $rootdir "does not exist. Creating it now." -ForegroundColor "Yellow"
-    mkdir $rootdir
-}
-Write-host "Now change to " $rootdir "." -ForegroundColor "Yellow"
-cd $rootdir
 
 Write-host "Start cloning the general repository..." -ForegroundColor "Yellow"
 Write-host "You might be asked to input your credentials..." -ForegroundColor "Yellow"
