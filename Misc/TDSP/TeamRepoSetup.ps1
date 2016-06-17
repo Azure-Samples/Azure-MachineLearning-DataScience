@@ -8,8 +8,8 @@ $teamreponame = [uri]::EscapeDataString($teamreponame)
 $generalrepourl = 'https://'+$server+'.visualstudio.com/_git/'+$generalreponame
 $teamrepourl = 'https://'+$server+'.visualstudio.com/_git/'+$teamreponame
 
-Write-host "URL of the general repository is "+$generalrepourl -ForegroundColor "Yellow"
-Write-host "URL of the team repository is "+$teamrepourl -ForegroundColor "Yellow"
+Write-host "URL of the general repository is "$generalrepourl -ForegroundColor "Yellow"
+Write-host "URL of the team repository is "$teamrepourl -ForegroundColor "Yellow"
 
 #$web_client = new-object System.Net.WebClient
 #$gcmwurl = 'https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/download/v1.4.0/GCMW-1.4.0.exe'
@@ -26,7 +26,7 @@ Write-host "Installing Chocolatey. It is needed to install Git Credential Manage
 iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
 Write-host "Chocolatey installed." -ForegroundColor "Green"
 
-Write-host "Installing Git Credential manager..." -ForegroundColor "Yellow"
+Write-host "Installing Git Credential Manager..." -ForegroundColor "Yellow"
 choco install git-credential-manager-for-windows -y
 Write-host "Git Credential manager installed." -ForegroundColor "Green"
 
@@ -40,7 +40,7 @@ Write-host "Currently it is empty. You need to determine the content of it..." -
 git clone $teamrepourl
 Write-host "Team repository cloned." -ForegroundColor "Green"
 
-Write-host "Copying the entire directory in "+$rootdir+"\"+$generalreponame+" except .git directory to "+$rootdir+"\"+$teamreponame+"..." -ForegroundColor "Yellow"
+Write-host "Copying the entire directory in "$rootdir"\"$generalreponame+" except .git directory to "$rootdir"\"$teamreponame"..." -ForegroundColor "Yellow"
 $SourceDirectory = $rootdir+"\"+$generalreponame
 $DestinationDirectory = $rootdir+"\"+$teamreponame
 $ExcludeSubDirectory = $SourceDirectory+'\.git'
@@ -53,7 +53,7 @@ foreach ($file in $files)
 }
 
 Write-host "General repository copied to the team repository on your disk." -ForegroundColor "Green"
-Write-host "Change to the team repository directory "+$DestinationDirectory -ForegroundColor "Green"
+Write-host "Change to the team repository directory "$DestinationDirectory -ForegroundColor "Green"
 cd $DestinationDirectory
 
 $commitornot = Read-Host 'If you are ready to commit the new team repository, enter Y. Otherwise, go to change your team repository and come back to enter Y to commit...'
