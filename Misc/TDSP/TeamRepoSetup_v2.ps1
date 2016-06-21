@@ -105,10 +105,10 @@ if ($role -lt 3)
 # Authenticate to Azure.
 if ($role -lt 3){
     if ($role -eq 1){
-        $prompt = "Do you want to create a data drive for your team? [Y]/N"
+        $prompt = "Do you want to create an Azure file share service for your team? [Y]/N"
     }
     else {
-        $prompt = "Do you want to create a data drive for your project? [Y]/N"
+        $prompt = "Do you want to create an Azure file share service for your project? [Y]/N"
     }
     $createornot = Read-Host -Prompt $prompt
     if (!$createornot -or $createornot.ToLower() -eq 'y'){
@@ -116,8 +116,8 @@ if ($role -lt 3){
         Get-AzureSubscription | Format-Table
         # Select your subscription
         $sub = Read-Host 'Select the subscription name where resources will be created'
-        $sa = Read-Host 'Enter the storage account name to create'
-        $rg = Read-Host 'Enter the resource group to create'
+        $sa = Read-Host 'Enter the storage account name to create (has to be new)'
+        $rg = Read-Host 'Enter the resource group to create (has to be new)'
         Get-AzureRmSubscription -SubscriptionName $sub | Select-AzureRmSubscription
         # Create a new resource group.
         New-AzureRmResourceGroup -Name $rg -Location 'South Central US'
@@ -127,13 +127,13 @@ if ($role -lt 3){
         Set-AzureRmCurrentStorageAccount -ResourceGroupName $rg -StorageAccountName $sa
 
         # Create a Azure File Service Share
-        $sharename = Read-Host 'Enter the name of the file share to create'
+        $sharename = Read-Host 'Enter the name of the file share service to create'
         $s = New-AzureStorageShare $sharename
         # Create a directory under the FIle share. You can give it any name
         New-AzureStorageDirectory -Share $s -Path 'data' 
         # List the share to confirm that everything worked
         Get-AzureStorageFile -Share $s
-        Write-Host "Azure file share service created. It can be later mounted to the Azure virtual machines created for your team projects." -ForegroundColor "Green"
+        Write-Host "An Azure file share service created. It can be later mounted to the Azure virtual machines created for your team projects." -ForegroundColor "Green"
         Write-Host "Please keep a note for the information of the Azure file share service. It will be needed in the future when mounting it to Azure virtual machines" -ForegroundColor "Green"
     }
 }
@@ -162,7 +162,7 @@ function mountfileservices
 
 if ($role -gt 1){
     
-    $prompt = "Do you want to mount a data drive to your Azure virtual machine? [Y]/N"
+    $prompt = "Do you want to mount an Azure file share service to your Azure virtual machine? [Y]/N"
     
     $mountornot = Read-Host -Prompt $prompt
     if (!$mountornot -or $mountornot.ToLower() -eq 'y'){
