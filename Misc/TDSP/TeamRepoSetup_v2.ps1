@@ -113,17 +113,38 @@ if ($role -lt 3){
     $createornot = Read-Host -Prompt $prompt
     if (!$createornot -or $createornot.ToLower() -eq 'y'){
         Login-AzureRmAccount
-        Get-AzureSubscription | Format-Table
+        Get-AzureRmSubscription | Format-Table
         # Select your subscription
         $sub = Read-Host 'Select the subscription name where resources will be created'
-        $sa = Read-Host 'Enter the storage account name to create (has to be new)'
-        $rg = Read-Host 'Enter the resource group to create (has to be new)'
         Get-AzureRmSubscription -SubscriptionName $sub | Select-AzureRmSubscription
-        # Create a new resource group.
-        New-AzureRmResourceGroup -Name $rg -Location 'South Central US'
-        # Create a new storage account. You can reuse existing storage account if you wish.
-        New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location 'South Central US' -Type 'Standard_LRS'
-        # Set your current working storage account
+        $createornotsa = Read-Host 'Do you want to create a new storage account for your file share?'
+        if (!$createornotsa -or $createornotsa.ToLower() -eq 'y'){
+            $havegoodsaname = $false
+            while(!$havegoodsaname) {
+                $sa = Read-Host 'Enter the storage account name to create'
+                $havegoodsaname = !(Test-AzureName -Storage $sa)
+                if (!$havegoodsaname) { Write-Host "Storage Account already exists. Try a different name again." }
+            }
+            $rg = Read-Host 'Enter the resource group'
+       
+            # Create a new resource group if it does not exist. Default is southcentral (for now)
+            $loc = 'southcentralus'
+            try {
+                $tmprg=Get-AzureRmResourceGroup -Name $rg
+                Write-Host "Reusing Resource Group: "$rg
+                $loc=$tmprg.Location
+            }
+            catch {
+                New-AzureRmResourceGroup -Name $rg -Location $loc
+            }
+            # Create a new storage account. You can reuse existing storage account if you wish.
+            New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS'
+            # Set your current working storage account
+        } else {
+            Get-AzureRmStorageAccount | Format-Table
+            $sa = Read-Host 'Enter the storage account name to reuse from above list'
+            $rg = Read-Host 'Enter the resource group of thr storage account from above list'            
+        }
         Set-AzureRmCurrentStorageAccount -ResourceGroupName $rg -StorageAccountName $sa
 
         # Create a Azure File Service Share
