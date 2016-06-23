@@ -14,24 +14,31 @@ if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
         $name1 = 'general repository'
         $name2 = 'team repository'
     } else{
-        $name1 = 'project repository'
+        $name1 = 'team repository'
+        $name2 = 'project repository'
     }
 
-    if ($role -lt 3){
-        $prompt1 = 'Input the name of the '+$name1
-        $prompt2 = 'Input the name of the '+$name2
-        $generalreponame = Read-Host -Prompt $prompt1
-        $teamreponame  = Read-Host -Prompt $prompt2
-        $generalreponame = [uri]::EscapeDataString($generalreponame)
-        $teamreponame = [uri]::EscapeDataString($teamreponame)
-        $generalrepourl = 'https://'+$server+'.visualstudio.com/_git/'+$generalreponame
+    $prompt1 = 'Input the name of the '+$name1
+    $prompt2 = 'Input the name of the '+$name2
+    $generalreponame = Read-Host -Prompt $prompt1
+    $teamreponame  = Read-Host -Prompt $prompt2
+    $generalreponame = [uri]::EscapeDataString($generalreponame)
+    $teamreponame = [uri]::EscapeDataString($teamreponame)
+    $generalrepourl = 'https://'+$server+'.visualstudio.com/_git/'+$generalreponame
+    if ($role -eq 1)
+    {
         $teamrepourl = 'https://'+$server+'.visualstudio.com/_git/'+$teamreponame
+    } ElseIf ($role -eq 2)
+    {
+        $teamrepourl = 'https://'+$server+'.visualstudio.com/'+$generalreponame+'/_git/'+$teamreponame
+    } else{
+        $generalrepourl = 'https://'+$server+'.visualstudio.com/'+$generalreponame+'/_git/'+$teamreponame
+    }
+    if ($role -lt 3)
+    {
         Write-host "URL of the "$name1 "is "$generalrepourl -ForegroundColor "Yellow"
         Write-host "URL of the "$name2 "is "$teamrepourl -ForegroundColor "Yellow"
     } else{
-        $prompt1 = 'Input the name of the '+$name1
-        $generalreponame = [uri]::EscapeDataString($generalreponame)
-        $generalrepourl = 'https://'+$server+'.visualstudio.com/_git/'+$generalreponame
         Write-host "URL of the "$name1 "is "$generalrepourl -ForegroundColor "Yellow"
     }
     
@@ -96,7 +103,7 @@ if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
         Write-host "Change to the "$name2 "directory "$DestinationDirectory -ForegroundColor "Green"
         cd $DestinationDirectory
 
-        $prompt = 'If you are ready to commit the'+$name2+', enter Y. Otherwise, go to change your'+$name2+'and come back to enter Y to commit...'
+        $prompt = 'If you are ready to commit the '+$name2+', enter Y. Otherwise, go to change your '+$name2+' and come back to enter Y to commit...'
         $commitornot = Read-Host -Prompt $prompt
 
         if ($commitornot.ToLower() -eq 'y')
