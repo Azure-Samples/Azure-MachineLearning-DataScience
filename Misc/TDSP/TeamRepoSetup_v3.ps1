@@ -1,10 +1,15 @@
 ﻿$role = Read-Host -Prompt 'Select your role in your team:1-team lead;[2]-project lead;3-project team member'
-$vstsyesorno = Read-Host -Prompt 'Do you want to set up your team or project repository on Visual Studio Team Services (VSTS)?[Y]/N'
+if ($role -lt 3)
+{
+    $vstsyesorno = Read-Host -Prompt 'Do you want to set up your team or project repository on Visual Studio Team Services (VSTS)?[Y]/N'
+} else{
+    $vstsyesorno = Read-Host -Prompt 'Do you want to clone your project repository on your machine?[Y]/N'
+}
 if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
 {
     $server = Read-Host -Prompt 'Please input your VSTS server name'
     
-    if (!$role -or !$role -eq 1 -or !$role -eq 3){
+    if (!$role -or !($role -eq 1) -or !($role -eq 3)){
         $role = 2
     }
     if ($role -eq 2){
@@ -89,7 +94,7 @@ if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
             } else {
                 $overwriteyesno = 'y'
             }
-            if ($overwriteyesno -eq 'y' -or $overwriteyesno -eq 'a')
+            if (($overwriteyesno -eq 'y') -or ($overwriteyesno -eq 'a'))
             {
                 Copy-Item $file.FullName -Destination $CopyPath -Force
                 $copied = 'y'
@@ -144,8 +149,12 @@ if ($role -lt 3){
         $prompt = "Do you want to create an Azure file share service for your project? [Y]/N"
     }
     $createornot = Read-Host -Prompt $prompt
-    if (!$createornot -or $createornot.ToLower() -eq 'y'){
-        Login-AzureRmAccount
+    if (!$createornot -or ($createornot.ToLower() -eq 'y')){
+        if ((Get-AzureRmSubscription).Length -le 0) {
+            Write-Host "Login to Azure..." -ForegroundColor Yellow
+            Login-AzureRmAccount
+        }
+        Write-Host "Getting the list of subscriptions..." -ForegroundColor Yellow
         $sublist = Get-AzureRmSubscription
         $subnamelist = $sublist.SubscriptionName
         echo $subnamelist
@@ -155,14 +164,12 @@ if ($role -lt 3){
         DO
         {
             $sub = Read-Host 'Enter the subscription name where resources will be created'
-            if ($subnamelist -match $sub)
+            $index = [array]::indexof($subnamelist,$sub)
+    
+            if ($index -ge 0)
             {
-                $index = [array]::indexof($subnamelist,$sub)
-                if ($index -ge 0)
-                {
-                    $subnameright = $true
-                }
-            } 
+                $subnameright = $true
+            }
             if (!$subnameright)
             {
                 $quitornotask = Read-Host 'The subscription name you input does not exist. [R]-retry,q-quit'
@@ -176,6 +183,7 @@ if ($role -lt 3){
 
         if ($subnameright) #subscription name selected correctly
         {
+            Write-Host "Getting the list of storage accounts under subscription "$sub -ForegroundColor Yellow
             Get-AzureRmSubscription -SubscriptionName $sub | Select-AzureRmSubscription
             $storageaccountlist = Get-AzureRmStorageAccount #Retrieve the storage account list
             $storageaccountnames = $storageaccountlist.StorageAccountName #get the storage account names
@@ -184,7 +192,7 @@ if ($role -lt 3){
             $resourcegroupnames = $storageaccountlist.ResourceGroupName #get the resource group for storage accounts
             $createornotsa = Read-Host 'Do you want to create a new storage account for your Azure file share?[Y]/N'
             $saretryornot = 'r'
-            if (!$createornotsa -or $createornotsa.ToLower() -eq 'y'){ #create a new storage account
+            if (!$createornotsa -or ($createornotsa.ToLower() -eq 'y')){ #create a new storage account
                 $havegoodsaname = $false
                 $saretry = $true
                 $loc = 'southcentralus'
@@ -192,7 +200,7 @@ if ($role -lt 3){
                     $sa0 = Read-Host 'Enter the storage account name to create (only accept lower case letters and numbers)'
                     $sa = $sa0.ToLower()
                     $sa = $sa -replace '[^a-z0-9]'
-                    if (!$sa -eq $sa0)
+                    if (!($sa -eq $sa0))
                     {
                         Write-Host "You input storage account name "$sa0 ". To follow the naming convention of Azure storage account names, it is converted to" $sa"." -ForegroundColor Yellow
                     }
@@ -217,16 +225,19 @@ if ($role -lt 3){
                         echo $resourcegroupnames
                         $rg0 = Read-Host 'Enter the resource group name (New or existing names are OK. Only alphanumeric, underscore, and hyphen are accepted)'
                         $rg = $rg0 -Replace '[^a-zA-Z0-9-_]' #enforce the naming convention
-                        if (!$rg -eq $rg0)
+                        if (!($rg -eq $rg0))
                         {
                             Write-Host "The resource group name you input is "$rg0 ". To follow the naming convention of Azure resource group, it is converted to "$rg0
                         }
                         $havegoodsaname = $true
                         $index = [array]::indexof($resourcegroupnames,$rg)
                         if ($index -ge 0){ #resource group already exists
+                            Write-Host "Start creating storage account "$sa "under resource group "$rg "at "$loc -ForegroundColor Yellow
                             New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS' #create a new storage account under rg
                         } else{
+                            Write-Host "Start creating resource group "$rg "at "$loc -ForegroundColor Yellow
                             New-AzureRmResourceGroup -Name $rg -Location $loc
+                            Write-Host "Start creating storage account "$sa "under resource group "$rg "at "$loc -ForegroundColor Yellow
                             New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS'
                         }
                     }
@@ -241,8 +252,9 @@ if ($role -lt 3){
                         Write-Host "Resource group "$rg "does not exist. Creating..." -ForegroundColor Yellow
                         New-AzureRmResourceGroup -Name $rg -Location $loc
                     }
-                    if (!$saretryornot.ToLower() -eq 'u') #not using the existing storage account
+                    if (!($saretryornot.ToLower() -eq 'u')) #not using the existing storage account
                     {
+                        Write-Host "Start creating storage account "$sa "under resource group "$rg "at "$loc -ForegroundColor Yellow
                         New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS'
                     }
                 }            
@@ -252,14 +264,14 @@ if ($role -lt 3){
                 while(!$validexistingsasaname -and $saretry) {
                     $sa0 = Read-Host 'Enter the storage account name to use'
                     $sa = $sa0.ToLower()
-                    if ($storageaccountnames -match $sa) #storage accont name already exists. 
+                    $index = [array]::indexof($storageaccountnames,$sa)
+                    if ($index -ge 0) #storage accont name already exists. 
                     {
-                        $index = [array]::indexof($storageaccountnames,$sa)
                         $rg = $resourcegroupnames[$index]
                         Write-Host "Storage Account "$sa "does exist. Its resource group is "$rg -ForegroundColor Yellow  #storage account exists. 
                         $validexistingsasaname = $true
                     } else{
-                        $saretryornot = Read-Host $sa "does not exit. [R]-retry,Q-quit"
+                        $saretryornot = Read-Host "Storage account "$sa "does not exit. [R]-retry,Q-quit"
                         if ($saretryornot.ToLower() -eq 'q')
                         {
                             $saretry = $false
@@ -288,11 +300,14 @@ function mountfileservices
 {
     # Authenticate to Azure.
     if ((Get-AzureRmSubscription).Length -le 0) {
+        Write-Host "Login to your Azure account..." -ForegroundColor Yellow
         Login-AzureRmAccount
     }
     
+    Write-Host "Start getting the list of subscriptions under your Azure account..." -ForegroundColor Yellow
     $sublist = Get-AzureRmSubscription
     $subnamelist = $sublist.SubscriptionName
+    Write-Host "Here are the subscription names under your Azure account:" -ForegroundColor Yellow
     echo $subnamelist
     # Select your subscription
     $subnameright = $false
@@ -300,33 +315,36 @@ function mountfileservices
     DO
     {
         $sub = Read-Host 'Enter the subscription name where the Azure file share service has been created'
-        if ($subnamelist -match $sub)
+        $index = [array]::indexof($subnamelist,$sub)
+        if ($index -ge 0)
         {
             $subnameright = $true
         } else
         {
-            $quitornotask = Read-Host 'The subscription name you input does not exist. [R]-retry,q-quit'
-            if ($quitornotask -eq 'q')
+            $quitornotask = Read-Host 'The subscription name you input does not exist. [R]-retry,Q-quit'
+            if ($quitornotask.ToLower() -eq 'q')
             {
                 Write-Host "Mounting Azure file share service quit." -ForegroundColor "Red"
                 $quitornot = $true
             }
         }
-    } while(!$submitright -and !$quitornot)
+    } while(!$subnameright -and !$quitornot)
     
     if ($subnameright){
         Get-AzureRmSubscription -SubscriptionName $sub | Select-AzureRmSubscription
+        Write-Host "Start getting the list of storage accounts under your subscription "$sa -ForegroundColor Yellow
         $storageaccountlist = Get-AzureRmStorageAccount #Retrieve the storage account list
-        echo $storageaccountlist
         $storageaccountnames = $storageaccountlist.StorageAccountName #get the storage account names
         $resourcegroupnames = $storageaccountlist.ResourceGroupName #get the resource group for storage accounts
+        Write-Host "Here are the storage account names under subsription "$sub
+        echo $storageaccountnames
         $goodsaname = $false
         $quitornot = $false
         while (!$goodsaname -and !$quitornot)
         {
-            $sa = Read-Host "Enter the storage account name where the Azure file share you mount is created"
-            if ($storageaccountnames -match $sa){
-                $index = [array]::indexof($storageaccountnames,$sa)
+            $sa = Read-Host "Enter the storage account name where the Azure file share you want to mount is created"
+            $index = [array]::indexof($storageaccountnames,$sa)
+            if ($index -ge 0){
                 $rg = $resourcegroupnames[$index]
                 $goodsaname = $true
             } else{
@@ -340,8 +358,13 @@ function mountfileservices
         if ($goodsaname){
             $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Key1
             $sharename = Read-Host 'Enter the name of the file share to mount'
-            $drivename = Read-Host 'Enter the name of the drive. This name should be different from the disk names your virtual machine has.'
-
+            $drivename = Read-Host 'Enter the name of the drive to be added to your virtual machine. This name should be different from the disk names your virtual machine has.'
+            if (!($drivename[$drivename.Length-1] -eq ':')){
+                Write-Host 'We are here'
+                $drivename = $drivename+':'
+                Write-Host 'Drivename = '$drivename
+            }
+            Write-Host 'File share '$sharename' will be mounted to your virtual machine as drive' $drivename
             # Save key securely
             cmdkey /add:$sa.file.core.windows.net /user:$sa /pass:$storKey
 
@@ -356,14 +379,14 @@ if ($role -eq 3){
     $prompt = "Do you want to mount an Azure file share service to your Azure virtual machine? [Y]/N"
     
     $mountornot = Read-Host -Prompt $prompt
-    if (!$mountornot -or $mountornot.ToLower() -eq 'y'){
+    if (!$mountornot -or ($mountornot.ToLower() -eq 'y')){
         
         mountfileservices
         $others = $true
         DO{
             $prompt = "Do you want to mount other Azure file share services? [Y]/N"
             $mountornot = Read-Host -Prompt $prompt
-            if (!$mountornot -or $mountornot.ToLower() -eq 'y'){
+            if (!$mountornot -or ($mountornot.ToLower() -eq 'y')){
                 mountfileservices
             } else{
                 $others = $false
