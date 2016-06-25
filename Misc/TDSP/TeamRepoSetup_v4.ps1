@@ -1,7 +1,9 @@
 ﻿$role = Read-Host -Prompt 'Select your role in your team:1-team lead;[2]-project lead;3-project team member'
-if (!$role -or !($role -eq 1) -or !($role -eq 3)){
+
+if ((!$role) -or (!($role -eq 1) -and !($role -eq 3))){
     $role = 2
 }
+
 if ($role -eq 3){
     $name1 = 'team repository'
     $name2 = 'project repository'
@@ -13,6 +15,7 @@ if ($role -eq 3){
     $name1 = 'team repository'
     $name2 = 'project repository'
 }
+
 
 if ($role -eq 1)
 {
@@ -72,12 +75,12 @@ if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
         Write-host "Start cloning"$name2"..." -ForegroundColor "Yellow"
         Write-host "Currently it is empty. You need to determine the content of it..." -ForegroundColor "Yellow"
         git clone $teamrepourl
-        Write-host $name2"cloned." -ForegroundColor "Green"
+        Write-host $name2 "cloned." -ForegroundColor "Green"
     }
 
     if ($role -lt 3)
     {
-        Write-host "Copying the entire directory in "$rootdir"\"$generalreponame "except .git directory to "$rootdir"\"$teamreponame"..." -ForegroundColor "Yellow"
+        Write-host "Copying the entire directory in"$rootdir"\"$generalreponame "except .git directory to"$rootdir"\"$teamreponame"..." -ForegroundColor "Yellow"
         $SourceDirectory = $rootdir+"\"+$generalreponame
         $DestinationDirectory = $rootdir+"\"+$teamreponame
         $ExcludeSubDirectory = $SourceDirectory+'\.git'
@@ -88,8 +91,8 @@ if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
         {
             $CopyPath = Join-Path $DestinationDirectory $file.FullName.Substring($SourceDirectory.length)
             if ((Test-Path $CopyPath) -and ($promptnote -eq 'n' -or $promptnote -eq 'y')){
-                $promptnote = $CopyPath+" exists. Do you want to overwrite?[A]-all/Y-yes/N-no"
-                $overwriteyesno = Read-Host -Prompt $promptnote
+                $promptnote1 = $CopyPath+" exists. Do you want to overwrite?[A]-all/Y-yes/N-no"
+                $overwriteyesno = Read-Host -Prompt $promptnote1
                 if (!$overwriteyesno -or $overwriteyesno.ToLower() -eq 'a')
                 {
                     $overwriteyesno = 'a'
@@ -265,7 +268,7 @@ if ($role -lt 3){
                             }
                         }
                         
-                    } else{ #storage account does not exit
+                    } else{ #storage account does not exist
                         Write-Host "Storage account" $sa "will be created..." -ForegroundColor Yellow
                         Write-Host "You need to select the resource group name under which the storage account will be created." -ForegroundColor Yellow
                         Write-Host "Here is the list of existing resource group names" -ForegroundColor Yellow
@@ -327,32 +330,32 @@ if ($role -lt 3){
                         $havegoodsaname = $true
                         $index = [array]::indexof($resourcegroupnames,$rg)
                         if ($index -ge 0){ #resource group already exists
-                            Write-Host "Start creating storage account "$sa "under resource group "$rg "at "$loc -ForegroundColor Yellow
+                            Write-Host "Start creating storage account"$sa "under resource group"$rg "at"$loc -ForegroundColor Yellow
                             New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS' #create a new storage account under rg
                         } else{
-                            Write-Host "Start creating resource group "$rg "at "$loc -ForegroundColor Yellow
+                            Write-Host "Start creating resource group"$rg "at"$loc -ForegroundColor Yellow
                             New-AzureRmResourceGroup -Name $rg -Location $loc
-                            Write-Host "Start creating storage account "$sa "under resource group "$rg "at "$loc -ForegroundColor Yellow
+                            Write-Host "Start creating storage account"$sa "under resource group"$rg "at"$loc -ForegroundColor Yellow
                             New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS'
                         }
                     }
                 }
-                if ($havegoodsaname -and $saretry) #a good name is provided, $saretryornot is not 'q', and the storage account name does not exist
-                {
-                    $index = [array]::indexof($resourcegroupnames,$rg)
-                    if ($index -ge 0){
-                        Write-Host "Using the existing resource group "$rg -ForegroundColor Yellow
-                    } else{
-                        
-                        Write-Host "Resource group "$rg "does not exist. Creating..." -ForegroundColor Yellow
-                        New-AzureRmResourceGroup -Name $rg -Location $loc
-                    }
-                    if (!($saretryornot.ToLower() -eq 'u')) #not using the existing storage account
-                    {
-                        Write-Host "Start creating storage account "$sa "under resource group "$rg "at "$loc -ForegroundColor Yellow
-                        New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS'
-                    }
-                }            
+                #if ($havegoodsaname -and $saretry) #a good name is provided, $saretryornot is not 'q', and the storage account name does not exist
+                #{
+                #    $index = [array]::indexof($resourcegroupnames,$rg)
+                #    if ($index -ge 0){
+                #        Write-Host "Using the existing resource group "$rg -ForegroundColor Yellow
+                #    } else{
+                #        
+                #        Write-Host "Resource group "$rg "does not exist. Creating..." -ForegroundColor Yellow
+                #        New-AzureRmResourceGroup -Name $rg -Location $loc
+                #    }
+                #    if (!($saretryornot.ToLower() -eq 'u')) #not using the existing storage account
+                #    {
+                #        Write-Host "Start creating storage account "$sa "under resource group "$rg "at "$loc -ForegroundColor Yellow
+                #        New-AzureRmStorageAccount -Name $sa -ResourceGroupName $rg -Location $loc -Type 'Standard_LRS'
+                #    }
+                #}            
             } else{ #use an existing storage account
                 $validexistingsasaname = $false
                 $saretry = $true
