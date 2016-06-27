@@ -1,4 +1,4 @@
-This folder contains Scala codes and notebooks that show how to perform data science on Spark on Azure HDInsight clusters using Scala.  
+This folder contains Scala code and notebook that show how to perform data science on Spark on Azure HDInsight clusters using Scala.  
 
 We previously published similar end-to-end data science process walkthrough on Spark using pySpark. Files here show similar content in Scala.
  
