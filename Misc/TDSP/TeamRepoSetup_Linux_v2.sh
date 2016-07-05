@@ -139,7 +139,7 @@ if [ $role -lt 3 ]
  read commitornot
  commitornot2=${commitornot,,}
  
- if [ commitornot2='y' ]
+ if [ "$commitornot2" = 'y' ]
  then
   git add .
   username=$(git config user.name)
@@ -177,7 +177,6 @@ if [ $role -lt 3 ]
 fi
 
 
-#role=2
 
 if [ $role -lt 3 ]
  then
@@ -193,7 +192,7 @@ if [ $role -lt 3 ]
  
  createornot2=${createornot=,,}
  
- if [ -z "$createornot2" ] || [ createornot2='y' ]
+ if [ -z "$createornot2" ] || [ "$createornot2" = 'y' ]
   then 
   azure config mode arm
   loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
@@ -270,68 +269,33 @@ function mountfileservices {
 
 
 
-
 #Mount share files to Linux DSVM
 
 if [ $role -gt 1 ]
  then
- echo "Do you want to mount an Azure File share service to your Azure Virtual Machine? Y/N "  
+ echo "Do you want to mount an Azure File share service to your Azure Virtual Machine? Y/N "
  read mountornot
- mountornot2=${mountornot=,,} 
- if [ -z "$mountornot2" ] || [ mountornot2='y' ]
+ mountornot2=${mountornot,,}
+ # echo "mountornot2 is $mountornot2"
+ if [ -z "$mountornot2" ] || [ "$mountornot2" = 'y' ]
   then
   mountfileservices
-  #others=1
-  #while [ $others -eq 1 ]
-  #do
-  # echo "Do you want to mount other Azure File share services? Y/N "
-  # read mountornot_other
-  # mountornot_other2=${mountornot_other=,,}
-  # if [ -z "$mountornot_other2" ] || [ mountornot_other2='y' ]
-  #  then 
-  #  mountfileservices
-  # else
-  #  others=0
-  # fi
-  #done  
+  others=1
+  while [ $others -eq 1 ]
+  do
+   echo "Do you want to mount other Azure File share services? Y/N "
+   read mountornot_other
+   mountornot_other2=${mountornot_other,,}
+   #echo "mountornot_other2 is $mountornot_other2"
+   if [ -z "$mountornot_other2" ] || [ "$mountornot_other2" = 'y' ]
+   #if [ "$mountornot_other" -eq 1 ]
+    then
+    mountfileservices again
+   else
+    others=0
+    #echo "others is $others"
+   fi
+  done
  fi
 fi
-
-
-
-#azure config mode arm
-#loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
-#if [ "$loginstat" = "False" ]
-# then
-# # Login to your Azure account
-# echo "Follow direction on screen to login to your Azure account"
-# azure login
-#fi
-#
-#echo -n "Enter storage account name where share was created: "
-#read sacct
-#echo -n "Enter resource group name : "
-#read rgname
-#k=`azure storage account keys list  $sacct -g $rgname --json |  python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["key1"])'`
-#
-#echo -n "Enter the file share to mount: "
-#read shar
-#echo -n "Enter the directory where to mount the share : "
-#read directory
-#sudo mkdir -p /$directory
-#sudo mount -t cifs //$sacct.file.core.windows.net/$shar /$directory -o vers=3.0,username=$sacct,password=$k,dir_mode=0777,file_mode=0777
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
