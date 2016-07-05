@@ -1,5 +1,13 @@
 #!/usr/bin/bash
 
+
+#Prerequisite
+# 1. Git version is 1.9 or above
+# 2. Azure Resource group, Storage Account, and your linux machine are in the same geo- location 
+
+
+printf " Make sure Git is version 1.9 or higher and\nAzure Resource group, Storage Account, and your Linux DSVM are in the same geo-location\n"
+
 # ask user input
 echo -n "Input the VSTS server name: ";
 read server;
@@ -65,9 +73,9 @@ fi
 #https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/blob/master/Install.md
 
 #Step 1: Download git-credential-manager-1.7.1-1.noarch.rpm and copy the file somewhere locally.
-wget ./ https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/releases/download/git-credential-manager-1.7.1/git-credential-manager-1.7.1-1.noarch.rpm
+wget  https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/releases/download/git-credential-manager-1.7.1/git-credential-manager-1.7.1-1.noarch.rpm
 #Step 2: Download the PGP key used to sign the RPM.
-wget ./ https://java.visualstudio.com/Content/RPM-GPG-KEY-olivida.txt
+wget  https://java.visualstudio.com/Content/RPM-GPG-KEY-olivida.txt
 #Step 3: Import the signing key into RPM's database
 sudo rpm --import RPM-GPG-KEY-olivida.txt
 #Step 4: Verify the GCM RPM
@@ -161,3 +169,70 @@ else
  echo -n "git push"
  echo
 fi
+
+
+echo "Make sure the resource group, storage account, and your linux machine are in the same location!"
+echo
+
+#Create File share
+azure config mode arm
+loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
+if [ "$loginstat" = "False" ] ; then
+# Login to your Azure account
+echo "Follow direction on screen to login to your Azure account"
+azure login
+fi
+azure account list
+echo -n "Enter Subscription Name from above list: "
+read sub
+# Set the default subscription where we will create the share
+azure account set "$sub"
+echo -n "Enter storage account name where share is created: "
+read sacct
+echo -n "Enter resource group name : "
+read rgname
+echo -n "Create a new storage account? "
+read answer
+
+if echo "$answer" | grep -iq "^y" ;then
+#Create storage account
+    azure storage account create $sacct -g $rgname
+fi
+#Create storage account
+x=`azure storage account connectionstring show $sacct -g $rgname --json`
+# Extract the storage connectionstring with the keys
+y=`echo $x | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["string"])'`
+export AZURE_STORAGE_CONNECTION_STRING=$y
+
+echo -n "Enter the file share to create: "
+read shar
+# Create a mountable share
+azure storage share create $shar
+echo -n "Enter the directory to create in the file share: "
+read directory
+# Create an empty directory
+azure storage directory create $shar  $directory
+
+
+#Mount file
+azure config mode arm
+loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
+if [ "$loginstat" = "False" ] ; then
+# Login to your Azure account
+echo "Follow direction on screen to login to your Azure account"
+azure login
+fi
+echo -n "Enter storage account name where share was created: "
+read sacct
+echo -n "Enter resource group name : "
+read rgname
+k=`azure storage account keys list  $sacct -g $rgname --json |  python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["key1"])'`
+
+echo -n "Enter the file share to mount: "
+read shar
+echo -n "Enter the directory where to mount the share : "
+read directory
+sudo mkdir -p /$directory
+sudo mount -t cifs //$sacct.file.core.windows.net/$shar /$directory -o vers=3.0,username=$sacct,password=$k,dir_mode=0777,file_mode=0777
+
+
