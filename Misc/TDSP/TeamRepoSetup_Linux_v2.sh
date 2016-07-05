@@ -175,3 +175,163 @@ if [ $role -lt 3 ]
   echo
  fi
 fi
+
+
+#role=2
+
+if [ $role -lt 3 ]
+ then
+ 
+ if [ $role -eq 1 ]
+  then
+  echo "Do you want to create an Azure file share service for your team? Y/N "
+  read createornot
+ else
+  echo "Do you want to create an Azure file share service for your project? Y/N "
+  read createornot
+ fi
+ 
+ createornot2=${createornot=,,}
+ 
+ if [ -z "$createornot2" ] || [ createornot2='y' ]
+  then 
+  azure config mode arm
+  loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
+ 
+  if [ "$loginstat" = "False" ]
+   then
+   # Login to your Azure account
+   echo "Follow directions on screen to login to your Azure account"
+   azure login
+  fi
+ 
+  azure account list
+  echo -n "Enter Subscription Name from above list: "
+  read sub
+  # Set the default subscription where we will create the share
+  azure account set "$sub"
+  echo -n "Enter storage account name where share is created: "
+  read sacct
+  echo -n "Enter resource group name : "
+  read rgname
+  echo -n "Create a new storage account? "
+  read answer
+ 
+  if echo "$answer" | grep -iq "^y"
+   then
+   #Create storage account
+   azure storage account create $sacct -g $rgname
+  fi
+ 
+  #Create storage account
+  x=`azure storage account connectionstring show $sacct -g $rgname --json`
+  # Extract the storage connectionstring with the keys
+  y=`echo $x | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["string"])'`
+  export AZURE_STORAGE_CONNECTION_STRING=$y
+
+  echo -n "Enter the file share to create: "
+  read shar
+  
+  # Create a mountable share
+  azure storage share create $shar
+  echo -n "Enter the directory to create in the file share: "
+  read directory
+  
+  # Create an empty directory
+  azure storage directory create $shar  $directory
+ fi
+fi
+
+
+
+function mountfileservices {
+ azure config mode arm
+ loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
+ if [ "$loginstat" = "False" ]
+  then
+  # Login to your Azure account
+  echo "Follow direction on screen to login to your Azure account"
+  azure login
+ fi
+
+ echo -n "Enter storage account name where share was created: "
+ read sacct
+ echo -n "Enter resource group name : "
+ read rgname
+ k=`azure storage account keys list  $sacct -g $rgname --json |  python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["key1"])'`
+ 
+ echo -n "Enter the file share to mount: "
+ read shar
+ echo -n "Enter the directory where to mount the share : "
+ read directory
+ sudo mkdir -p /$directory
+ sudo mount -t cifs //$sacct.file.core.windows.net/$shar /$directory -o vers=3.0,username=$sacct,password=$k,dir_mode=0777,file_mode=0777
+}
+
+
+
+
+#Mount share files to Linux DSVM
+
+if [ $role -gt 1 ]
+ then
+ echo "Do you want to mount an Azure File share service to your Azure Virtual Machine? Y/N "  
+ read mountornot
+ mountornot2=${mountornot=,,} 
+ if [ -z "$mountornot2" ] || [ mountornot2='y' ]
+  then
+  mountfileservices
+  #others=1
+  #while [ $others -eq 1 ]
+  #do
+  # echo "Do you want to mount other Azure File share services? Y/N "
+  # read mountornot_other
+  # mountornot_other2=${mountornot_other=,,}
+  # if [ -z "$mountornot_other2" ] || [ mountornot_other2='y' ]
+  #  then 
+  #  mountfileservices
+  # else
+  #  others=0
+  # fi
+  #done  
+ fi
+fi
+
+
+
+#azure config mode arm
+#loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
+#if [ "$loginstat" = "False" ]
+# then
+# # Login to your Azure account
+# echo "Follow direction on screen to login to your Azure account"
+# azure login
+#fi
+#
+#echo -n "Enter storage account name where share was created: "
+#read sacct
+#echo -n "Enter resource group name : "
+#read rgname
+#k=`azure storage account keys list  $sacct -g $rgname --json |  python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["key1"])'`
+#
+#echo -n "Enter the file share to mount: "
+#read shar
+#echo -n "Enter the directory where to mount the share : "
+#read directory
+#sudo mkdir -p /$directory
+#sudo mount -t cifs //$sacct.file.core.windows.net/$shar /$directory -o vers=3.0,username=$sacct,password=$k,dir_mode=0777,file_mode=0777
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
