@@ -1,0 +1,177 @@
+#!/bin/bash
+
+# ask user input
+echo -n "Input the VSTS server name: ";
+read server
+
+
+echo -n "Select your role in your team: 1-team lead; 2-project-lead; 3-project team member: "
+read role
+echo
+
+echo " You typed [$role]"
+echo
+
+#if [ -z "$role" ] || [ $role -ne 1 ] || [ $role -ne 3 ]
+#if [ -z "$role" ] || ( ((  "$role" != 1 )) || (( "$role" != 3 )))
+if [ -z "$role" ] ||  ((  "$role" > 3 )) 
+ then
+ role=2
+ echo "You role is set to $role "
+fi
+
+#echo "Now your role is set to $role "
+#echo
+
+if [ $role -eq 2 ]
+ then 
+ name1='team repository'
+ name2='project repositor'
+elif [ $role -eq 1 ]
+ then 
+ name1='general repository'
+ name2='team repository'
+else
+ name1='project repository'
+fi
+echo "name1 is $name1"
+echo
+echo "name2 is $name2"
+echo
+
+if [ $role -lt 3 ]
+ then
+ prompt1="Input the name of the $name1 : "
+ prompt2="Input the name of the $name2 : "
+ echo -n $prompt1
+ read generalreponame
+ echo -n $prompt2
+ read teamreponame
+ generalrepourl="https://$server.visualstudio.com/_git/$generalreponame"
+ teamrepourl="https://$server.visualstudio.com/_git/$teamreponame"
+ echo "URL of the $name1 is " $generalrepourl
+ echo
+ echo "URL of the $name2 is " $teamrepourl
+ echo
+else
+ prompt1="Input the name of the $name1 : "
+ echo -n $prompt1
+ read generalreponame
+ generalrepourl="https://$server.visualstudio.com/_git/$generalreponame"
+ echo "URL of the $name1 is  $generalrepourl "
+fi
+
+
+## This method does not work...
+#Use SSH key to authenticate
+#echo "SSH key is being generated, press enter 3 times" 
+#ssh-keygen
+#echo "Copy the following string and add a new SSH public key in https://$server.visualstudio.com/_details/security/keys"
+#cd 
+#cat .ssh/id_rsa.pub
+
+
+
+#Installing on Linux using RPM
+#https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/blob/master/Install.md
+
+#Step 1: Download git-credential-manager-1.7.1-1.noarch.rpm and copy the file somewhere locally.
+wget  https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/releases/download/git-credential-manager-1.7.1/git-credential-manager-1.7.1-1.noarch.rpm
+#Step 2: Download the PGP key used to sign the RPM.
+wget  https://java.visualstudio.com/Content/RPM-GPG-KEY-olivida.txt
+#Step 3: Import the signing key into RPM's database
+sudo rpm --import RPM-GPG-KEY-olivida.txt
+#Step 4: Verify the GCM RPM
+rpm --checksig --verbose git-credential-manager-1.7.1-1.noarch.rpm
+#Step 5: Install the RPM
+sudo rpm --install git-credential-manager-1.7.1-1.noarch.rpm
+#Step 6: Run the GCM in install mode
+git-credential-manager install
+
+
+echo "Your Git Credential Manager is successfully installed!"
+echo
+
+echo "Start cloning the $name1 repository..."
+echo
+echo "You might be asked to input your credentials..."
+echo
+
+#azure login
+
+
+rootdir="$PWD"
+
+
+echo "Start cloning $name1 ... "
+echo
+git clone $generalrepourl
+
+
+if [ $role -lt 3 ]
+ then
+ echo "Start cloning $name2 ..."
+ echo
+ echo "Currently it is empty. You need to determine the content of it ... "
+ echo
+ git clone $teamrepourl
+ echo "$name2 cloned."
+fi
+
+
+
+if [ $role -lt 3 ]
+ then
+ echo "Copying the entire directory in $rootdir/$generalreponame except .git directory to $rootdir/$teamreponame..." 
+ SourceDirectory=$rootdir/$generalreponame
+ DestinationDirectory=$rootdir/$teamreponame
+
+ cd $SourceDirectory
+ git archive HEAD --format=tar | (cd $DestinationDirectory; tar xvf -)
+
+ echo "$name1 copied to the $name2 on your disk."
+ echo
+ echo "Change to the $name2 directory $DestinationDirectory"
+ echo
+ 
+ cd $DestinationDirectory
+ echo -n "Input If you are ready to commit the $name2, enter Y. Otherwise, go to change your $name2 and come back to enter Y to commit..."
+ read commitornot
+ commitornot2=${commitornot,,}
+ 
+ if [ commitornot2='y' ]
+ then
+  git add .
+  username=$(git config user.name)
+  email=$(git config user.email)
+  if [ -z "$username" ]
+  then
+    echo -n "For logging purpose, input your name"
+    read user
+    git config --global user.name $user
+  fi
+  if [ -z "$email" ]
+  then
+    echo -n "For logging purpose, input your email"
+    read useremail
+    git config --global user.email $useremail
+  fi
+  git commit -m"changed the team repository directory"
+  git push
+ else
+  echo -n "I do not understand your input. Please commit later by yourself using the following commands in sequence."
+  echo
+  echo -n "These commands need to be submitted when you are in $DestinationDirectory"
+  echo
+  echo -n "git add ."
+  echo
+  echo -n "git config --global user.name <your name>"
+  echo
+  echo -n "git config --global user.email <your email address>"
+  echo
+  echo -n "git commit -m'This is a commit note'"
+  echo
+  echo -n "git push"
+  echo
+ fi
+fi
