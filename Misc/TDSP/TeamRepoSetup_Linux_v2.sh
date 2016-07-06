@@ -12,8 +12,7 @@ echo
 echo " You typed [$role]"
 echo
 
-#if [ -z "$role" ] || [ $role -ne 1 ] || [ $role -ne 3 ]
-#if [ -z "$role" ] || ( ((  "$role" != 1 )) || (( "$role" != 3 )))
+
 if [ -z "$role" ] ||  ((  "$role" > 3 )) 
  then
  role=2
@@ -69,29 +68,16 @@ ssh-keygen
 echo "Copy the following string and add a new SSH public key in https://$server.visualstudio.com/_details/security/keys"
 cd 
 cat .ssh/id_rsa.pub
-sleep 30
+#sleep 30
 
 
-
-#Installing on Linux using RPM
-#https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/blob/master/Install.md
-
-#Step 1: Download git-credential-manager-1.7.1-1.noarch.rpm and copy the file somewhere locally.
-#wget  https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/releases/download/git-credential-manager-1.7.1/git-credential-manager-1.7.1-1.noarch.rpm
-#Step 2: Download the PGP key used to sign the RPM.
-#wget  https://java.visualstudio.com/Content/RPM-GPG-KEY-olivida.txt
-#Step 3: Import the signing key into RPM's database
-#sudo rpm --import RPM-GPG-KEY-olivida.txt
-#Step 4: Verify the GCM RPM
-#rpm --checksig --verbose git-credential-manager-1.7.1-1.noarch.rpm
-#Step 5: Install the RPM
-#sudo rpm --install git-credential-manager-1.7.1-1.noarch.rpm
-#Step 6: Run the GCM in install mode
-#git-credential-manager install
+function pause(){
+   read -p "$*"
+}
 
 
-#echo "Your Git Credential Manager is successfully installed!"
-#echo
+pause 'If you are done with adding SSH public keey, press [Enter] key to continue...'
+
 
 echo "Start cloning the $name1 repository..."
 echo
@@ -184,10 +170,10 @@ if [ $role -lt 3 ]
  
  if [ $role -eq 1 ]
   then
-  echo "Do you want to create an Azure file share service for your team? Y/N "
+  echo -n "Do you want to create an Azure file share service for your team? Y/N "
   read createornot
  else
-  echo "Do you want to create an Azure file share service for your project? Y/N "
+  echo -n "Do you want to create an Azure file share service for your project? Y/N "
   read createornot
  fi
  
@@ -274,7 +260,7 @@ function mountfileservices {
 
 if [ $role -gt 1 ]
  then
- echo "Do you want to mount an Azure File share service to your Azure Virtual Machine? Y/N "
+ echo -n "Do you want to mount an Azure File share service to your Azure Virtual Machine? Y/N "
  read mountornot
  mountornot2=${mountornot,,}
  # echo "mountornot2 is $mountornot2"
@@ -284,7 +270,7 @@ if [ $role -gt 1 ]
   others=1
   while [ $others -eq 1 ]
   do
-   echo "Do you want to mount other Azure File share services? Y/N "
+   echo -n "Do you want to mount other Azure File share services? Y/N "
    read mountornot_other
    mountornot_other2=${mountornot_other,,}
    #echo "mountornot_other2 is $mountornot_other2"
