@@ -47,8 +47,8 @@ if [ $role -lt 3 ]
  read generalreponame
  echo -n $prompt2
  read teamreponame
- generalrepourl="https://$server.visualstudio.com/_git/$generalreponame"
- teamrepourl="https://$server.visualstudio.com/_git/$teamreponame"
+ generalrepourl="ssh://$server@$server.visualstudio.com/_git/$generalreponame"
+ teamrepourl="ssh://$server@$server.visualstudio.com/_git/$teamreponame"
  echo "URL of the $name1 is " $generalrepourl
  echo
  echo "URL of the $name2 is " $teamrepourl
@@ -57,18 +57,19 @@ else
  prompt1="Input the name of the $name1 : "
  echo -n $prompt1
  read generalreponame
- generalrepourl="https://$server.visualstudio.com/_git/$generalreponame"
+ generalrepourl="ssh://$server@$server.visualstudio.com/_git/$generalreponame"
  echo "URL of the $name1 is  $generalrepourl "
 fi
 
 
-## This method does not work...
+
 #Use SSH key to authenticate
-#echo "SSH key is being generated, press enter 3 times" 
-#ssh-keygen
-#echo "Copy the following string and add a new SSH public key in https://$server.visualstudio.com/_details/security/keys"
-#cd 
-#cat .ssh/id_rsa.pub
+echo "SSH key is being generated, press enter 3 times" 
+ssh-keygen
+echo "Copy the following string and add a new SSH public key in https://$server.visualstudio.com/_details/security/keys"
+cd 
+cat .ssh/id_rsa.pub
+sleep 30
 
 
 
@@ -76,21 +77,21 @@ fi
 #https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/blob/master/Install.md
 
 #Step 1: Download git-credential-manager-1.7.1-1.noarch.rpm and copy the file somewhere locally.
-wget  https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/releases/download/git-credential-manager-1.7.1/git-credential-manager-1.7.1-1.noarch.rpm
+#wget  https://github.com/Microsoft/Git-Credential-Manager-for-Mac-and-Linux/releases/download/git-credential-manager-1.7.1/git-credential-manager-1.7.1-1.noarch.rpm
 #Step 2: Download the PGP key used to sign the RPM.
-wget  https://java.visualstudio.com/Content/RPM-GPG-KEY-olivida.txt
+#wget  https://java.visualstudio.com/Content/RPM-GPG-KEY-olivida.txt
 #Step 3: Import the signing key into RPM's database
-sudo rpm --import RPM-GPG-KEY-olivida.txt
+#sudo rpm --import RPM-GPG-KEY-olivida.txt
 #Step 4: Verify the GCM RPM
-rpm --checksig --verbose git-credential-manager-1.7.1-1.noarch.rpm
+#rpm --checksig --verbose git-credential-manager-1.7.1-1.noarch.rpm
 #Step 5: Install the RPM
-sudo rpm --install git-credential-manager-1.7.1-1.noarch.rpm
+#sudo rpm --install git-credential-manager-1.7.1-1.noarch.rpm
 #Step 6: Run the GCM in install mode
-git-credential-manager install
+#git-credential-manager install
 
 
-echo "Your Git Credential Manager is successfully installed!"
-echo
+#echo "Your Git Credential Manager is successfully installed!"
+#echo
 
 echo "Start cloning the $name1 repository..."
 echo
@@ -135,7 +136,7 @@ if [ $role -lt 3 ]
  echo
  
  cd $DestinationDirectory
- echo -n "Input If you are ready to commit the $name2, enter Y. Otherwise, go to change your $name2 and come back to enter Y to commit..."
+ echo -n "Input If you are ready to commit the $name2, enter Y. Otherwise, go to change your $name2 and come back to enter Y to commit: "
  read commitornot
  commitornot2=${commitornot,,}
  
@@ -146,18 +147,18 @@ if [ $role -lt 3 ]
   email=$(git config user.email)
   if [ -z "$username" ]
   then
-    echo -n "For logging purpose, input your name"
+    echo -n "For logging purpose, input your name: "
     read user
     git config --global user.name $user
   fi
   if [ -z "$email" ]
   then
-    echo -n "For logging purpose, input your email"
+    echo -n "For logging purpose, input your email: "
     read useremail
     git config --global user.email $useremail
   fi
-  git commit -m"changed the team repository directory"
-  git push
+  git commit -m"changed the $name2  directory"
+  git push --set-upstream origin master
  else
   echo -n "I do not understand your input. Please commit later by yourself using the following commands in sequence."
   echo
