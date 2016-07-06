@@ -170,12 +170,18 @@ if ($role -lt 3){
     }
     $createornot = Read-Host -Prompt $prompt
     if (!$createornot -or ($createornot.ToLower() -eq 'y')){
-        if ((Get-AzureRmSubscription).Length -le 0) {
+        Write-Host "Getting the list of subscriptions..." -ForegroundColor Yellow
+        try
+        {
+            $sublist = Get-AzureRmSubscription
+        } 
+        Catch
+        {
             Write-Host "Login to Azure..." -ForegroundColor Yellow
             Login-AzureRmAccount
+            $sublist = Get-AzureRmSubscription
         }
-        Write-Host "Getting the list of subscriptions..." -ForegroundColor Yellow
-        $sublist = Get-AzureRmSubscription
+        
         $subnamelist = $sublist.SubscriptionName
         #$subnamecount = 0
         #foreach($subname in $subnamelist)
@@ -481,10 +487,6 @@ if ($role -lt 3){
 function mountfileservices
 {
     # Authenticate to Azure.
-    if ((Get-AzureRmSubscription).Length -le 0) {
-        Write-Host "Login to your Azure account..." -ForegroundColor Yellow
-        Login-AzureRmAccount
-    }
     
     Write-Host "Start getting the list of subscriptions under your Azure account..." -ForegroundColor Yellow
     Try
@@ -502,6 +504,10 @@ function mountfileservices
     printarray $subnamelist
     # Select your subscription
     $inputfileyesorno = Read-Host "Do you have a file with the information of the file share you want to mount?[Y]-yes/N-no"
+    if (!($inputfileyesorno.ToLower() -eq 'n'))
+    {
+        $inputfileyesorno = 'y'
+    }
     $sub = 'NA'
     $sa = 'NA'
     $sharename = 'NA'
