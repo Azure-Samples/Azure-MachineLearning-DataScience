@@ -277,7 +277,7 @@ if [ $role -gt 1 ]
    if [ -z "$mountornot_other2" ] || [ "$mountornot_other2" = 'y' ]
    #if [ "$mountornot_other" -eq 1 ]
     then
-    mountfileservices again
+    mountfileservices
    else
     others=0
     #echo "others is $others"
