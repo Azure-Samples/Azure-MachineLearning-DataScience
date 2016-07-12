@@ -7,6 +7,7 @@ if ((!$role) -or (!($role -eq 1) -and !($role -eq 3))){
 $rootdir = $PWD.Path
 
 $server = $null
+$gcminstalled = $false
 
 $name1 = 'data science project template repository'
 $name2 = 'team project template repository'
@@ -33,12 +34,15 @@ $name5 = 'team utilities repository'
 if ($role -eq 1)
 {
     $vstsyesorno = Read-Host -Prompt 'Do you want to set up your team repository on Visual Studio Team Services (VSTS)?[Y]/N'
+    $nameofrole = $name1
 } ElseIf ($role -eq 2)
 {
     $vstsyesorno = Read-Host -Prompt 'Do you want to set up your project repository on Visual Studio Team Services (VSTS)?[Y]/N'
+    $nameofrole = $name2
 }
 else{
     $vstsyesorno = Read-Host -Prompt 'Do you want to clone your project repository on your machine?[Y]/N'
+    $nameofrole = $name3
 }
 
 function copyFiles($rootdir, $reponame1, $reponame2, $nameparam1, $nameparam2){
@@ -77,6 +81,25 @@ function copyFiles($rootdir, $reponame1, $reponame2, $nameparam1, $nameparam2){
     }
     cd $DestinationDirectory
     write-host 'Files copied'
+}
+
+function installGCM
+{
+    Write-host "Installing Chocolatey. It is needed to install Git Credential Manager." -ForegroundColor "Yellow"
+    iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
+    Write-host "Chocolatey installed." -ForegroundColor "Green"
+
+    Write-host "Installing Git Credential Manager..." -ForegroundColor "Yellow"
+    choco install git-credential-manager-for-windows -y
+    Write-host "Git Credential manager installed." -ForegroundColor "Green"
+}
+
+function gitClone($url, $nameofrole)
+{
+    Write-host "Start cloning the"$nameofrole"..." -ForegroundColor "Yellow"
+    Write-host "You might be asked to input your credentials..." -ForegroundColor "Yellow"
+    git clone $url
+    Write-host $nameofrole" cloned." -ForegroundColor "Green"
 }
 
 if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
@@ -119,44 +142,56 @@ if (!$vstsyesorno -or $vstsyesorno.ToLower() -eq 'y')
         Write-host "URL of the "$name3 "is "$generalrepourl -ForegroundColor "Yellow"
     }
     
-    
+    $ClonePath = Join-Path $rootdir $generalreponame
 
-    Write-host "Installing Chocolatey. It is needed to install Git Credential Manager." -ForegroundColor "Yellow"
-    iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
-    Write-host "Chocolatey installed." -ForegroundColor "Green"
-
-    Write-host "Installing Git Credential Manager..." -ForegroundColor "Yellow"
-    choco install git-credential-manager-for-windows -y
-    Write-host "Git Credential manager installed." -ForegroundColor "Green"
-
-    if ($role -eq 1)
+    if (Test-Path $ClonePath)
     {
-        Write-host "Start cloning the"$name1"..." -ForegroundColor "Yellow"
-    } ElseIf ($role -eq 2)
-    {
-        Write-host "Start cloning the"$name2"..." -ForegroundColor "Yellow"
-    } else
-    {
-        Write-host "Start cloning the"$name3"..." -ForegroundColor "Yellow"
-    }
-    Write-host "You might be asked to input your credentials..." -ForegroundColor "Yellow"
-    git clone $generalrepourl
-    Write-host $name1" cloned." -ForegroundColor "Green"
+        $prompt1 = $ClonePath+' already exists. It looks like you have cloned it before. [P]-pull to update/S-skip?'
+        $cloneagainyesno = Read-Host $prompt1
+        if (!($cloneagainyesno.ToLower() -eq 's'))
+        {
+            
+            Write-Host 'running git pull to update the existing repository '$generalrepourl -ForegroundColor Yellow
+            cd $ClonePath
+            git pull
+            Write-Host $name1 " updated." -ForegroundColor Green 
+            cd $rootdir
+        }
+    } else{
+        Write-Host 'Clone '$generalrepourl '...' -ForegroundColor Yellow
 
-    if ($role -eq 1){
-        Write-host "Start cloning"$name2"..." -ForegroundColor "Yellow"
-        Write-host "Currently it is empty. You need to determine the content of it..." -ForegroundColor "Yellow"
-        git clone $teamrepourl
-        Write-host $name2 "cloned." -ForegroundColor "Green"
-    } ElseIf ($role -eq 2){
-        Write-host "Start cloning"$name3"..." -ForegroundColor "Yellow"
-        Write-host "Currently it is empty. You need to determine the content of it..." -ForegroundColor "Yellow"
-        git clone $teamrepourl
-        Write-host $name3 "cloned." -ForegroundColor "Green"
+        installGCM
+        $gcminstalled = $true
+
+        gitClone $generalrepourl $nameofrole
     }
 
     if ($role -lt 3)
     {
+        $ClonePath = Join-Path $rootdir $teamreponame
+        if (Test-Path $ClonePath)
+        {
+            $prompt1 = $ClonePath+' already exists. It looks like you have cloned it before. [P]-pull to update/S-skip?'
+            $cloneagainyesno = Read-Host $prompt1
+            if (!($cloneagainyesno.ToLower() -eq 's'))
+            {
+                Write-Host 'running git pull to update the existing repository '$teamrepourl -ForegroundColor Yellow
+                cd $ClonePath
+                git pull
+                Write-Host $nametouse " updated." -ForegroundColor Green 
+                cd $rootdir
+            }
+        } else{
+            Write-Host 'Clone '$teamrepourl '...' -ForegroundColor Yellow
+            if (!$gcminstalled)
+            {
+                installGCM
+                $gcminstalled = $true
+            }
+
+            gitClone $teamrepourl $nametouse
+        }
+        
         Write-host "Copying the entire directory in"$rootdir"\"$generalreponame "except .git directory to"$rootdir"\"$teamreponame"..." -ForegroundColor "Yellow"
         #$SourceDirectory = $rootdir+"\"+$generalreponame
         $DestinationDirectory = $rootdir+"\"+$teamreponame
@@ -304,14 +339,51 @@ if (!($role -eq 2)) # if it is team lead or project individual contributor, set 
         
         if ($role -eq 1)
         {
-            Write-host "Start cloning the"$name4"..." -ForegroundColor "Yellow"
-            Write-host "You might be asked to input your credentials..." -ForegroundColor "Yellow"
-            git clone $commonutilrepourl
-            Write-host $name4" cloned." -ForegroundColor "Green"
-            Write-host "Start cloning"$name5"..." -ForegroundColor "Yellow"
-            Write-host "Currently it is empty. You need to determine the content of it..." -ForegroundColor "Yellow"
-            git clone $teamutilrepourl
-            Write-host $name5 "cloned." -ForegroundColor "Green"
+            $ClonePath = Join-Path $rootdir $commonutilreponame
+
+            if (Test-Path $ClonePath)
+            {
+                $prompt1 = $ClonePath+' already exists. It looks like you have cloned it before. [P]-pull to update/S-skip?'
+                $cloneagainyesno = Read-Host $prompt1
+                if (!($cloneagainyesno.ToLower() -eq 's'))
+                {
+                    Write-Host 'running git pull to update the existing repository '$commonutilrepourl -ForegroundColor Yellow
+                    cd $ClonePath
+                    git pull
+                    Write-Host $name4 "updated." -ForegroundColor Green 
+                    cd $rootdir
+                }
+            } else{
+                Write-Host 'Clone '$commonutilrepourl ' ...' -ForegroundColor Yellow
+                if (!$gcminstalled)
+                { 
+                    installGCM
+                    $gcminstalled = $true
+                }
+                Write-host "You might be asked to input your credentials..." -ForegroundColor "Yellow"
+                git clone $commonutilrepourl
+                Write-host $name4" cloned." -ForegroundColor "Green"
+            }
+            $ClonePath = Join-Path $rootdir $teamutilreponame
+            if (Test-Path $ClonePath)
+            {
+                $prompt1 = $ClonePath+' already exists. It looks like you have cloned it before. [P]-pull to update/S-skip?'
+                $cloneagainyesno = Read-Host $prompt1
+                if (!($cloneagainyesno.ToLower() -eq 's'))
+                {
+                    Write-Host 'running git pull to update the existing repository '$commonutilrepourl -ForegroundColor Yellow
+                    cd $ClonePath
+                    git pull
+                    Write-Host $name5 "updated." -ForegroundColor Green 
+                    cd $rootdir
+                }
+            } else
+            {
+                Write-host "Start cloning"$name5"..." -ForegroundColor "Yellow"
+                Write-host "Currently it is empty. You need to determine the content of it..." -ForegroundColor "Yellow"
+                git clone $teamutilrepourl
+                Write-host $name5 "cloned." -ForegroundColor "Green"
+            }
         
             Write-host "Copying the entire directory in"$rootdir"\"$commonutilreponame "except .git directory to"$rootdir"\"$teamutilreponame"..." -ForegroundColor "Yellow"
             copyFiles $rootdir $commonutilreponame $teamutilreponame $name4 $name5
@@ -351,10 +423,30 @@ if (!($role -eq 2)) # if it is team lead or project individual contributor, set 
             }
         } else
         {
-            Write-host "Start cloning the"$name5"..." -ForegroundColor "Yellow"
-            Write-host "You might be asked to input your credentials..." -ForegroundColor "Yellow"
-            git clone $teamutilrepourl
-            Write-host $name5" cloned." -ForegroundColor "Green"
+            $ClonePath = Join-Path $rootdir $teamutilreponame
+            if (Test-Path $ClonePath)
+            {
+                $prompt1 = $ClonePath+' already exists. It looks like you have cloned it before. [P]-pull to update/S-skip?'
+                $cloneagainyesno = Read-Host $prompt1
+                if (!($cloneagainyesno.ToLower() -eq 's'))
+                {
+                    Write-Host 'running git pull to update the existing repository '$teamutilrepourl -ForegroundColor Yellow
+                    cd $ClonePath
+                    git pull
+                    Write-Host $name5 "updated." -ForegroundColor Green 
+                    cd $rootdir
+                }
+            } else{
+                Write-host "Start cloning the"$name5"..." -ForegroundColor "Yellow"
+                if (!$gcminstalled)
+                {
+                    installGCM
+                    $gcminstalled = $true
+                }
+                Write-host "You might be asked to input your credentials..." -ForegroundColor "Yellow"
+                git clone $teamutilrepourl
+                Write-host $name5" cloned." -ForegroundColor "Green"
+            }
         }
     }
 }
@@ -980,3 +1072,6 @@ if ($role -gt 0){
         } while($others)
     }
 }
+
+Write-Host "All done. Changing to "$rootdir -ForegroundColor Green
+cd $rootdir
