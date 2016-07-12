@@ -385,7 +385,7 @@ if [ $role -lt 3 ]
         read rgname0
         rgname=${rgname0,,}
         grplist2=$(cat grplist.json | jq '.[] .name' --raw-output)
-        if [[ $grplist2 ~= $rgname ]] 
+        if [[ $grplist2 =~ $rgname ]] 
          then 
          echo -n "Resource group $rgname exists. U-use/R-retry"
          read useexisting
@@ -417,7 +417,7 @@ if [ $role -lt 3 ]
 
       havegoodsaname=true
       grplist2=$(cat grplist.json | jq '.[] .name' --raw-output)
-      if [[ $grplist2 ~= $rgname ]]
+      if [[ $grplist2 =~ $rgname ]]
        then
        echo -n "Start creating storage account $sa under resource group $rgname. "
       else 
@@ -543,7 +543,7 @@ if [ $role -lt 3 ]
     fi
    fi
  fi
-fi
+
 
 
 
@@ -636,7 +636,7 @@ function mountfileservices {
    fi
    azure account list --json > acctlist.json
    sublist=$(cat acctlist.json | jq '.[] .name' --raw-output)
-   if [[ $sublist ~= $sub ]]
+   if [[ $sublist =~ $sub ]]
     then
     subnameright=true
    else
@@ -713,7 +713,7 @@ function mountfileservices {
      fi
     else
      storageaccountnames2=$(cat storlist.json | jq '.[] .name' --raw-output)
-     if [[ ! $storageaccountnames ~= $sa ]]
+     if [[ ! $storageaccountnames =~ $sa ]]
       then
       echo -n " Storage account name $sa from the file does not exist. Please manually input it next. "
       sa='NA'
@@ -726,178 +726,72 @@ function mountfileservices {
    done
    
    if ["$goodname" = true ]
-    then 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function mountfileservices {
- #azure config mode arm
- #loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
- #if [ "$loginstat" = "False" ]
- # then
- # # Login to your Azure account
- # echo "Follow direction on screen to login to your Azure account"
- # azure login
- #fi
-
- #echo -n "Enter storage account name where share was created: "
- #read sacct
- #echo -n "Enter resource group name : "
- #read rgname
- k=`azure storage account keys list  $stor -g $grp --json |  python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["key1"])'`
- 
- #echo -n "Enter the file share to mount: "
- #read shar
- #echo -n "Enter the directory where to mount the share : "
- #read directory
- sudo mkdir -p /$directory
- sudo mount -t cifs //$stor.file.core.windows.net/$shar /$directory -o vers=3.0,username=$stor,password=$k,dir_mode=0777,file_mode=0777
-}
-
+    then
+    sharenameexist=false
+    quitnewsharename=false
+    #storkey 
+    sharenameright=false
+    quitornot=false
+    while [ "$sharenameexist" = true ] && [ "$quitenewsharename" = true ]
+    do
+     while [ "$sharenameright" = true ] && [ "$quitornot" = true ]
+     do
+      if [ "$sharename" = 'NA' ]
+       then
+       echo -n "Enter the name for the file share to mount (lower case only): "
+       read sharename
+       sharename=${sharename,,} 
+      elif [ -z "sharename" ]
+       then 
+       echo -n "File share name cannot be empty. R-retry/Q-quit. "
+       read quitornotanswer
+       if [ "${quitornotanswer,,}" = 'q' ]
+        then
+        quitornot=true
+       fi
+      else
+       sharenameright=true
+      fi
+     done
+     
+     if [ "$sharenameright" = true ]
+      then
+      drivenameright=false
+      existingdisks=$(df -h)
+      existingdisknames=$(df -h | cut -d" " -f1 | tail -n+2)  
+      echo -n "Existing disk names are: "
+      echo
+      echo -n "$existingdisks" 
+      echo
+      quitdrivename=false
+      while [ "$drivenameright" = true ] && [ "$quitedrivename" = true ]
+      do
+       echo -n "Enter the name of the drive to be added to your virtual machine. This name should be diferent from the disk names your virtual machine has."
+       read drivename
+       drivelist=$(df -h | rev | cut -d" " -f1 | rev)
+       if [[ $drivelist =~ $drivename ]]
+       #if echo "$sublist" | grep -q "$sub" ; then echo "matched" ;else echo "not matched"; fi;
+        then
+        echo -n "The disk drive $drivename you want to mount the file sahre already exists. R-retry/Q-quit"
+        read inputnewdrive
+        if [ "${inputnewdrive,,}" = 'q' ]
+         then
+         quitdrivename=true
+        fi
+       else
+        drivenameright=true
+       fi
+      done
+      
+      if [ "$drivenameright" = true ]
+       then
+       echo -n "File share $sharename will be mounted to your virtual machine as drive $drivename "
+       k=`azure storage account keys list  $sa -g $rg --json |  python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["key1"])'`
+       sudo mkdir -p /$drivename
+       sudo mount -t cifs //$sa.file.core.windows.net/$sharename /$drivename -o vers=3.0,username=$sa,password=$k,dir_mode=0777,file_mode=0777
+       sharenameexist=true
+      fi
+     fi
 
 
 #Mount share files to Linux DSVM
