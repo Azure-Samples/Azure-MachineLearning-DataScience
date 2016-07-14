@@ -4,8 +4,8 @@ echo -n "Select your role in your team: 1-team lead; [2]-project-lead; 3-project
 read role
 echo
 
-echo " You typed $role"
-echo
+#echo " You typed $role"
+#echo
 
 if [ -z "$role" ] ||  ((  "$role" > 3 )) 
  then
@@ -24,10 +24,10 @@ elif [ $role -eq 1 ]
 else
  name1='project repository'
 fi
-echo "name1 is $name1"
-echo
-echo "name2 is $name2"
-echo
+#echo "name1 is $name1"
+#echo
+#echo "name2 is $name2"
+#echo
 
 
 if [ $role -eq 1 ]
@@ -211,300 +211,314 @@ fi
 #make
 #sudo make install
 
-
 #Authenticate to Azure
 if [ $role -lt 3 ]
  then
 
- if [ $role -eq 1 ]
-  then
-  echo -n "Do you want to create an Azure file share service for your team? [Y]/N "
-  read createornot
- else
-  echo -n "Do you want to create an Azure file share service for your project? [Y]/N "
-  read createornot
- fi
- 
- if [ -z "${createornot,,}" ] || [ "${createornot,,}" = 'y' ]
-  then 
-  azure config mode arm
-  loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
- 
-  if [ "$loginstat" = "False" ]
-   then
-   # Login to your Azure account
-   echo "Follow directions on screen to login to your Azure account"
-   azure login
-  fi
-  
-  subnameright=false
-  quitornot=false
-    
-  azure account list --json > acctlist.json
-  num_sub=$(jq '.| length' acctlist.json)
-  sublist=$(cat acctlist.json | jq '.[] .name' --raw-output| cat -n) 
-  echo -n "Here are your subscriptions:"
-  echo
-  echo "$sublist"
-  echo
+		 if [ $role -eq 1 ]
+		  then
+		  echo -n "Do you want to create an Azure file share service for your team? [Y]/N "
+		  read createornot
+		 else
+		  echo -n "Do you want to create an Azure file share service for your project? [Y]/N "
+		  read createornot
+		 fi
+	 
+	 if [ -z "${createornot,,}" ] || [ "${createornot,,}" = 'y' ]
+	  then 
+			  azure config mode arm
+			  loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
+			 
+			  if [ "$loginstat" = "False" ]
+				   then
+				   # Login to your Azure account
+				   echo "Follow directions on screen to login to your Azure account"
+				   azure login
+			  fi
+			  
+			  subnameright=false
+			  quitornot=false
+				
+			  azure account list --json > acctlist.json
+			  num_sub=$(jq '.| length' acctlist.json)
+			  sublist=$(cat acctlist.json | jq '.[] .name' --raw-output| cat -n) 
+			  echo -n "Here are your subscriptions:"
+			  echo
+			  echo "$sublist"
+			  echo
 
-  while [ ! ${subnameright} ] && [ ! ${quitornot} ]
-  do
-   echo -n "Enter the index of the subscription name where resources will be created (1-$num_sub): "
-   echo 
-   read subnbr
-  
-   if [ $subnbr -gt 0 ] && [ $subnbr -le $num_sub ]
-    then
-    let subnbr2=subnbr-1
-    sub=$(cat acctlist.json | jq  '.['$subnbr2'] .name' --raw-output)
-    echo -n "You selected $subnbr: $sub. [Y]-yes to continue/N-no to reselect"  
-    read selectedright
-    if [ -z "${selectedright,,}" ] || [ "${selectedright,,}" = 'y' ]
-     then
-     subnameright=true
-    fi
-   fi
+			  while [ $subnameright = false ] && [ $quitornot = false ]
+			  do
+				   echo -n "Enter the index of the subscription name where resources will be created (1-$num_sub): "
+				    
+				   read subnbr
+				  
+				   if [ $subnbr -gt 0 ] && [ $subnbr -le $num_sub ]
+						then
+						let subnbr2=subnbr-1
+						sub=$(cat acctlist.json | jq  '.['$subnbr2'] .name' --raw-output)
+						echo -n "You selected $subnbr: $sub. [Y]-yes to continue/N-no to reselect: "  
+						read selectedright
+						if [ -z "${selectedright,,}" ] || [ "${selectedright,,}" = 'y' ]
+							 then
+							 subnameright=true
+						fi
+				   fi
 
-   if [ ${subnameright} ]
-    then
-    echo -n "The number you entered is out of bound. [R] -retry/Q -quit"
-    read quitornotask
-    if [ -z "${quitornotask,,}" ] || [ "${quitornotask,,}" = 'q' ]
-     then 
-     echo -n "Creating Azure file share service quit."
-     quitornot=true
-    fi
-   fi
-  done
+				   if [  $subnameright = false ]
+						then
+						echo -n "The number you entered is out of bound. [R] -retry/Q -quit"
+						read quitornotask
+						if [ -z "${quitornotask,,}" ] || [ "${quitornotask,,}" = 'q' ]
+							 then 
+							 echo -n "Creating Azure file share service quit."
+							 quitornot=true
+						fi
+				   fi
+			  done
 
-if [ ${subnameright} ]
- then
-   # Set the default subscription where we will create the share
-   azure account set "$sub"
-   
-   echo "Getting the list of storage accounts under subscription $sub: "
-   echo
-   # Choose from existing storage account
-   azure storage account list --json > storlist.json
-   storlist=$(cat storlist.json | jq '.[] .name' --raw-output | cat -n)
-   echo "Here are the storage account names under your subscription $sub: "
-   echo
-   echo "$storlist"
-   echo
-  
-   azure group list --json > grplist.json
-   grplist=$(cat grplist.json | jq '.[] .name' --raw-output | cat -n)
-      
-   echo -n "Do you want to create a new storage storage account for your Azure file share? [Y]/N "
-   read createornotsa
-   saretryornot='r'
-   if [ -z "${createornot,,}" ] || ["${createornot,,}" = 'y' ]
-    then
-    havegoodsaname=false
-    saretry=true
-    #loc='southcentralus'    
-    while [ ! ${havegoodsaname} ] && [ ! ${saretry} ]
-    do
-     echo -n "Enter the storage account name to create (only accept lower case letters and numbers): "
-     read sa
-     sa=${sa,,}
-     rg=$(cat storlist.json | jq '.[] | select (.name == "'$sa'" )' | jq ' .resourceGroup' --raw-output)
-     storlist2=$(cat storlist.json | jq '.[] .name' --raw-output)
-     if [[ $storlist2 =~ $sa ]]
-      then
-      echo -n " Storage account already exists. [R]-retry/U-use/Q-quit" 
-      read saretryornot
-      if [ "${saretryornot,,}" = 'q' ]
-       then 
-       saretry=false   
-      elif [ "${saretryornot,,}" = 'u' ]
-       then
-       echo -n "You choose to use an existing storage account $sa. Y-continue/R-retry"
-       read useexisting       
-       if [ -z "${useexisting,,}" ] || ["${useexisting,,}" = 'y' ]
-        then 
-        havegoodsaname=true
-        echo -n "Existing storage $sa will be used. Its resource group is $rg. "
-        echo
-       fi
-      fi
-     else
-      echo -n "Storage account $sa will be created ..."
-      echo
-      echo -n "You need to select the resource group name under which the storage account will be created."
-      echo
-      rgvalid=false 
-      azure group list --json > grplist.json
-      grplist=$(cat grplist.json | jq '.[] .name' --raw-output | cat -n)
-      echo -n "Here is the list of existing resource group names: "
-      echo
-      echo "$grplist"
-      echo
+				if [ $subnameright = true ]
+				 then
+					   # Set the default subscription where we will create the share
+					   azure account set "$sub"
+					   
+					   echo "Getting the list of storage accounts under subscription $sub: "
+					   echo
+					   # Choose from existing storage account
+					   azure storage account list --json > storlist.json
+					   storlist=$(cat storlist.json | jq '.[] .name' --raw-output | cat -n)
+					   echo "Here are the storage account names under your subscription $sub: "
+					   echo
+					   echo "$storlist"
+					   echo
+					  
+					   azure group list --json > grplist.json
+					   grplist=$(cat grplist.json | jq '.[] .name' --raw-output | cat -n)
+						  
+					   echo -n "Do you want to create a new storage storage account for your Azure file share? [Y]/N: "
+					   read createornotsa
+					   #echo $createornotsa
+					   saretryornot='r'
+					   if [ -z "${createornotsa,,}" ] || [ "${createornotsa,,}" = 'y' ]
+							then
+							havegoodsaname=false
+							saretry=true
+							#loc='southcentralus'    
+							while [  $havegoodsaname = false ] && [  $saretry = true ]
+							do
+								 echo -n "Enter the storage account name to create (only accept lower case letters and numbers): "
+								 read sa
+								 sa=${sa,,}
+								 azure storage account list --json > storlist.json
+								 rg=$(cat storlist.json | jq '.[] | select (.name == "'$sa'" )' | jq ' .resourceGroup' --raw-output)
+								 storlist2=$(cat storlist.json | jq '.[] .name' --raw-output)
+								 if [[ $storlist2 =~ $sa ]]
+										  then
+											  echo -n " Storage account already exists. [R]-retry/U-use/Q-quit" 
+											  read saretryornot
+											  
+											  if [ "${saretryornot,,}" = 'q' ]
+												   then 
+												   saretry=false   
+											  elif [ "${saretryornot,,}" = 'u' ]
+												   then
+												   echo -n "You choose to use an existing storage account $sa. Y-continue/R-retry"
+												   read useexisting       
+												   if [ -z "${useexisting,,}" ] || [ "${useexisting,,}" = 'y' ]
+														then 
+														havegoodsaname=true
+														echo -n "Existing storage $sa will be used. Its resource group is $rg. "
+														echo
+												   fi
+											  fi
+								 else
+									  echo -n "Storage account $sa will be created ..."
+									  echo
+									  echo -n "You need to select the resource group name under which the storage account will be created."
+									  echo
+									  rgvalid=false 
+									  azure group list --json > grplist.json
+									  grplist=$(cat grplist.json | jq '.[] .name' --raw-output | cat -n)
+									  echo -n "Here is the list of existing resource group names: "
+									  echo
+									  echo "$grplist"
+									  echo
 
-      while [ ! ${rgvalid} ]
-      do
-       num_rg=$(jq '.| length' grplist.json)
-       echo -n "Enter the index of resource group you want to use: 0-New/1-$num_rg -use existing ones " 
-       read grpnbr
-       if [ "$grpnbr" = 0 ]
-        then
-        echo -n "Please input the name of a new resource group to create (only allows lower cae letters, numbers,underline, and hyphen)： "
-        read rg
-        rg=${rg,,}
-        grplist2=$(cat grplist.json | jq '.[] .name' --raw-output)
-        if [[ $grplist2 =~ $rg ]] 
-         then 
-         echo -n "Resource group $rg exists. [U]-use/R-retry: "
-         read useexisting
-         if [ -z "${useexisting,,}" ] || [ "${useexisting,,}" = 'u' ]
-          then
-          rgvalid=true 
-         fi
-        else
-         rgvalid=true
-        fi
-       else
-        if [ "$grpnbr" -gt 0 ] && [ "grpnbr" -le $num_rg ]
-         then
-         let grpnbr2=grpnbr-1
-         grp=$(cat grplist.json | jq  '.['$grpnbr2'] .name' --raw-output)
-         echo -n "You selected $grp. [Y]-continue/R-retry"
-         read continue
-         if [ -z "${continue,,}" ] || [ "${continue,,}" = 'y' ]
-          then
-          rgvalid=true
-         fi
-        else
-          echo -n "Selected index of existing resource group out of bounds. Retry..."
-        fi
-       fi
-      done
+									  while [ $rgvalid = false ]
+									  do
+										   num_rg=$(jq '.| length' grplist.json)
+										   echo -n "Enter the index of resource group you want to use: 0-New/1-$num_rg -use existing ones " 
+										   read grpnbr
+										   if [ "$grpnbr" = 0 ]
+												then
+												echo -n "Please input the name of a new resource group to create (only allows lower cae letters, numbers,underline, and hyphen)： "
+												read rg
+												rg=${rg,,}
+												grplist2=$(cat grplist.json | jq '.[] .name' --raw-output)
+												if [[ $grplist2 =~ $rg ]] 
+													 then 
+													 echo -n "Resource group $rg exists. [U]-use/R-retry: "
+													 read useexisting
+													 if [ -z "${useexisting,,}" ] || [ "${useexisting,,}" = 'u' ]
+														  then
+														  rgvalid=true 
+													 fi
+												else
+													 rgvalid=true
+												fi
+										   else
+												if [ "$grpnbr" -gt 0 ] && [ "$grpnbr" -le $num_rg ]
+													 then
+													 let grpnbr2=grpnbr-1
+													 grp=$(cat grplist.json | jq  '.['$grpnbr2'] .name' --raw-output)
+													 echo -n "You selected $grp. [Y]-continue/R-retry"
+													 read continue
+													 if [ -z "${continue,,}" ] || [ "${continue,,}" = 'y' ]
+													  then
+													  rgvalid=true
+													 fi
+												else
+													  echo -n "Selected index of existing resource group out of bounds. Retry..."
+												fi
+										   fi
+									  done
 
-      havegoodsaname=true
-      grplist3=$(cat grplist.json | jq '.[] .name' --raw-output)
-      if [[ $grplist3 =~ $rg ]]
-       then
-       echo -n "Start creating storage account $sa under resource group $rg. "
-      else 
-       echo -n "Start creating resource group $rg. "
-       azure group create $rg
-       echo -n "Start creating storage account $sa under resource group $rg. "
-       azure storage account create $sacct -g $rg
-      fi
-     fi
-    done
-   else
-    validexistingsaname=false
-    saretry=true
-    azure storage account list --json > storlist.json
-    num_stor=$(jq '.| length' storlist.json)
-    while [ ! ${validexistingsanme} ] && [ ! ${saretry} ]
-    do
-     echo -n "Enter the index of the storage account to use (1 - $num_stor ): "
-     read saindex
-     if [ "$saindex" - gt 0 ] && [ "$saindex" -le num_stor ]
-      then
-      let saindex2=saindex-1
-      sa=$(cat storlist.json | jq  '.['$saindex2'] .name' --raw-output)
-      rg=$(cat storlist.json | jq  '.['$saindex2'] .resourceGroup' --raw-output)
-      echo -n "You selected storage account $sa. [Y]-continue/N-reselect"
-      read saconfirm
-      if [ -z "${saconfirm,,}" ] || [ "${saconfirm,,}" = 'y' ]
-       then
-       echo -n "Stoage account $sa is selected. Its resource group is $rg. "
-       validexistingsaname=true
-      fi  
-     else
-      echo -n "Selected index of storage account out of bounds. [R]-retry/Q-quit"
-      read saretryornot
-      if [ "${saretryornot,,}" = 'q' ]
-       then
-       saretry=false
-       echo -n "Quitting ..." 
-      fi
-     fi  
-    done 
-   fi
-  azure storage account set -g $rg  $sa
+									  havegoodsaname=true
+									  grplist3=$(cat grplist.json | jq '.[] .name' --raw-output)
+									  if [[ $grplist3 =~ $rg ]]
+										   then
+										   echo -n "Start creating storage account $sa under resource group $rg. "
+									  else 
+										   echo -n "Start creating resource group $rg. "
+										   azure group create $rg
+										   echo -n "Start creating storage account $sa under resource group $rg. "
+										   azure storage account create $sacct -g $rg
+									  fi
+								 fi
+							done
+					   else
+							validexistingsaname=false
+							saretry=true
+							azure storage account list --json > storlist.json
+							num_stor=$(jq '.| length' storlist.json)
+							while [ $validexistingsaname = false ] && [ $saretry = true ]
+							do
+								 echo -n "Enter the index of the storage account to use (1 - $num_stor ): "
+								 read saindex
+								 if [ "$saindex" -gt 0 ] && [ "$saindex" -le "$num_stor" ]
+									  then
+									  let saindex2=saindex-1
+									  sa=$(cat storlist.json | jq  '.['$saindex2'] .name' --raw-output)
+									  rg=$(cat storlist.json | jq  '.['$saindex2'] .resourceGroup' --raw-output)
+									  echo -n "You selected storage account $sa. [Y]-continue/N-reselect: "
+									  read saconfirm
+									  if [ -z "${saconfirm,,}" ] || [ "${saconfirm,,}" = 'y' ]
+										   then
+										   echo -n "Stoage account $sa is selected. Its resource group is $rg. "
+										   validexistingsaname=true
+									  fi  
+								 else
+									  echo -n "Selected index of storage account out of bounds. [R]-retry/Q-quit: "
+									  read saretryornot
+									  if [ "${saretryornot,,}" = 'q' ]
+										   then
+										   saretry=false
+										   echo -n "Quitting ..." 
+									  fi
+								 fi  
+							done 
+						fi
+					  echo $rg
+					  echo $sa
 
-  validsharename=false
-  quitcreateshare=false
-  while [ ! ${validsharename} ] && [ ! ${quitcreateshare} ]
-  do
-   echo -n "Enter the name of the file share service to create (lower case characters, numbers, and - are accepted): "
-   read sharename0
-   if [ -z "$sharename0" ]
-    then
-    echo -n "You entered an empty file share name. [R]-retry/Q-quit"
-    read retrysharename
-    if [ "${retrysharename,,}" = 'q' ]
-     then 
-     quitcreateshare=true
-    fi
-   else
-    sharename=${sharename0,,}
-    if [ "$sharename" -ne "$sharename0" ] 
-     then
-     echo "Invalid file share name '$sharename0' converted to '$sharename'"
-     validsharename=true 
-    fi
-   fi
- 
+					  #azure storage account set -g $rg -s $sa
 
-   if [ ${validsharename} ]
-    then
-    x=`azure storage account connectionstring show $sa -g $rg --json`
-    # Extract the storage connectionstring with the keys
-    y=`echo $x | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["string"])'`
-    export AZURE_STORAGE_CONNECTION_STRING=$y
-    azure storage share create $sharename
-    azure storage directory create $sharename  -p 'data'
-    echo -n "An Azure file share service created. It can be later mounted to the Azure virtual machine screated for your team projects. "
-    echo
-    echo -n "Please keep a note for the information of the Azure file share service. It will be needed in the future when mounting it to Azure virtual machines."
-    echo
-    echo -n "Do you want to output the file share information to a file in your current directory? [Y]/N"
-    read outputtofile
-    if [ -z "${outputtofile,,}" ] || [ "${outputtofile,,}" = 'y' ]
-     then 
-     filenameright=false
-     skipoutputfile=false
-     while [ ! ${filenameright} ] && [ ! ${skipoutputfile} ]
-     do
-      echo -n "Please provide the file name. This file under the current working directory will be created to store the file share information: "
-      read filename
-       if [ -z "$filename" ] 
-        then
-        echo -n "File name cannot be empty"
-       else
-        filename="$PWD"/$filename
-        if [ -d "$filename" ]
-         then
-         echo -n "$filename already exists. [R]-retry/Q-quit"
-         read fileoutput
-          if [ "${fileoutput,,}" = 'q' ]
-           then
-           skipoutputfile=true
-          fi
-        else
-         filenameright=true
-        fi
-       fi
-     done
-     if [ ${filenameright} ]
-      then
-      echo "Created date time : $(date) " >> $filename
-      echo "Subscription name : $sub " >> $filename
-      echo "Storage account name : $sa " >> $filename
-      echo "File share name : $sharename " >> $filename
-      echo -n "File sahre information output to $filename. Share it with your team members who want to mount it to their virtual machines. "
-     fi
-    fi
-   fi  
-  done
- fi
+					  validsharename=false
+					  quitcreateshare=false
+					  while [ $validsharename = false ] && [  $quitcreateshare = false ]
+					  do
+						   echo -n "Enter the name of the file share service to create (lower case characters, numbers, and - are accepted): "
+						   read sharename0
+
+						   if [ -z "$sharename0" ]
+								then
+								echo -n "You entered an empty file share name. [R]-retry/Q-quit: "
+								read retrysharename
+								if [ "${retrysharename,,}" = 'q' ]
+									 then 
+									 quitcreateshare=true
+								fi
+						   else
+								sharename=${sharename0,,}
+								if [ "$sharename" != "$sharename0" ] 
+									 then
+									 echo "Invalid file share name '$sharename0' converted to '$sharename'"
+									 validsharename=true
+								else 
+									validsharename=true
+								fi
+						   fi
+					  done
+					 
+
+					   if [ $validsharename = true ]
+							then
+							x=`azure storage account connectionstring show $sa -g $rg --json`
+							# Extract the storage connectionstring with the keys
+							y=`echo $x | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["string"])'`
+							export AZURE_STORAGE_CONNECTION_STRING="$y"
+							azure storage share create $sharename
+							#azure storage directory create $sharename 
+							#azure storage directory create $sharename  -p 'data'
+							echo -n "An Azure file share service created. It can be later mounted to the Azure virtual machine screated for your team projects. "
+							echo
+							echo -n "Please keep a note for the information of the Azure file share service. It will be needed in the future when mounting it to Azure virtual machines."
+							echo
+							echo -n "Do you want to output the file share information to a file in your current directory? [Y]/N: "
+							read outputtofile
+							if [ -z "${outputtofile,,}" ] || [ "${outputtofile,,}" = 'y' ]
+								 then 
+								 filenameright=false
+								 skipoutputfile=false
+								 while [ $filenameright = false ] && [  $skipoutputfile = false ]
+								 do
+									  echo -n "Please provide the file name. This file under the current working directory will be created to store the file share information: "
+									  read filename
+									   if [ -z "$filename" ] 
+											then
+											echo -n "File name cannot be empty"
+									   else
+											filename="$PWD"/$filename
+											if [ -e "$filename" ]
+												 then
+												 echo -n "$filename already exists. [R]-retry/Q-quit"
+												 read fileoutput
+												  if [ "${fileoutput,,}" = 'q' ]
+													   then
+													   skipoutputfile=true
+												  fi
+											else
+												 filenameright=true
+											fi
+									   fi
+								 done
+								 if [ $filenameright = true ]
+									  then
+									  echo "Created date time:$(date) " >> $filename
+									  echo "Subscription name:$sub " >> $filename
+									  echo "Storage account name:$sa " >> $filename
+									  echo "File share name:$sharename " >> $filename
+									  echo "File share information output to $filename. Share it with your team members who want to mount it to their virtual machines. "
+								 fi
+							fi
+					   fi  
+				fi  
+	 fi
 fi
+
+echo $filename
+echo
+######The above is tested through successfully. 
 
 function mountfileservices {
   echo -n " Start getting the list ofsubscriptions under your Azure account..."
@@ -527,7 +541,7 @@ function mountfileservices {
   echo
   echo -n "Do you have a file with the information of the file share you want to mount? Y/N "
   read inputfileyesorno
-  if [ "${inputfileyesorno,,}" -ne 'n' ]
+  if [ "${inputfileyesorno,,}" != 'n' ]
    then
    inputfileyesorno='y'
   fi
@@ -540,23 +554,22 @@ function mountfileservices {
    then
    inputfilequit=false
    inputfileright=false
-   while [ ! ${inputfilequit} ] && [ ! ${inputfilequit} ]
+   while [ $inputfilequit = false ] && [  $inputfileright = false ]
    do
-    echo -n "Please provide the name of the file with the information of the file share you want to mount"
+    echo -n "Please provide the name of the file with the information of the file share you want to mount: "
     read filename
     if [ -z "$filename" ]
      then 
-     echo -n "File name cannnot be empty. R-retry/S-skip."
+     echo -n "File name cannnot be empty. R-retry/S-skip: "
      read retryinput
-     retryinput2=${retryinput,,}
-     if [ "$retryinput2" = 's' ]
+     if [ "${retryinput,,}" = 's' ]
       then
       inputfilequit=true
      fi
     else
-     if [ -d "$filename" ]
+     if [ ! -f "$filename" ]
       then
-      echo -n "File does not exist. R-retry/S-skip" 
+      echo -n "File does not exist. R-retry/S-skip: " 
       read retryinput
       if [ "${retryinput,,}" = 's' ]
        then 
@@ -567,12 +580,12 @@ function mountfileservices {
      fi
     fi
    done
-   if [ ${inputfileright} ]
+   if [ $inputfileright = true ]
     then
-    sub=$(sed -n -e 's/^.*Subscription name: //p' $filename)
-    sa=$(sed -n -e 's/^.*Storage account name: //p' $filename)
-    sharename=$(sed -n -e 's/^.*File share name: //p' $filename)
-    if [ "$sub" = 'NA' ] || ["$sa" = 'NA' ] || [ "$sharename" = 'NA' ]
+    sub=$(cat $filename | cut -d':' -f2  | head -2 | tail -1)
+    sa=$(cat $filename | cut -d':' -f2  | head -3 | tail -1)
+    sharename=$(cat $filename | cut -d':' -f2  | head -4 | tail -1)
+    if [ "$sub" = 'NA' ] || [ "$sa" = 'NA' ] || [ "$sharename" = 'NA' ]
      then
      echo -n "Information about the file share to be mounted is incomplete. You have to manually input information later. "
      sub='NA'
@@ -584,7 +597,7 @@ function mountfileservices {
 
  subnameright=false
  quitornot=false
- while [ ! ${subnameright} ] && [ ! ${quitornot} ]
+ while [  $subnameright = false ] && [ $quitornot = false ]
  do
    if [ "$sub" = 'NA' ]
     then
@@ -602,7 +615,7 @@ function mountfileservices {
     sub='NA'
     sa='NA'
     sharename='NA'
-    if ["${quitornotask2,,}" = 'q' ]
+    if [ "${quitornotask2,,}" = 'q' ]
      then
      echo "Mounting Azure file share quit. "
      quitornot=true
@@ -610,7 +623,7 @@ function mountfileservices {
    fi
  done
 
- if [ ${subnameright} ]
+ if [ $subnameright = true ]
   then
   retrycount=0
   getstoragesucceed=false
@@ -618,7 +631,7 @@ function mountfileservices {
   num_sub=$(jq '.| length' acctlist.json)
   azure account set "$sub"
   echo -n "Start getting the list of storage accounts under your subscription $sub "
-  while [ ! ${getstoragesucceed} ] && [ ! ${retrycount} ]
+  while [ $getstoragesucceed = false ] && [ $retrycount -eq 0 ]
   do
    azure storage account list --json > storlist.json
    num_stor=$(jq '.| length' storlist.json)
@@ -626,14 +639,14 @@ function mountfileservices {
     then
     getstoragesucceed=true
    fi
-   if [ ${getstoragesucceed} ]
+   if [ $getstoragesucceed = true ]
     then
     let retrycount=retrycount+1
     echo -n "Trial $retrycount failed to get storage account list from your subscription $sub. Wait for 1 second to try again. "
     sleep 1
    fi
   done
-  if [ ! ${getstoragesucceed} ] && [ "$retrycount" -eq 10 ]
+  if [  $getstoragesucceed = false ] && [ "$retrycount" -eq 10 ]
    then 
    echo -n "It has failed 10 times getting the storage account. Retry sometime later. "
   else
@@ -644,11 +657,12 @@ function mountfileservices {
    echo -n "Here are the storage account names under subscription $sub "
    echo
    echo -n "$storageaccountnames"
+   echo
    goodsaname=false
    quitornot=false
-   while [ ! ${goodname} ] && [ ! ${quitornot} ]
+   while [  $goodsaname = false ] && [  $quitornot = false ]
    do
-    if ["$sa" = 'NA' ]
+    if [ "$sa" = 'NA' ]
      then
      echo -n "Enter the index of the storage account name where your Azure file share you want to mount is created: "
      read saindex
@@ -657,7 +671,7 @@ function mountfileservices {
       let saindex2=saindex-1
       sa=$(cat storlist.json | jq  '.['$saindex2'] .name' --raw-output)
       rg=$(cat storlist.json | jq  '.['$saindex2'] .resourceGroup' --raw-output) 
-      goodname=true
+      goodsaname=true
      else
       echo -n "Index out of bounds (1 - $num_stor ) [R]-retry/Q-quit "
       read quitsa
@@ -680,16 +694,16 @@ function mountfileservices {
     fi
    done
    
-   if [ ${goodname} ]
+   if [ $goodsaname = true ]
     then
     sharenameexist=false
     quitnewsharename=false
     #storkey 
     sharenameright=false
     quitornot=false
-    while [ ! ${sharenameexist} ] && [ ! ${quitenewsharename} ]
+    while [ $sharenameexist = false ] && [  $quitnewsharename = false ]
     do
-     while [ ! ${sharenameright} ] && [ ! ${quitornot} ]
+     while [ $sharenameright = false ] && [  $quitornot = false ]
      do
       if [ "$sharename" = 'NA' ]
        then
@@ -708,7 +722,7 @@ function mountfileservices {
       fi
      done
      
-     if [ ${sharenameright} ]
+     if [ $sharenameright = true ]
       then
       drivenameright=false
       existingdisks=$(df -h)
@@ -718,7 +732,7 @@ function mountfileservices {
       echo -n "$existingdisks" 
       echo
       quitdrivename=false
-      while [ ! ${drivenameright} ] && [ ! ${quitedrivename} ]
+      while [ $drivenameright = false ] && [  $quitdrivename = false ]
       do
        echo -n "Enter the name of the drive to be added to your virtual machine. This name should be diferent from the disk names your virtual machine has: "
        read drivename
@@ -737,7 +751,7 @@ function mountfileservices {
        fi
       done
       
-      if [ ${drivenameright} ]
+      if [ $drivenameright = true ]
        then
        echo -n "File share $sharename will be mounted to your virtual machine as drive $drivename "
        k=`azure storage account keys list  $sa -g $rg --json |  python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["key1"])'`
@@ -752,11 +766,12 @@ function mountfileservices {
  fi
 }
 
+
 #Mount share files to Linux DSVM
 
 if [ $role -gt 0 ]
  then
- echo -n "Do you want to mount an Azure File share service to your Azure Virtual Machine? [Y]-yes/N -no to quit "
+ echo -n "Do you want to mount an Azure File share service to your Azure Virtual Machine? [Y]-yes/N -no to quit: "
  read mountornot
  if [ -z "${mountornot,,}" ] || [ "${mountornot,,}" = 'y' ]
   then
@@ -775,4 +790,3 @@ if [ $role -gt 0 ]
   done
  fi
 fi
-
