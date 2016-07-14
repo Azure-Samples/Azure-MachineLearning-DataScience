@@ -651,7 +651,7 @@ function mountfileservices {
 			then
 			getstoragesucceed=true
 	   fi
-	   if [ $getstoragesucceed = true ]
+	   if [ $getstoragesucceed = false ]
 			then
 			let retrycount=retrycount+1
 			echo -n "Trial $retrycount failed to get storage account list from your subscription $sub. Wait for 1 second to try again. "
