@@ -488,7 +488,7 @@ if [ $role -lt 3 ]
 											then
 											echo -n "File name cannot be empty"
 									   else
-											filename="$PWD"/$filename
+											#filename="$PWD/$filename"
 											if [ -e "$filename" ]
 												 then
 												 echo -n "$filename already exists. [R]-retry/Q-quit"
@@ -504,6 +504,7 @@ if [ $role -lt 3 ]
 								 done
 								 if [ $filenameright = true ]
 									  then
+									  cd
 									  echo "Created date time:$(date) " >> $filename
 									  echo "Subscription name:$sub " >> $filename
 									  echo "Storage account name:$sa " >> $filename
@@ -582,6 +583,7 @@ function mountfileservices {
    done
    if [ $inputfileright = true ]
     then
+    #cd
     sub=$(cat $filename | cut -d':' -f2  | head -2 | tail -1)
     sa=$(cat $filename | cut -d':' -f2  | head -3 | tail -1)
     sharename=$(cat $filename | cut -d':' -f2  | head -4 | tail -1)
@@ -610,7 +612,7 @@ function mountfileservices {
     then
     subnameright=true
    else
-    echo -n "The subscription name you input does not exist. [R]-retry/Q-quit"
+    echo -n "The subscription name you input does not exist. [R]-retry/Q-quit: "
     read quitornotask
     sub='NA'
     sa='NA'
@@ -734,7 +736,7 @@ function mountfileservices {
       quitdrivename=false
       while [ $drivenameright = false ] && [  $quitdrivename = false ]
       do
-       echo -n "Enter the name of the drive to be added to your virtual machine. This name should be diferent from the disk names your virtual machine has: "
+       echo -n "Enter the name of the drive to be added to your virtual machine. This name should be diferent from the disk names your virtual machine has. "
        read drivename
        drivelist=$(df -h | rev | cut -d" " -f1 | rev)
        if [[ $drivelist =~ $drivename ]]
