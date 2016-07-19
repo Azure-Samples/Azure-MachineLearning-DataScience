@@ -385,42 +385,42 @@ if (!($role -eq 2)) # if it is team lead or project individual contributor, set 
                 Write-host $name5 "cloned." -ForegroundColor "Green"
             }
         
-            Write-host "Copying the entire directory in"$rootdir"\"$commonutilreponame "except .git directory to"$rootdir"\"$teamutilreponame"..." -ForegroundColor "Yellow"
-            copyFiles $rootdir $commonutilreponame $teamutilreponame $name4 $name5
-            $DestinationDirectory = $rootdir+"\"+$teamutilreponame
-            Write-host "Change to the "$name5 "directory "$DestinationDirectory -ForegroundColor "Green"
+            #Write-host "Copying the entire directory in"$rootdir"\"$commonutilreponame "except .git directory to"$rootdir"\"$teamutilreponame"..." -ForegroundColor "Yellow"
+            #copyFiles $rootdir $commonutilreponame $teamutilreponame $name4 $name5
+            #$DestinationDirectory = $rootdir+"\"+$teamutilreponame
+            #Write-host "Change to the "$name5 "directory "$DestinationDirectory -ForegroundColor "Green"
             
-            cd $DestinationDirectory
+            #cd $DestinationDirectory
 
-            $prompt = 'If you are ready to commit the '+$name5+', enter Y. Otherwise, go to change your '+$name5+' and come back to enter Y to commit...'
-            $commitornot = Read-Host -Prompt $prompt
+            #$prompt = 'If you are ready to commit the '+$name5+', enter Y. Otherwise, go to change your '+$name5+' and come back to enter Y to commit...'
+            #$commitornot = Read-Host -Prompt $prompt
 
-            if ($commitornot.ToLower() -eq 'y')
-            {
-                git add .
-                $username = git config user.name
-                $email = git config user.email
-                if (!$username)
-                {
-                    $user = Read-Host -Prompt 'For logging purpose, input your name'
-                    git config --global user.name $user
-                }
-                if (!$email)
-                {
-                    $useremail = Read-Host -Prompt 'Fog logging purpose, input your email address'
-                    git config --global user.email $useremail
-                }
-                git commit -m"changed the team repository directory."
-                git push
-            } else {
-                Write-host "I do not understand your input. Please commit later by yourself using the following commands in sequence." -ForegroundColor "Yellow"
-                Write-host "These commands need to be submitted when you are in "$DestinationDirectory
-                Write-host "git add ." -ForegroundColor "Green"
-                Write-host "git config --global user.name john.smith" -ForegroundColor "Green"
-                Write-host "git config --global user.email johnsmith@example.com" -ForegroundColor "Green"
-                Write-host "git commit -m'This is a commit note'" -ForegroundColor "Green"
-                Write-host "git push" -ForegroundColor "Green"
-            }
+            #if ($commitornot.ToLower() -eq 'y')
+            #{
+            #    git add .
+            #    $username = git config user.name
+            #    $email = git config user.email
+            #    if (!$username)
+            #    {
+            #        $user = Read-Host -Prompt 'For logging purpose, input your name'
+            #        git config --global user.name $user
+            #    }
+            #    if (!$email)
+            #    {
+            #        $useremail = Read-Host -Prompt 'Fog logging purpose, input your email address'
+            #        git config --global user.email $useremail
+            #    }
+            #    git commit -m"changed the team repository directory."
+            #    git push
+            #} else {
+            #    Write-host "I do not understand your input. Please commit later by yourself using the following commands in sequence." -ForegroundColor "Yellow"
+            #    Write-host "These commands need to be submitted when you are in "$DestinationDirectory
+            #    Write-host "git add ." -ForegroundColor "Green"
+            #    Write-host "git config --global user.name john.smith" -ForegroundColor "Green"
+            #    Write-host "git config --global user.email johnsmith@example.com" -ForegroundColor "Green"
+            #    Write-host "git commit -m'This is a commit note'" -ForegroundColor "Green"
+            #    Write-host "git push" -ForegroundColor "Green"
+            #}
         } else
         {
             $ClonePath = Join-Path $rootdir $teamutilreponame
