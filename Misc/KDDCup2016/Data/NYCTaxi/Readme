@@ -1,1 +1,6 @@
 Contains sampled NYC Taxi data from December 2013
+
+URIs for CSV data containing December 2013 trip and fare data:
+
+http://cdspsparksamples.blob.core.windows.net/data/NYC Taxi/KDD2016/trip_data_12.csv
+http://cdspsparksamples.blob.core.windows.net/data/NYC Taxi/KDD2016/trip_fare_12.csv
