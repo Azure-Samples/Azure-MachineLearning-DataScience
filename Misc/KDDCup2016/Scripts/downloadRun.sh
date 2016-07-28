@@ -56,4 +56,4 @@ cd /home/remoteuser/Code
 ###########################################################################
 ## Change permission of Code directory
 ###########################################################################
-sudo chmod -R 777 Code
+sudo chmod -R 777 /home/remoteuser/Code
