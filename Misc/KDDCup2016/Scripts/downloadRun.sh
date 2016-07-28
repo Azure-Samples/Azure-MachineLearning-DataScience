@@ -51,3 +51,8 @@ sudo R --vanilla --quiet  <  /home/remoteuser/github_installs.R
 ## Set working directory
 ###########################################################################
 cd /home/remoteuser/Code
+
+###########################################################################
+## Change permission of Code directory
+###########################################################################
+sudo chmod -R 777 Code
