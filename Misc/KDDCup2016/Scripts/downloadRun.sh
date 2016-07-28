@@ -4,7 +4,6 @@
 cd /home/remoteuser
 if [[ -f github_installs.R ]]; then sudo rm -Rf github_installs*; fi;
 if [[ -f downloadRun.sh ]]; then sudo rm -Rf downloadRun*; fi;
-
 if [[ -d Code ]]; then sudo rm -Rf Code; fi;
 mkdir Code  
 mkdir Code/MRS Code/SparkR
