@@ -1,18 +1,29 @@
+###########################################################################
 ## Download scripts and code files into directories
+###########################################################################
 cd /home/remoteuser
 mkdir Code  
-mkdir Code/MRS Code/sparklyr
+mkdir Code/MRS Code/SparkR
 
 cd /home/remoteuser
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
 chmod +x downloadRun.sh
 
-cd  /home/remoteuser/Code/sparklyr
+cd  /home/remoteuser/Code/SparkR
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparklyR_NYCTaxi.Rmd
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparklyR_NYCTaxi.html
 
+cd  /home/remoteuser/Code/MRS
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/1-Clean-Join-Subset.r
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/2-Train-Test-Subset.r
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/3-Deploy-Score-Subset.r
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/Installation.r
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/SetComputeContext.r
+
+###########################################################################
 ## Install packages, remove older version of packages prior to installation
+###########################################################################
 cd /home/remoteuser
 sudo apt-get -y -qq install libcurl4-openssl-dev
 
@@ -36,5 +47,7 @@ if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
 cd /home/remoteuser
 sudo R --vanilla --quiet  <  /home/remoteuser/github_installs.R
 
+###########################################################################
 ## Set working directory
+###########################################################################
 cd /home/remoteuser/Code
