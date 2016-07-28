@@ -2,6 +2,7 @@
 ## Download scripts and code files into directories
 ###########################################################################
 cd /home/remoteuser
+if [[ -d Code ]]; then sudo rm -Rf Code; fi;
 mkdir Code  
 mkdir Code/MRS Code/SparkR
 
