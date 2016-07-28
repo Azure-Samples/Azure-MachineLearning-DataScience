@@ -1,5 +1,6 @@
+## Download scripts and code files into directories
 cd 
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/sparklyRInstall.sh
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
 
 mkdir Code  
@@ -10,6 +11,7 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparklyR_NYCTaxi.html
 
 
+## Install packages, remove older version of packages prior to installation
 cd 
 sudo apt-get install libcurl4-openssl-dev
 
@@ -21,4 +23,5 @@ sudo rm -r rmarkdown
 
 sudo R --vanilla --quiet  <  /home/remoteuser/Scripts/github_installs.R
 
-cd
+## Set working directory
+cd /home/remoteuser/Code
