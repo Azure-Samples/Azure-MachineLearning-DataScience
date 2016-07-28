@@ -2,6 +2,7 @@
 cd 
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
+chmod +x downloadRun.sh
 
 mkdir Code  
 mkdir Code/MRS Code/sparklyr
