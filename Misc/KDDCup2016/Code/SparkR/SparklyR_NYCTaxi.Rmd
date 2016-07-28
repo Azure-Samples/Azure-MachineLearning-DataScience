@@ -48,7 +48,6 @@ sqlContext <- sparkRSQL.init(sc)
 ###########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
 ###########################################
-.libPaths("/usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R")
 library(rmarkdown)
 library(knitr)
 library(gridExtra)
