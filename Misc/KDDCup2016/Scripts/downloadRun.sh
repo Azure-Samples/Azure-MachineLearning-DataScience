@@ -14,14 +14,25 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 
 ## Install packages, remove older version of packages prior to installation
 cd /home/remoteuser
-sudo apt-get install libcurl4-openssl-dev
+sudo apt-get -y -qq install libcurl4-openssl-dev
 
 cd /usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R/library
-sudo rm -r sparklyr sparkapi rprojroot dplyr Rcpp DBI config tibble devtools rmarkdown
+if [[ -d sparklyr ]]; then sudo rm -Rf sparklyr; fi;
+if [[ -d sparkapi ]]; then sudo rm -Rf sparkapi; fi;
+if [[ -d rprojroot ]]; then sudo rm -Rf rprojroot; fi;
+if [[ -d dplyr ]]; then sudo rm -Rf dplyr; fi;
+if [[ -d Rcpp ]]; then sudo rm -Rf Rcpp; fi;
+if [[ -d DBI ]]; then sudo rm -Rf DBI; fi;
+if [[ -d config ]]; then sudo rm -Rf config; fi;
+if [[ -d tibble ]]; then sudo rm -Rf tibble; fi;
+if [[ -d devtools ]]; then sudo rm -Rf devtools; fi;
+if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
+if [[ -d knitr ]]; then sudo rm -Rf knitr; fi;
 
 cd /home/remoteuser/R/x86_64-pc-linux-gnu-library/3.2
-sudo rm -r rmarkdown
+if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
 
+# Call R file to install packages
 sudo R --vanilla --quiet  <  /home/remoteuser/Scripts/github_installs.R
 
 ## Set working directory

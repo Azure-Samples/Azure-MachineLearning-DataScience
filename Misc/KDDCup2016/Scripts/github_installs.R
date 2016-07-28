@@ -15,3 +15,4 @@ devtools::install_github("rstudio/sparklyr");
 install.packages("rmarkdown", repos='http://cran.us.r-project.org')
 install.packages("ggplot2", repos='http://cran.us.r-project.org')
 install.packages("gridExtra", repos='http://cran.us.r-project.org')
+install.packages("knitr", repos='http://cran.us.r-project.org')
