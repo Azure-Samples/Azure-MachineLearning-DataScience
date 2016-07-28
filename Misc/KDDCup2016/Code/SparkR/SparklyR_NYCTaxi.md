@@ -40,7 +40,7 @@ sc <- sparkR.init(
 ```
 
 ```
-## Launching java with spark-submit command /usr/hdp/current/spark-client/bin/spark-submit  --packages com.databricks:spark-csv_2.10:1.3.0 sparkr-shell /tmp/RtmpUeD5xs/backend_port16d71b26493f
+## Launching java with spark-submit command /usr/hdp/current/spark-client/bin/spark-submit  --packages com.databricks:spark-csv_2.10:1.3.0 sparkr-shell /tmp/RtmpRyu0Sl/backend_port97002e3a83e8
 ```
 
 ```r
@@ -49,7 +49,6 @@ sqlContext <- sparkRSQL.init(sc)
 ###########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
 ###########################################
-.libPaths("/usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R")
 library(rmarkdown)
 library(knitr)
 library(gridExtra)
@@ -303,11 +302,8 @@ Create a elastic net model using training data, and evaluate on test data-set
 
 ```r
 # Fit elastic net regression model
-fit <- partitions$training %>% ml_linear_regression(response = "tip_amount", 
-                                                    features = c("pt_bin", "fare_amount", 
-                                                                 "pickup_hour", "passenger_count",
-                                                                 "trip_distance", "TrafficTimeBuc"), 
-                                                    alpha = 0.5, lambda = 0.01)
+fit <- partitions$training %>% ml_linear_regression(response = "tip_amount", features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count", "trip_distance", "TrafficTimeBuc"), alpha = 0.5, lambda = 0.01)
+
 # Show summary of fitted Elastic Net model
 summary(fit)
 ```
@@ -317,7 +313,7 @@ summary(fit)
 ## 
 ## Deviance Residuals: (approximate):
 ##       Min        1Q    Median        3Q       Max 
-## -15.64632  -0.53410   0.04463   0.52419  23.59143 
+## -16.42945  -0.53367   0.04452   0.52461  23.40958 
 ## 
 ## Coefficients:
 ##     (Intercept)          pt_bin     fare_amount     pickup_hour 
@@ -362,11 +358,8 @@ Create a random forest model using training data, and evaluate on test data-set
 
 ```r
 # Fit Random Forest regression model
-fit <- partitions$training %>% ml_random_forest(response = "tip_amount", 
-                                                features = c("pt_bin", "fare_amount", 
-                                                             "pickup_hour", "passenger_count", 
-                                                             "trip_distance", "TrafficTimeBuc"), 
-                                                max.bins = 500L, max.depth = 5L, num.trees = 50L)
+fit <- partitions$training %>% ml_random_forest(response = "tip_amount", features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count",  "trip_distance", "TrafficTimeBuc"), max.bins = 500L, max.depth = 5L, num.trees = 50L)
+
 # Show summary of fitted Random Forest model
 summary(fit)
 ```
@@ -419,11 +412,8 @@ Create a gradient boosted tree model using training data, and evaluate on test d
 
 ```r
 # Fit Gradient Boosted Tree regression model
-fit <- partitions$training %>% ml_gradient_boosted_trees(response = "tip_amount", 
-                                                         features = c("pt_bin", "fare_amount", 
-                                                                      "pickup_hour", "passenger_count", 
-                                                                      "trip_distance","TrafficTimeBuc"), 
-                                                         max.bins = 32L, max.depth = 3L, type = "regression")
+fit <- partitions$training %>% ml_gradient_boosted_trees(response = "tip_amount", features = c("pt_bin", "fare_amount","pickup_hour","passenger_count","trip_distance","TrafficTimeBuc"), max.bins = 32L, max.depth = 3L, type = "regression")
+
 # Show summary of fitted Random Forest model
 summary(fit)
 ```
@@ -454,7 +444,7 @@ Rsqr = cor(predictedDF$tip_amount, predictedDF$fitted)^2; Rsqr;
 ```
 
 ```
-## [1] 0.7816144
+## [1] 0.7839889
 ```
 
 ```r
