@@ -1,19 +1,19 @@
 ## Download scripts and code files into directories
-cd 
+cd /home/remoteuser
+mkdir Code  
+mkdir Code/MRS Code/sparklyr
+
+cd /home/remoteuser
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
 chmod +x downloadRun.sh
 
-mkdir Code  
-mkdir Code/MRS Code/sparklyr
-
-cd  Code/sparklyr
+cd  /home/remoteuser/Code/sparklyr
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparklyR_NYCTaxi.Rmd
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparklyR_NYCTaxi.html
 
-
 ## Install packages, remove older version of packages prior to installation
-cd 
+cd /home/remoteuser
 sudo apt-get install libcurl4-openssl-dev
 
 cd /usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R/library
