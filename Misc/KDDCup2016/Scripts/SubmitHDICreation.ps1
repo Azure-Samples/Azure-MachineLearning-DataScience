@@ -1,4 +1,4 @@
-param([string]$clustername, [string]$clustername, [string]$resourcegroup, [string]$profilepath, [string]$clusterpasswd)
+param([string]$clustername, [string]$resourcegroup, [string]$profilepath, [string]$clusterpasswd)
 
 function SubmitHDICreation {
     param([string]$clustername, [string]$resourcegroup, [string]$profilepath, [string]$clusterpasswd)
