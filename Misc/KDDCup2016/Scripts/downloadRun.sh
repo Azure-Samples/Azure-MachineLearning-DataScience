@@ -14,8 +14,10 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 chmod +x downloadRun.sh
 
 cd  /home/remoteuser/Code/SparkR
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparklyR_NYCTaxi.Rmd
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparklyR_NYCTaxi.html
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparkR_sparklyr_NYCTaxi.Rmd
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparkR_sparklyr_NYCTaxi.html
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/sparklyr_NYCTaxi.Rmd
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/sparklyr_NYCTaxi.html
 
 cd  /home/remoteuser/Code/MRS
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/1-Clean-Join-Subset.r
