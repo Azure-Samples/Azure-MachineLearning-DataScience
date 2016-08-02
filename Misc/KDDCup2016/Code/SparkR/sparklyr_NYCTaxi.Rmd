@@ -157,8 +157,11 @@ Spark provides feature transformers, faciliating many common transformations of 
 # Binarizer
 joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', output_col = 'pt_ind') %>% ft_binarizer(input_col = 'pt_ind', output_col = 'pt_bin', threshold = 0.5)
 
+head(joinedDF2, 5)
 # Bucketizer
 joinedDF3 <- joinedDF2 %>% ft_string_indexer(input_col = 'TrafficTimeBins', output_col = 'TrafficTimeInd') %>% ft_bucketizer(input_col = 'TrafficTimeInd', output_col = 'TrafficTimeBuc', splits=c(-1,0.5,1.5,2.5,3.5))
+
+head(joinedDF3, 5)
 ```
 
 <hr>
