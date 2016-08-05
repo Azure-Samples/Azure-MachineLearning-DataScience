@@ -5,7 +5,7 @@
 			DestinationDirectory=$PWD/$dest
 			cd $SourceDirectory
 			git archive HEAD --format=tar | (cd $DestinationDirectory; tar xvf -)
-			cd
+			cd ../
 
 			# Copy Utilities folder to GroupUtilities folder
 			src="Utilities"
@@ -14,4 +14,4 @@
 			DestinationDirectory=$PWD/$dest
 			cd $SourceDirectory
 			git archive HEAD --format=tar | (cd $DestinationDirectory; tar xvf -)
-			cd 
+			cd ../ 
