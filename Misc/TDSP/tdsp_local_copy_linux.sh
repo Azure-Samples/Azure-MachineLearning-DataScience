@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Copy ProjectTemplate and Utilities folder to GroupProjectTemplate and GroupUtilities folder
 
 function TDSP_local_copy_linux{
