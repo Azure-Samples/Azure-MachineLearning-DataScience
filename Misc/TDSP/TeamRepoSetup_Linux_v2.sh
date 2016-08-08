@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ask user input
-echo -n "Input the VSTS server name: ";
+echo -n "Input the VSTS server name: "
 read server
 
 
