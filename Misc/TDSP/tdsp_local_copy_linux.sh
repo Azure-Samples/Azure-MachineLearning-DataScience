@@ -2,7 +2,7 @@
 
 #Copy ProjectTemplate and Utilities folder to GroupProjectTemplate and GroupUtilities folder
 
-function TDSP_local_copy_linux{
+function TDSP_local_copy_linux {
 
 echo -n "What is your source folder?"
 read src
