@@ -527,7 +527,7 @@ echo
 ######The above is tested through successfully. 
 
 function mountfileservices {
-  echo -n " Start getting the list ofsubscriptions under your Azure account..."
+  echo -n " Start getting the list of subscriptions under your Azure account..."
   azure config mode arm
   loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
 
