@@ -206,10 +206,9 @@ fi
 
 ###install jq to process json file
 ###Option 1
-#sudo -i
-#yum install jq
+sudo yum install jq
 
-###Option 1
+###Option 2
 #git clone https://github.com/stedolan/jq.git
 #cd jq
 #autoreconf -i
