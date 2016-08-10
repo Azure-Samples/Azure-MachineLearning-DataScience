@@ -1,3 +1,5 @@
+#install jq to process json file
+sudo yum install jq
 
 #Mount file
 azure config mode arm
