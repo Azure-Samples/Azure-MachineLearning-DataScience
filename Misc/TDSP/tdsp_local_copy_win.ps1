@@ -7,18 +7,24 @@ function TDSP_local_copy ($reponame1, $reponame2) {
     $validpath = $false
     while(!$validpath) {
         $src = Read-Host -Prompt $prompt1
-        if (Test-Path $src)
+        $src_git = $src+'\.git'
+        if ((Test-Path $src) -and (Test-Path $src_git))
         {
             $validpath = $true
+        } else{
+            Write-Host $src 'is not a valid git repository. Please try it again.' -ForegroundColor Red
         }
     }
 
     $validpath = $false
     while(!$validpath) {
         $dest = Read-Host -Prompt $prompt2
-        if (Test-Path $dest)
+        $dest_git = $dest+'\.git'
+        if ((Test-Path $dest) -and (Test-Path $dest_git))
         {
             $validpath = $true
+        } else{
+            Write-Host $dest 'is not a valid git repository. Please try it again.' -ForegroundColor Red
         }
     }
 
