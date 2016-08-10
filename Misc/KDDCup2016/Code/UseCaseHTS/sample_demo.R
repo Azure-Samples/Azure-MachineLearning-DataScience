@@ -36,7 +36,7 @@ library(fpp)
 forecast_hts <- function (traindata, testdata, htsmethod, tsmethod, combweights){
   
   # Forecasting horizon
-  horiz =  dim(aggts(test_data))[1]
+  horiz =  dim(aggts(testdata))[1]
   
   # Run hierarchical forecast
   hts_fcast <- forecast(object  = traindata, 
@@ -99,10 +99,19 @@ param_space$comb_weights[rm_inds] <- "none"
 param_space <- param_space[!duplicated.data.frame(param_space),]
 
 
-# Setting compute context to "local" which executes runs locally in a serial manner.
-# For parallelized distributed execution via Spark across the nodes of a cluster,
-# set compute context to RxSpark(), that is rxSetComputeContext(RxSpark())
-rxSetComputeContext("local")
+# rxSetComputeContext("local") - sets compute context to "local" and causes rxExec() 
+# to execute runs locally in a serial manner.
+# 
+# rxSetComputeContext(RxLocalParallel()) - causes rxExec() to run multiple tasks 
+# in parallel, thereby using the multiple cores on your local machine. 
+# The downside is that this will use more memory and will slow down your computer 
+# for other work you may be trying to do at the same time.
+# 
+# rxSetComputeContext(RxSpark()) - for parallelized distributed execution via Spark 
+# across the nodes of a cluster
+
+
+rxSetComputeContext(RxLocalParallel())
 
 
 # Run many distributed jobs
