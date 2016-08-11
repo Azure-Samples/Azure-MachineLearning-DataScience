@@ -12,6 +12,7 @@ install.packages("Rcpp", repos='http://cran.us.r-project.org')
 devtools::install_github("hadley/dplyr");
 devtools::install_github("krlmlr/rprojroot");
 devtools::install_github("rstudio/sparklyr");
+devtools::install_github("rstudio/sparkapi");
 install.packages("rmarkdown", repos='http://cran.us.r-project.org')
 install.packages("ggplot2", repos='http://cran.us.r-project.org')
 install.packages("gridExtra", repos='http://cran.us.r-project.org')
