@@ -190,7 +190,7 @@ function mountfileservices
             if ($goodsaname){
                 $sharenameexist = $false
                 $quitnewsharename = $false
-                $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Key1
+                $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Value[0]
                 $sharenameright = $false
                 $quitornot = $false
                 while ((!$sharenameexist) -and (!$quitnewsharename))
