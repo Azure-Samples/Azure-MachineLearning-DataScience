@@ -31,6 +31,9 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 ###########################################################################
 cd /home/remoteuser
 sudo apt-get -y -qq install libcurl4-openssl-dev
+sudo apt-get -y -qq install libcurl4-gnutls-dev
+sudo apt-get -y -qq install libssl-dev
+sudo apt-get -y -qq install libxml2-dev
 
 cd /usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R/library
 if [[ -d sparklyr ]]; then sudo rm -Rf sparklyr; fi;
@@ -44,6 +47,7 @@ if [[ -d tibble ]]; then sudo rm -Rf tibble; fi;
 if [[ -d devtools ]]; then sudo rm -Rf devtools; fi;
 if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
 if [[ -d knitr ]]; then sudo rm -Rf knitr; fi;
+if [[ -d AzureML ]]; then sudo rm -Rf AzureML; fi;
 
 cd /home/remoteuser/R/x86_64-pc-linux-gnu-library/3.2
 if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
