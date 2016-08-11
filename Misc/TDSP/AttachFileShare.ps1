@@ -5,7 +5,7 @@
 
     $sa = Read-Host 'Enter the storage account name where file share is created '
     $rg = Read-Host 'Enter the resource group '
-    $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg )..Value[0]
+    $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Value[0]
 
     # Get Azure File Service Share details
     $sharename = Read-Host 'Enter the name of the file share to mount'
