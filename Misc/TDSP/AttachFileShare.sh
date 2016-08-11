@@ -67,11 +67,11 @@ function mountfileservices {
 			then
 			#cd
 			sub=$(cat $filename | cut -d':' -f2  | head -2 | tail -1)
-			echo "from the file sub is $sub"
+			#echo "from the file sub is $sub"
 			sa=$(cat $filename | cut -d':' -f2  | head -3 | tail -1)
-			echo "from the file sa is $sa"
+			#echo "from the file sa is $sa"
 			sharename=$(cat $filename | cut -d':' -f2  | head -4 | tail -1)
-			echo "from the file sharename is $sharename"
+			#echo "from the file sharename is $sharename"
 			if [ "$sub" = 'NA' ] || [ "$sa" = 'NA' ] || [ "$sharename" = 'NA' ]
 				 then
 				 echo -n "Information about the file share to be mounted is incomplete. You have to manually input information later. "
@@ -95,7 +95,7 @@ function mountfileservices {
    sublist=$(cat acctlist.json | jq '.[] .name' --raw-output)
    if [[ $sublist =~ $sub ]]
 		then
-		echo "$sub is in $sublist"
+		#echo "$sub is in $sublist"
 		subnameright=true
    else
 		echo -n "The subscription name you input does not exist. [R]-retry/Q-quit: "
