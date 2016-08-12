@@ -16,7 +16,7 @@ if(useHDFS) {
   
   rxOptions(fileSystem = RxHdfsFileSystem())
   
-  dataDir <- "/user/RevoShare/dev/delayDataLarge"
+  dataDir <- "/HdiSamples/HdiSamples/FlightDelay"
   
   ################################################
 
