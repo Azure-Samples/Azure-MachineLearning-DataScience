@@ -1,5 +1,6 @@
 # Use the AzureML CRAN package to deploy the tree-based model as a scalable web service.
-source("SetComputeContext.R")
+setwd("/home/remoteuser/Code/MRS")
+source("SetComputeContext.r")
 
 # Load our rxDTree Decision Tree model
 
