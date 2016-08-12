@@ -2,7 +2,7 @@
 
 function TDSP_local_copy ($reponame1, $reponame2) {
     $prompt1 = 'Please input the local path to '+$reponame1+' (source directory)'
-    $prompt2 = 'Please input the local path to '+$reponame2+' (source directory)'
+    $prompt2 = 'Please input the local path to '+$reponame2+' (destination directory)'
     
     $validpath = $false
     while(!$validpath) {
@@ -33,7 +33,7 @@ function TDSP_local_copy ($reponame1, $reponame2) {
     Write-Host 'Start copying files (except files in .git directory) from '$src 'to'$dest'...' -ForegroundColor Yellow
     foreach ($file in $files)
     {
-	    $CopyPath = Join-Path $DestinationDirectory $file.FullName.Substring($SourceDirectory.length)
+	    $CopyPath = Join-Path $dest $file.FullName.Substring($src.length)
 	    Copy-Item $file.FullName -Destination $CopyPath
     }
 }
