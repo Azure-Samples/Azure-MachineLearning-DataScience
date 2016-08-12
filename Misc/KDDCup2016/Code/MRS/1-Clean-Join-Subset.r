@@ -1,4 +1,5 @@
-source("SetComputeContext.R")
+setwd("/home/remoteuser/Code/MRS")
+source("SetComputeContext.r")
 
 .libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
 
@@ -17,7 +18,7 @@ sqlContext <- sparkRSQL.init(sc)
 # airPath <- file.path(fullDataDir, "AirOnTime08to12CSV")
 # weatherPath <- file.path(fullDataDir, "Weather") # pre-processed weather data
 
-airPath <- file.path(fullDataDir, "AirSubsetCsv")
+airPath <- file.path(fullDataDir, "AirlineSubsetCsv")
 weatherPath <- file.path(fullDataDir, "WeatherSubsetCsv") # pre-processed weather data
 
 # create a SparkR DataFrame for the airline data
