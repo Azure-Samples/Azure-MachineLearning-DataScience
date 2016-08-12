@@ -159,7 +159,7 @@ trip_fare_featSampled <- SparkR::sample(trip_fare_feat, withReplacement=FALSE,
 trip_fare_featSampledDF <- as.data.frame(trip_fare_featSampled);
 
 ###########################################
-# PLOT HISTOGRAM OF TIP AMOUNT
+# Generate HISTOGRAM OF TIP AMOUNT
 ###########################################
 hist <- ggplot(trip_fare_featSampledDF, aes(x=tip_amount)) + 
   geom_histogram(binwidth = 0.5, aes(fill = ..count..)) + 
@@ -167,12 +167,16 @@ hist <- ggplot(trip_fare_featSampledDF, aes(x=tip_amount)) +
   labs(title="Histogram for Tip Amount");
 
 ###########################################
-# PLOT HISTOGRAM OF TIP AMOUNT
+# Generate Scatter Plot OF TRIP DISTANCE vs. TIP AMOUNT
 ###########################################
 scatter <- ggplot(trip_fare_featSampledDF, aes(tip_amount, trip_distance)) + 
   geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
   labs(title="Tip amount vs. trip distance");
 
+
+###########################################
+# Plot Histogram and Scatter Plot OF TIP AMOUNT Side by Side
+###########################################
 grid.arrange(hist, scatter, ncol=2)
 ```
 
@@ -208,7 +212,7 @@ If a data-set is large, it may need to be down-sampled for modeling in reasonabl
 ###########################################
 # LOAD SAMPLED JOINED TAXI DATA FROM HDFS, CACHE
 ###########################################
-joinedDF <- spark_read_parquet(sp, name = "joined_table", 
+joinedDF <- spark_read_parquet(sc, name = "joined_table", 
                                path = "/HdiSamples/HdiSamples/NYCTaxi/JoinedParquetSampledFile", memory = TRUE, overwrite = TRUE)
 head(joinedDF, 5)
 
