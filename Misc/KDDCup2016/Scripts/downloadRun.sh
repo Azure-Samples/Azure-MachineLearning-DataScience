@@ -52,6 +52,7 @@ if [[ -d RCurl ]]; then sudo rm -Rf RCurl; fi;
 if [[ -d rjson ]]; then sudo rm -Rf rjson; fi;
 if [[ -d hts ]]; then sudo rm -Rf hts; fi;
 if [[ -d fpp ]]; then sudo rm -Rf fpp; fi;
+if [[ -d randomForest ]]; then sudo rm -Rf randomForest; fi;
 
 cd /home/remoteuser/R/x86_64-pc-linux-gnu-library/3.2
 if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
