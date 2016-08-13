@@ -11,7 +11,8 @@ devtools::install_github("rstats-db/DBI");
 install.packages("Rcpp", repos='http://cran.us.r-project.org')
 devtools::install_github("hadley/dplyr");
 devtools::install_github("krlmlr/rprojroot");
-devtools::install_github("rstudio/sparklyr");
+#devtools::install_github("rstudio/sparklyr");
+install.packages("home/remoteuser/sparklyr0801.tar.gz", repos=NULL, type="source")
 devtools::install_github("rstudio/sparkapi");
 install.packages("rmarkdown", repos='http://cran.us.r-project.org')
 install.packages("ggplot2", repos='http://cran.us.r-project.org')

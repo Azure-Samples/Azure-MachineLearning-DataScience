@@ -9,6 +9,10 @@ mkdir Code
 mkdir Code/MRS Code/SparkR
 
 cd /home/remoteuser
+wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
+unzip sparklyr0801.zip -d sparklyr0801
+tar -czvf sparklyr0801.tar.gz sparklyr0801
+
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
 chmod +x downloadRun.sh
