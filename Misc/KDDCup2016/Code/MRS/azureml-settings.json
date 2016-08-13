@@ -1,0 +1,6 @@
+{"workspace":{
+   "id": "f846e64b86374091a7b1416630cd28ae",
+   "authorization_token": "replaceWithToken",
+   "api_endpoint": "https://studioapi.azureml.net",
+   "management_endpoint": "https://management.azureml.net"
+}}
