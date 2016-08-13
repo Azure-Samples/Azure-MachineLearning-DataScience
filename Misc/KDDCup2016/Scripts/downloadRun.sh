@@ -1,3 +1,5 @@
+amlToken=$1
+
 ###########################################################################
 ## Download scripts and code files into directories
 ###########################################################################
@@ -31,6 +33,11 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/SetComputeContext.r
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/azureml-settings.json
 
+###########################################################################
+## Store the AML token in azureml-settings.json
+###########################################################################
+
+sudo sed -i.bak "s/replaceWithToken/$amlToken/" /home/remoteuser/Code/MRS/azureml-settings.json
 
 ###########################################################################
 ## Reduce spark logging, because it slows down RStudio
