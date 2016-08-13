@@ -15,6 +15,7 @@ tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
 
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/update_sparklyr.R
 chmod +x downloadRun.sh
 
 cd  /home/remoteuser/Code/SparkR
@@ -64,6 +65,7 @@ if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
 # Call R file to install packages
 cd /home/remoteuser
 sudo R --vanilla --quiet  <  /home/remoteuser/github_installs.R
+sudo R --vanilla --quiet  <  /home/remoteuser/update_sparklyr.R
 
 ###########################################################################
 ## Change permission of Code directory
