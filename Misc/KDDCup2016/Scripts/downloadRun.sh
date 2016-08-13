@@ -54,7 +54,7 @@ sudo apt-get -y -qq install libcurl4-gnutls-dev
 sudo apt-get -y -qq install libssl-dev
 sudo apt-get -y -qq install libxml2-dev
 
-cd /usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R/library
+cd /usr/lib64/microsoft-r/8.0/lib64/R/library
 if [[ -d sparklyr ]]; then sudo rm -Rf sparklyr; fi;
 if [[ -d sparkapi ]]; then sudo rm -Rf sparkapi; fi;
 if [[ -d rprojroot ]]; then sudo rm -Rf rprojroot; fi;
