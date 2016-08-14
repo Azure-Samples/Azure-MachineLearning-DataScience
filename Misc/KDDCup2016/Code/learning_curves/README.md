@@ -1,4 +1,4 @@
-# Learning curves on big data using Microsoft R Server
+# Demo of learning curves on big data using Microsoft R Server
 
 * `learning_curve_lib.R` defines the `run_training_fraction` function and some helper functions.
 * `sim_data.R` has functions for generating the simulated data used in the demo.
