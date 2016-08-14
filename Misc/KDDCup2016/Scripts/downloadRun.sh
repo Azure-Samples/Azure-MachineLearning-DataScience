@@ -8,7 +8,7 @@ if [[ -f github_installs.R ]]; then sudo rm -Rf github_installs*; fi;
 if [[ -f downloadRun.sh ]]; then sudo rm -Rf downloadRun*; fi;
 if [[ -d Code ]]; then sudo rm -Rf Code; fi;
 mkdir Code  
-mkdir Code/MRS Code/SparkR
+mkdir Code/MRS Code/SparkR Code/UseCaseHTS
 
 cd /home/remoteuser
 
@@ -24,6 +24,9 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/sparklyr_NYCTaxi.Rmd
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/sparklyr_NYCTaxi.R
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/sparklyr_NYCTaxi.html
+
+cd  /home/remoteuser/Code/UseCaseHTS
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/UseCaseHTS/sample_demo.R
 
 cd  /home/remoteuser/Code/MRS
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/1-Clean-Join-Subset.r
