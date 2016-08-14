@@ -11,16 +11,11 @@ apiKey <- argsSplit[2]
 
 # Verify files in HDFS
 
-#rxHadoopListFiles(path="", recursive=T, print=F)
+files1 <- rxHadoopListFiles("/HdiSamples/HdiSamples/FlightDelay/AirlineSubsetCsv/", print = F)
+files2 <- rxHadoopListFiles("/HdiSamples/HdiSamples/NYCTaxi/Csv/", print = F)
+files3 <- rxHadoopListFiles("/HdiSamples/HdiSamples/NYCTaxi/JoinedParquetSampledFile/", print = F)
 
-files1 <- rxHadoopListFiles("/HdiSamples/HdiSamples/FlightDelay/AirlineSubsetCsv/part-00015")
-
-hdfsFiles <- files1
-
-#rxHadoopCommand(cmd, computeContext, sshUsername=NULL, 
-                #sshHostname=NULL, 
-                #sshSwitches=NULL,
-                #sshProfileScript=NULL, intern=FALSE)
+hdfsFiles <- (length(files1) == 17) && (length(files2) == 3) && (length(files3) == 204) 
 
 # Verify files on edge node
 files2 <- file.exists("/home/remoteuser/Code/MRS/3-Deploy-Score-Subset.r")
