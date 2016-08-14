@@ -1,3 +1,5 @@
+amlToken=$1
+
 ###########################################################################
 ## Download scripts and code files into directories
 ###########################################################################
@@ -12,7 +14,6 @@ cd /home/remoteuser
 
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun_sparklyr.sh
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/update_sparklyr.R
 chmod +x downloadRun.sh
 chmod +x downloadRun_sparklyr.sh
@@ -29,17 +30,34 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/3-Deploy-Score-Subset.r
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/Installation.r
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/SetComputeContext.r
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/azureml-settings.json
+
+###########################################################################
+## Store the AML token in azureml-settings.json
+###########################################################################
+
+sudo sed -i.bak "s/replaceWithToken/$amlToken/" /home/remoteuser/Code/MRS/azureml-settings.json
+
+###########################################################################
+## Reduce spark logging, because it slows down RStudio
+###########################################################################
+
+sudo sed -i.bak 's/INFO/WARN/' /etc/spark/2.4.2.4-5/0/log4j.properties
 
 ###########################################################################
 ## Install packages, remove older version of packages prior to installation
 ###########################################################################
 cd /home/remoteuser
+
+# the tibble package now seems to require /bin/gtar
+sudo ln -s /bin/tar /bin/gtar
+
 sudo apt-get -y -qq install libcurl4-openssl-dev
 sudo apt-get -y -qq install libcurl4-gnutls-dev
 sudo apt-get -y -qq install libssl-dev
 sudo apt-get -y -qq install libxml2-dev
 
-cd /usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R/library
+cd /usr/lib64/microsoft-r/8.0/lib64/R/library
 if [[ -d sparklyr ]]; then sudo rm -Rf sparklyr; fi;
 if [[ -d sparkapi ]]; then sudo rm -Rf sparkapi; fi;
 if [[ -d rprojroot ]]; then sudo rm -Rf rprojroot; fi;
@@ -65,6 +83,12 @@ if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
 cd /home/remoteuser
 sudo R --vanilla --quiet  <  /home/remoteuser/github_installs.R
 
+# update sparklyr to version 0.2.32
+wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
+unzip sparklyr0801.zip
+tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
+
+sudo R --vanilla --quiet  <  /home/remoteuser/update_sparklyr.R
 ###########################################################################
 ## Change permission of Code directory
 ###########################################################################
