@@ -71,7 +71,7 @@ if ( azureMLExists )
 command <- "ps aux | grep rstudio-server | grep -v grep"
 
 rstudio1 <- system(command, intern = T)	
-rstudioRunning <- (length(rstudio1) > 0) && grepl("/usr/lib/rstudio-server/bin/rserver", rstudio1, fixed = T)
+rstudioRunning <- (length(rstudio1) > 0) && grepl("/usr/lib/rstudio-server/bin/", rstudio1, fixed = T)
 	
 # Use web service to log the results
 
