@@ -56,9 +56,6 @@ azureMLExists <- require(AzureML)
 azureMLScore <- FALSE
 if ( azureMLExists )
 {
-	# TODO: CREATE AN AML STUDIO WORKSPACE SPECIFICALLY FOR THIS TUTORIAL
-	# AND COPY THE "azureml-settings.json" FROM A NON-PUBLIC LOCATION TO THE EDGE NODE
-	#workspace <- workspace(config = "azureml-settings.json")
 	workspace <- workspace( id = "22dff0820e214415898a098db4abcdb7", auth = amlAuth)
 	services <- services(workspace)
 
@@ -84,11 +81,11 @@ rstudioRunning <- (length(rstudio1) > 0) && grepl("/usr/lib/rstudio-server/bin/r
 # Use web service to log the results
 
 nodeName <- Sys.info()[["nodename"]]
-# nodeName <- "ed00-kdd52"
-clusterID <- sub("ed00-kdd", "", nodeName, fixed = T) # remove "ed00-kdd", leaving the node ID number
+# nodeName <- "ed10-kdd52"
+clusterID <- sub(".*-kdd", "", nodeName) # remove "ed10-kdd", leaving the node ID number
 verifDF <- data.frame(clusterID, hdfsFiles, edgeFiles, sparkHPCJob, sparkHPAJob, azureMLExists, azureMLScore, rstudioRunning,
 	stringsAsFactors = F)
-#str(verifDF)
+
 write.csv(verifDF, "/home/remoteuser/verification.csv")
 
 library("RCurl")
@@ -129,7 +126,7 @@ if (httpStatus >= 400)
 {
     print(paste("The request failed with status code:", httpStatus, sep=" "))
 
-    # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
+    # Print the headers - they include the request ID and the timestamp, which are useful for debugging the failure
     print(headers)
 }
 
