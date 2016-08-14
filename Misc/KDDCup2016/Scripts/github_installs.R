@@ -1,5 +1,5 @@
-.libPaths("/usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R/library")
-setwd("/usr/lib64/MRO-for-MRS-8.0.3/R-3.2.2/lib/R/library")
+.libPaths("/usr/lib64/microsoft-r/8.0/lib64/R/library")
+setwd("/usr/lib64/microsoft-r/8.0/lib64/R/library")
 
 install.packages("devtools", repos='http://cran.us.r-project.org')
 library(devtools)
