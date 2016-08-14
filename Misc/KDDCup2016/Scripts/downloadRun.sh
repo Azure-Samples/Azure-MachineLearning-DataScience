@@ -49,6 +49,10 @@ sudo sed -i.bak 's/INFO/WARN/' /etc/spark/2.4.2.4-5/0/log4j.properties
 ## Install packages, remove older version of packages prior to installation
 ###########################################################################
 cd /home/remoteuser
+
+# the tibble package now seems to require /bin/gtar
+sudo ln -s /bin/tar /bin/gtar
+
 sudo apt-get -y -qq install libcurl4-openssl-dev
 sudo apt-get -y -qq install libcurl4-gnutls-dev
 sudo apt-get -y -qq install libssl-dev
