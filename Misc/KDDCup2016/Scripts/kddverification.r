@@ -15,7 +15,7 @@ apiKey <- argsSplit[2]
 
 files1 <- rxHadoopListFiles("/HdiSamples/HdiSamples/FlightDelay/AirlineSubsetCsv/part-00015")
 
-hdfsFiles <- ( files1 == 0)
+hdfsFiles <- files1
 
 #rxHadoopCommand(cmd, computeContext, sshUsername=NULL, 
                 #sshHostname=NULL, 
