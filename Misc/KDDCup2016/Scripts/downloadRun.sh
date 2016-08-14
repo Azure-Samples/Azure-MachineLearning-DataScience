@@ -8,7 +8,7 @@ if [[ -f github_installs.R ]]; then sudo rm -Rf github_installs*; fi;
 if [[ -f downloadRun.sh ]]; then sudo rm -Rf downloadRun*; fi;
 if [[ -d Code ]]; then sudo rm -Rf Code; fi;
 mkdir Code  
-mkdir Code/MRS Code/SparkR Code/UseCaseHTS
+mkdir Code/MRS Code/SparkR Code/UseCaseHTS Code/learning_curves
 
 cd /home/remoteuser
 
@@ -35,6 +35,13 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/Installation.r
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/SetComputeContext.r
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/azureml-settings.json
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/MRS/dTreeModelSubset.RData
+
+cd  /home/remoteuser/Code/learning_curves
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/learning_curves/README.md
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/learning_curves/learning_curve_lib.R
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/learning_curves/run_learning_curve_demo.R
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/learning_curves/sim_data.R
 
 ###########################################################################
 ## Store the AML token in azureml-settings.json

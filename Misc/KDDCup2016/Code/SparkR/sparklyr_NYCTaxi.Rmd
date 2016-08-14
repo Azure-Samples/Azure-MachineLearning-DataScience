@@ -115,7 +115,7 @@ joinedSampled <- dplyr::sample_n(joinedDF, 1000)
 joinedSampledDF <- as.data.frame(joinedSampled);
 
 ###########################################
-# PLOT HISTOGRAM OF TIP AMOUNT
+# Generate HISTOGRAM OF TIP AMOUNT
 ###########################################
 hist <- ggplot(joinedSampledDF, aes(x=tip_amount)) + 
   geom_histogram(binwidth = 0.5, aes(fill = ..count..)) + 
@@ -123,12 +123,15 @@ hist <- ggplot(joinedSampledDF, aes(x=tip_amount)) +
   labs(title="Histogram for Tip Amount");
 
 ###########################################
-# PLOT HISTOGRAM OF TIP AMOUNT
+# Generate Scatter Plot of TIP AMOUNT vs. TRIP DISTANCE
 ###########################################
 scatter <- ggplot(joinedSampledDF, aes(tip_amount, trip_distance)) + 
   geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
   labs(title="Tip amount vs. trip distance");
 
+###########################################
+# Plot the Histogramand Scatter Plot Side by Side
+###########################################
 grid.arrange(hist, scatter, ncol=2)
 ```
 
