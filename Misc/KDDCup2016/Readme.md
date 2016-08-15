@@ -8,7 +8,7 @@ from http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
   ```bash
   ssh -L localhost:8787:localhost:8787 remoteuser@r-server.kddXXX-ssh.azurehdinsight.net
   ```
-  * Command line to connect with plink.exe (Windows) - replace XXX with the number of your cluster
+  * Command line to connect with plink.exe (Windows) - run the following commands in a Windows command prompt window - replace XXX with the number of your cluster
   ```bash
   cd to the directory containing plink.exe
   .\plink.exe -L localhost:8787:localhost:8787 remoteuser@r-server.kddXXX-ssh.azurehdinsight.net
