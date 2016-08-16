@@ -18,6 +18,8 @@ cd directory-containing-plink.exe
 * After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server on the edge node of your cluster
 
 ## Suggested Reading and Tutorial Scripts
+* for _Exploration and visualization using SparkSQL and R_
+ * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/KDDCup2016/Code/SparkSQL/SparkSQL.R)
 * for _End to end scalable data analysis in R: Data exploration, visualization, modeling and deployment using distributed R functions and Hadoop/Spark_
  * [SparkR, ScaleR, and AzureML scripts for Airline Delay dataset](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/MRS)
  * [SparkR and sparklyr scripts for NYC Taxi dataset](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/SparkR)
