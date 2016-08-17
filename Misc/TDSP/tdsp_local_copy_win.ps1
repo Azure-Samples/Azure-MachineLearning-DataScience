@@ -1,7 +1,15 @@
 # Copy ProjectTemplate and Utilities folder to GroupProjectTemplate and GroupUtilities folder
 
+$role = Read-Host -Prompt 'Select your role in your team:1-group manager;[2]-team lead;3-project lead'
+
+if ((!$role) -or (!($role -eq 1) -and !($role -eq 3))){
+    $role = 2
+}
+
+
 function TDSP_local_copy ($reponame1, $reponame2) {
-    $prompt1 = 'Please input the local path to '+$reponame1+' (source directory)'
+    
+	$prompt1 = 'Please input the local path to '+$reponame1+' (source directory)'
     $prompt2 = 'Please input the local path to '+$reponame2+' (destination directory)'
     
     $validpath = $false
@@ -38,8 +46,27 @@ function TDSP_local_copy ($reponame1, $reponame2) {
     }
 }
 
-#ProjectTemplate --> GroupProjectTemplate
-TDSP_local_copy 'ProjectTemplate repository from Microsoft TDSP team' 'Your GroupProjectTemplate repository'
-#Utilities --> GroupUtilities
-TDSP_local_copy 'Utilities repository from Microsoft TDSP team' 'Your GroupUtilities repository'
+if ($role -eq 1){
+	$reponame1 = 'ProjectTemplate repository from Microsoft TDSP team'
+	$reponame2 = 'Your GroupProjectTemplate repository'
+	$reponame3 = 'Utilities repository from Microsoft TDSP team'
+	$reponame4 = 'Your GroupUtilities repository'
 
+	TDSP_local_copy($reponame1,$reponame2)
+	TDSP_local_copy($reponame3,$reponame4)
+}
+elseif ($role -eq 2){
+	$reponame1 = 'Your GroupProjectTemplate repository'
+	$reponame2 = 'Your TeamProjectTemplate repository'
+	$reponame3 = 'Your GroupUtilities repository'
+	$reponame4 = 'Your TeampUtilities repository'
+
+	TDSP_local_copy($reponame1,$reponame2)
+	TDSP_local_copy($reponame3,$reponame4)
+}
+else{
+	$reponame1 = 'Your TeamProjectTemplate repository'
+	$reponame2 = 'Your Project repository'
+	
+	TDSP_local_copy($reponame1,$reponame2)
+}
