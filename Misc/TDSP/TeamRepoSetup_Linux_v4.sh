@@ -206,10 +206,9 @@ fi
 
 ###install jq to process json file
 ###Option 1
-#sudo -i
-#yum install jq
+sudo yum install jq
 
-###Option 1
+###Option 2
 #git clone https://github.com/stedolan/jq.git
 #cd jq
 #autoreconf -i
@@ -511,10 +510,10 @@ if [ $role -lt 3 ]
 								 if [ $filenameright = true ]
 									  then
 									  cd
-									  echo "Created date time:$(date)" >> $filename
-									  echo "Subscription name:$sub" >> $filename
-									  echo "Storage account name:$sa" >> $filename
-									  echo "File share name:$sharename" >> $filename
+									  echo "Created date time:$(date) " >> $filename
+									  echo "Subscription name:$sub " >> $filename
+									  echo "Storage account name:$sa " >> $filename
+									  echo "File share name:$sharename " >> $filename
 									  echo "File share information output to $filename. Share it with your team members who want to mount it to their virtual machines. "
 								 fi
 							fi
@@ -528,7 +527,7 @@ echo
 ######The above is tested through successfully. 
 
 function mountfileservices {
-  echo -n " Start getting the list ofsubscriptions under your Azure account..."
+  echo -n " Start getting the list of subscriptions under your Azure account..."
   azure config mode arm
   loginstat=`azure account list --json | python -c 'import json,sys;obj=json.load(sys.stdin);print(len(obj)>0)'`
 
@@ -608,7 +607,6 @@ function mountfileservices {
 
  subnameright=false
  quitornot=false
- echo $sub
  while [  $subnameright = false ] && [ $quitornot = false ]
  do
    if [ "$sub" = 'NA' ]
@@ -618,15 +616,11 @@ function mountfileservices {
    fi
    azure account list --json > acctlist.json
    sublist=$(cat acctlist.json | jq '.[] .name' --raw-output)
-   echo " 111111 $sublist"
-   echo " 22222 $sub"
    if [[ $sublist =~ $sub ]]
 		then
 		echo "$sub is in $sublist"
 		subnameright=true
    else
-		echo " 33333 $sublist"
-		echo " 44444 $sub"
 		echo -n "The subscription name you input does not exist. [R]-retry/Q-quit: "
 		read quitornotask
 		sub='NA'
@@ -808,4 +802,3 @@ if [ $role -gt 0 ]
   done
  fi
 fi
-
