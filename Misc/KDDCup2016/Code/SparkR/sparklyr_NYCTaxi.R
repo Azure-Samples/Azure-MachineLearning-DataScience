@@ -33,8 +33,10 @@ sqlContextSPR <- sparkRSQL.init(sp)
 ###########################################
 # LOAD SAMPLED JOINED TAXI DATA FROM HDFS, CACHE
 ###########################################
-joinedDF <- spark_read_parquet(sp, name = "joined_table", 
-                               path = "/HdiSamples/HdiSamples/NYCTaxi/JoinedParquetSampledFile", memory = TRUE, overwrite = TRUE)
+joinedDF <- spark_read_parquet(sp, 
+                               name = "joined_table", 
+                               path = "/HdiSamples/HdiSamples/NYCTaxi/JoinedParquetSampledFile", 
+                               memory = TRUE, overwrite = TRUE)
 head(joinedDF, 5)
 
 ###########################################
@@ -76,31 +78,42 @@ grid.arrange(hist, scatter, ncol=2)
 # CREATE TRANSFORMED FEATURES, BINAZURE OR BUCKET FEATURES
 ###########################################
 # Binarizer
-joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', output_col = 'pt_ind') %>% ft_binarizer(input_col = 'pt_ind', output_col = 'pt_bin', threshold = 0.5)
+joinedDF2 <- joinedDF %>% 
+    ft_string_indexer(input_col = 'payment_type', output_col = 'pt_ind') %>% 
+    ft_binarizer(input_col = 'pt_ind', output_col = 'pt_bin', threshold = 0.5)
 
 head(joinedDF2, 5)
 # Bucketizer
-joinedDF3 <- joinedDF2 %>% ft_string_indexer(input_col = 'TrafficTimeBins', output_col = 'TrafficTimeInd') %>% ft_bucketizer(input_col = 'TrafficTimeInd', output_col = 'TrafficTimeBuc', splits=c(-1,0.5,1.5,2.5,3.5))
+joinedDF3 <- joinedDF2 %>% 
+    ft_string_indexer(input_col = 'TrafficTimeBins', output_col = 'TrafficTimeInd') %>% 
+    ft_bucketizer(input_col = 'TrafficTimeInd', output_col = 'TrafficTimeBuc', splits=c(-1,0.5,1.5,2.5,3.5))
 
 head(joinedDF3, 5)
 
 ###########################################
 # CREATE TRAIN/TEST PARTITIONS
 ###########################################
-partitions <- joinedDF3 %>% sdf_partition(training = 0.75, test = 0.25, seed = 1099)
+partitions <- joinedDF3 %>% 
+    sdf_partition(training = 0.75, test = 0.25, seed = 1099)
 
 ###########################################
 # BUILD MACHINE LEARNING ELASTIC NET REGRESSION MODELS AND EVALUATE
 ###########################################
 
-fit <- partitions$training %>% ml_linear_regression(response = "tip_amount", features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count", "trip_distance", "TrafficTimeBuc"), alpha = 0.5, lambda = 0.01)
+fit <- partitions$training %>% 
+    ml_linear_regression(response = "tip_amount", 
+                        features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count", "trip_distance", "TrafficTimeBuc"), 
+                        alpha = 0.5, lambda = 0.01)
 
 # Show summary of fitted Elastic Net model
 summary(fit)
 
 # Predict on test data & evaluate in local data-frame
 predictedVals <- predict(fit, newdata =  partitions$test)
-predictedVals2 <- partitions$test %>% select(tip_amount) %>% collect %>% mutate(fitted = predictedVals)
+predictedVals2 <- partitions$test %>% 
+    select(tip_amount) %>% 
+    collect %>% 
+    mutate(fitted = predictedVals)
 predictedDF <- as.data.frame(predictedVals2)
 
 # Predict on test data and keep predictions in Spark context
@@ -114,19 +127,29 @@ predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot actual vs. predicted tip amounts
 lm_model <- lm(fitted ~ tip_amount, data = predictedDFSampled)
-ggplot(predictedDFSampled, aes(tip_amount, fitted)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+ggplot(predictedDFSampled, 
+      aes(tip_amount, fitted)) + 
+        geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
+        geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), 
+      color = "red")
 
 ###########################################
 # BUILD MACHINE LEARNING RANDOM FOREST REGRESSION MODELS AND EVALUATE
 ###########################################
-fit <- partitions$training %>% ml_random_forest(response = "tip_amount", features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count",  "trip_distance", "TrafficTimeBuc"), max.bins = 500L, max.depth = 5L, num.trees = 50L)
+fit <- partitions$training %>% 
+  ml_random_forest(response = "tip_amount", 
+                  features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count",  "trip_distance", "TrafficTimeBuc"), 
+                  max.bins = 500L, max.depth = 5L, num.trees = 50L)
 
 # Show summary of fitted Random Forest model
 summary(fit)
 
 # Predict on test data & evaluate in local data-frame
 predictedVals <- predict(fit, newdata =  partitions$test)
-predictedVals2 <- partitions$test %>% select(tip_amount) %>% collect %>% mutate(fitted = predictedVals)
+predictedVals2 <- partitions$test %>% 
+    select(tip_amount) %>% 
+    collect %>% 
+    mutate(fitted = predictedVals)
 predictedDF <- as.data.frame(predictedVals2)
 
 # Predict on test data and keep predictions in Spark context
@@ -140,19 +163,30 @@ predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot
 lm_model <- lm(fitted ~ tip_amount, data = predictedDFSampled)
-ggplot(predictedDFSampled, aes(tip_amount, fitted)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+ggplot(predictedDFSampled, 
+      aes(tip_amount, fitted)) + 
+          geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
+          geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), 
+      color = "red")
 
 ###########################################
 # BUILD MACHINE LEARNING GBM REGRESSION MODELS AND EVALUATE
 ###########################################
-fit <- partitions$training %>% ml_gradient_boosted_trees(response = "tip_amount", features = c("pt_bin", "fare_amount","pickup_hour","passenger_count","trip_distance","TrafficTimeBuc"), max.bins = 32L, max.depth = 3L, type = "regression")
+fit <- partitions$training %>% 
+    ml_gradient_boosted_trees(response = "tip_amount", 
+                              features = c("pt_bin", "fare_amount","pickup_hour","passenger_count","trip_distance","TrafficTimeBuc"), 
+                              max.bins = 32L, max.depth = 3L, 
+                              type = "regression")
 
 # Show summary of fitted Random Forest model
 summary(fit)
 
 # Predict on test data & evaluate in local data-frame
 predictedVals <- predict(fit, newdata =  partitions$test)
-predictedVals2 <- partitions$test %>% select(tip_amount) %>% collect %>% mutate(fitted = predictedVals)
+predictedVals2 <- partitions$test %>% 
+    select(tip_amount) %>% 
+    collect %>% 
+    mutate(fitted = predictedVals)
 predictedDF <- as.data.frame(predictedVals2)
 
 # Predict on test data and keep predictions in Spark context
@@ -166,4 +200,8 @@ predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot
 lm_model <- lm(fitted ~ tip_amount, data = predictedDFSampled)
-ggplot(predictedDFSampled, aes(tip_amount, fitted)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+ggplot(predictedDFSampled, 
+      aes(tip_amount, fitted)) + 
+          geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
+          geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), 
+      color = "red")
