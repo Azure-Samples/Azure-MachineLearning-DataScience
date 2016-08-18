@@ -9,7 +9,7 @@ if ((!$role) -or (!($role -eq 1) -and !($role -eq 3))){
 
 function TDSP_local_copy ($reponame1, $reponame2) {
     
-	$prompt1 = 'Please input the local path to '+$reponame1+' (source directory)'
+    $prompt1 = 'Please input the local path to '+$reponame1+' (source directory)'
     $prompt2 = 'Please input the local path to '+$reponame2+' (destination directory)'
     
     $validpath = $false
