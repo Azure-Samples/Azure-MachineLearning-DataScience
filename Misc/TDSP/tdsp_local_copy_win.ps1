@@ -52,8 +52,8 @@ if ($role -eq 1){
 	$reponame3 = 'Utilities repository from Microsoft TDSP team'
 	$reponame4 = 'Your GroupUtilities repository'
 
-	TDSP_local_copy($reponame1,$reponame2)
-	TDSP_local_copy($reponame3,$reponame4)
+	TDSP_local_copy $reponame1 $reponame2
+	TDSP_local_copy $reponame3 $reponame4
 }
 elseif ($role -eq 2){
 	$reponame1 = 'Your GroupProjectTemplate repository'
@@ -61,12 +61,12 @@ elseif ($role -eq 2){
 	$reponame3 = 'Your GroupUtilities repository'
 	$reponame4 = 'Your TeampUtilities repository'
 
-	TDSP_local_copy($reponame1,$reponame2)
-	TDSP_local_copy($reponame3,$reponame4)
+	TDSP_local_copy $reponame1 $reponame2
+	TDSP_local_copy $reponame3 $reponame4
 }
 else{
 	$reponame1 = 'Your TeamProjectTemplate repository'
 	$reponame2 = 'Your Project repository'
 	
-	TDSP_local_copy($reponame1,$reponame2)
+	TDSP_local_copy $reponame1 $reponame2
 }
