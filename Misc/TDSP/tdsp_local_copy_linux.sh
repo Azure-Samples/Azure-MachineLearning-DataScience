@@ -18,7 +18,7 @@ TDSP_local_copy_linux() {
 			validpath1=true
 		else 
 			echo "$src is not a valid git repository. Please try it again"
-      exit 1
+      			exit 1
 		fi	
 	done
 
@@ -32,7 +32,7 @@ TDSP_local_copy_linux() {
 			validpath2=true
 		else 
 			echo "$dest is not a valid git repository. Please try it again"
-    exit 1
+    			exit 1
 		fi	
 	done
 
