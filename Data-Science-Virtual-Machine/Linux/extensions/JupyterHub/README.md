@@ -1,5 +1,6 @@
 ###  Linux Data Science Virtual Machine with Jupyterhub custom extension
 
+**UPDATE**: The Linux data science VM now has JupyterHub installed by default. This extension will fail to install during deployment and should not be used.
 
 [![Deploy to Azure](http://azuredeploy.net/deploybutton.svg)](https://azuredeploy.net/)
 
