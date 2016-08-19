@@ -206,6 +206,10 @@ fi
 
 ###install jq to process json file
 ###Option 1
+echo "jq (json query) will be installed on your machine..."
+echo
+echo "Follow instructions on screen"
+echo
 sudo yum install jq
 
 ###Option 2
