@@ -6,8 +6,8 @@ param (
 
 function TDSP_local_copy ($reponame1, $reponame2) {
     
-    $prompt1 = 'Please input the local path to '+$reponame1+' (source directory)'
-    $prompt2 = 'Please input the local path to '+$reponame2+' (destination directory)'
+    $prompt1 = 'Please input the full path to '+$reponame1+' (source directory)'
+    $prompt2 = 'Please input the full path to '+$reponame2+' (destination directory)'
     
     $validpath = $false
     while(!$validpath) {
