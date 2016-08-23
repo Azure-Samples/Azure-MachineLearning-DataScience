@@ -3,15 +3,16 @@
 #Copy ProjectTemplate and Utilities folder to GroupProjectTemplate and GroupUtilities folder
 
 TDSP_local_copy_linux() {
-	echo -n "Please input the local path to $1 (source directory): "
+	echo -n "Please input the full path to $1 (source directory): "
 	read src
-	echo -n "Please input the local path to $2 (destination directory): "
+	echo -n "Please input the full path to $2 (destination directory): "
 	read dest
 
 	validpath1=false
 	while [ $validpath1 = false ]
 	do
-		SourceDirectory=$PWD/$src
+		#SourceDirectory=$PWD/$src
+		SourceDirectory=$src
 		SourceDirectory_git=$SourceDirectory"/.git"
 		if [ -d "$SourceDirectory" ] && [ -d "$SourceDirectory_git" ]
 			then
@@ -25,7 +26,8 @@ TDSP_local_copy_linux() {
 	validpath2=false
 	while [ $validpath2 = false ]
 	do
-		DestinationDirectory=$PWD/$dest
+		#DestinationDirectory=$PWD/$dest
+		DestinationDirectory=$dest
 		DestinationDirectory_git=$DestinationDirectory"/.git"
 		if [ -d "$DestinationDirectory" ] && [ -d "$DestinationDirectory_git" ]
 			then
