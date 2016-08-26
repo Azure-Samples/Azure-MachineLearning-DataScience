@@ -172,7 +172,7 @@ then
 								   echo -n "Start creating storage account $sa under resource group $rg. "
 							  else 
 								   echo -n "Start creating resource group $rg. "
-								   azure group create $rg
+								   azure group create $rg southcentralus
 								   echo -n "Start creating storage account $sa under resource group $rg. "
 								   azure storage account create $sacct -g $rg
 							  fi
