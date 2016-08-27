@@ -174,9 +174,7 @@ then
 								   echo -n "Start creating resource group $rg. "
 								   azure group create $rg southcentralus
 								   echo -n "Start creating storage account $sa under resource group $rg. "
-								   echo "1111 $rg"
-								   echo "2222 $sacct"
-								   azure storage account create $sacct -g $rg --sku-name 'LRS' -l southcentralus --kind Storage
+								   azure storage account create $sa -g $rg --sku-name 'LRS' -l southcentralus --kind Storage
 							  fi
 						 fi
 					done
