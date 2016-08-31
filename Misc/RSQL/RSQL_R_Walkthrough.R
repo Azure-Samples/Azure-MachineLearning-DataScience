@@ -31,8 +31,10 @@ rxSetComputeContext(cc)
 #Define a DataSource (from a select query) to be used to explore the data and generate features from.
 #Keep in mind that inDataSource is just a reference to the result dataset from the SQL query.
 sampleDataQuery <- "select top 1000 tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
-    pickup_datetime, dropoff_datetime, pickup_longitude, pickup_latitude, dropoff_longitude,  
-    dropoff_latitude from nyctaxi_sample"
+    pickup_datetime, dropoff_datetime, cast(pickup_longitude as float) as pickup_longitude, 
+cast(pickup_latitude as float) as pickup_latitude, 
+cast(dropoff_longitude as float) as dropoff_longitude, 
+cast(dropoff_latitude as float)  as dropoff_latitude from nyctaxi_sample"
 
 
 inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = connStr, 
