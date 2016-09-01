@@ -18,7 +18,7 @@ function mountfileservices {
   azure account list --json > acctlist.json
   num_sub=$(jq '.| length' acctlist.json)
   sublist=$(cat acctlist.json | jq '.[] .name' --raw-output| cat -n)  
-  echo " Here are the subscriptions :"
+  echo " Here are the subscription names under your account :"
   echo
   echo "$sublist"
   echo
