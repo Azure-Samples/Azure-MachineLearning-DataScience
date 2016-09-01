@@ -298,3 +298,4 @@ then
 		fi  
 fi
 
+rm -rf acctlist.json storlist.json grplist.json
