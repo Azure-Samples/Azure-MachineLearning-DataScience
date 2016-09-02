@@ -36,18 +36,18 @@
   <COLUMN SOURCE="8" NAME="passenger_count" xsi:type="SQLINT"/>
   <COLUMN SOURCE="9" NAME="trip_time_in_secs" xsi:type="SQLBIGINT"/>
   <COLUMN SOURCE="10" NAME="trip_distance" xsi:type="SQLFLT8"/>
-  <COLUMN SOURCE="11" NAME="pickup_longitude" xsi:type="SQLVARYCHAR"/>
-  <COLUMN SOURCE="12" NAME="pickup_latitude" xsi:type="SQLVARYCHAR"/>
-  <COLUMN SOURCE="13" NAME="dropoff_longitude" xsi:type="SQLVARYCHAR"/>
-  <COLUMN SOURCE="14" NAME="dropoff_latitude" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="11" NAME="pickup_longitude" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="12" NAME="pickup_latitude" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="13" NAME="dropoff_longitude" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="14" NAME="dropoff_latitude" xsi:type="SQLFLT8"/>
   <COLUMN SOURCE="15" NAME="payment_type" xsi:type="SQLCHAR"/>
   <COLUMN SOURCE="16" NAME="fare_amount" xsi:type="SQLFLT8"/>
   <COLUMN SOURCE="17" NAME="surcharge" xsi:type="SQLFLT8"/>
   <COLUMN SOURCE="18" NAME="mta_tax" xsi:type="SQLFLT8"/>
   <COLUMN SOURCE="19" NAME="tolls_amount" xsi:type="SQLFLT8"/>
   <COLUMN SOURCE="20" NAME="total_amount" xsi:type="SQLFLT8"/>
-    <COLUMN SOURCE="21" NAME="tip_amount" xsi:type="SQLFLT8"/>
-	  <COLUMN SOURCE="22" NAME="tipped" xsi:type="SQLINT"/>
-	    <COLUMN SOURCE="23" NAME="tip_class" xsi:type="SQLINT"/>
+  <COLUMN SOURCE="21" NAME="tip_amount" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="22" NAME="tipped" xsi:type="SQLINT"/>
+  <COLUMN SOURCE="23" NAME="tip_class" xsi:type="SQLINT"/>
  </ROW>
 </BCPFORMAT>

@@ -18,7 +18,7 @@ library(RevoScaleR)
 
 # Define the connection string
 # This walkthrough requires SQL authentication
-connStr <- "Driver=SQL Server;Server=<Your_Server_Name.somedomain.com>;Database=<Your_Database_Name>;Uid=<Your_User_Name>;Pwd=<Your_Password>"
+connStr <-"Driver=SQL Server;Server=<Your_Server_Name.somedomain.com>;Database=<Your_Database_Name>;Uid=<Your_User_Name>;Pwd=<Your_Password>"
 
 # Set ComputeContext. Needs a temp directory path to serialize R objects back and forth
 sqlShareDir <- paste("C:\\AllShare\\",Sys.getenv("USERNAME"),sep="")
@@ -31,17 +31,15 @@ rxSetComputeContext(cc)
 #Define a DataSource (from a select query) to be used to explore the data and generate features from.
 #Keep in mind that inDataSource is just a reference to the result dataset from the SQL query.
 sampleDataQuery <- "select top 1000 tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
-    pickup_datetime, dropoff_datetime, cast(pickup_longitude as float) as pickup_longitude, 
-cast(pickup_latitude as float) as pickup_latitude, 
-cast(dropoff_longitude as float) as dropoff_longitude, 
-cast(dropoff_latitude as float)  as dropoff_latitude from nyctaxi_sample"
+pickup_datetime, dropoff_datetime, pickup_longitude, pickup_latitude, dropoff_longitude,  
+dropoff_latitude from nyctaxi_sample"
 
 
 inDataSource <- RxSqlServerData(sqlQuery = sampleDataQuery, connectionString = connStr, 
                                 colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric", 
                                                dropoff_longitude = "numeric", dropoff_latitude = "numeric"),
                                 rowsPerRead=500)
-								
+
 ################################
 #        Data exploration      #
 ################################
@@ -67,18 +65,18 @@ print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2),
 # Plot pickup location on map in SQL Server
 # Define a function that plots points on a map
 mapPlot <- function(inDataSource, googMap){
-    library(ggmap)
-    library(mapproj)
-
-# Open Source R functions require data to be brought back in memory into data frames. Use rxImport to bring in data. 
-# Remember: This whole function runs in the SQL Server Context.
-    ds <- rxImport(inDataSource)
-
-    p<-ggmap(googMap)+
+  library(ggmap)
+  library(mapproj)
+  
+  # Open Source R functions require data to be brought back in memory into data frames. Use rxImport to bring in data. 
+  # Remember: This whole function runs in the SQL Server Context.
+  ds <- rxImport(inDataSource)
+  
+  p<-ggmap(googMap)+
     geom_point(aes(x = pickup_longitude, y =pickup_latitude ), 
-                      data=ds, alpha =.5, color="darkred", size = 1.5)
-
-    return(list(myplot=p))
+               data=ds, alpha =.5, color="darkred", size = 1.5)
+  
+  return(list(myplot=p))
 }
 
 library(ggmap)
@@ -118,8 +116,8 @@ env$ComputeDist <- function(pickup_long, pickup_lat, dropoff_long, dropoff_lat){
 #Define the featureDataSource to be used to store the features, specify types of some variables as numeric
 featureDataSource = RxSqlServerData(table = "features", 
                                     colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric", 
-                                               dropoff_longitude = "numeric", dropoff_latitude = "numeric",
-                                                  passenger_count  = "numeric", trip_distance  = "numeric",
+                                                   dropoff_longitude = "numeric", dropoff_latitude = "numeric",
+                                                   passenger_count  = "numeric", trip_distance  = "numeric",
                                                    trip_time_in_secs  = "numeric", direct_distance  = "numeric"),
                                     connectionString = connStr)
 
@@ -128,12 +126,12 @@ featureDataSource = RxSqlServerData(table = "features",
 # This will be the feature set for training machine learning models
 start.time <- proc.time()
 rxDataStep(inData =   inDataSource, outFile = featureDataSource,  overwrite = TRUE, 
-                           varsToKeep=c("tipped", "fare_amount", "passenger_count","trip_time_in_secs", 
-                                        "trip_distance", "pickup_datetime", "dropoff_datetime", "pickup_longitude",
-                                        "pickup_latitude","dropoff_longitude", "dropoff_latitude"),
-                           transforms = list(direct_distance=ComputeDist(pickup_longitude, pickup_latitude, dropoff_longitude, 
-                                                              dropoff_latitude)),
-                           transformEnvir = env, rowsPerRead=500, reportProgress = 3)
+           varsToKeep=c("tipped", "fare_amount", "passenger_count","trip_time_in_secs", 
+                        "trip_distance", "pickup_datetime", "dropoff_datetime", "pickup_longitude",
+                        "pickup_latitude","dropoff_longitude", "dropoff_latitude"),
+           transforms = list(direct_distance=ComputeDist(pickup_longitude, pickup_latitude, dropoff_longitude, 
+                                                         dropoff_latitude)),
+           transformEnvir = env, rowsPerRead=500, reportProgress = 3)
 used.time <- proc.time() - start.time
 print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2), 
             " seconds, Elapsed Time=", round(used.time[3],2), " seconds to generate features.", sep=""))
@@ -143,16 +141,16 @@ print(paste("It takes CPU Time=", round(used.time[1]+used.time[2],2),
 # You need to choose the most efficient way based on real situation
 # Here, featureEngineeringQuery is just a reference to the result from a SQL query. 
 featureEngineeringQuery = "SELECT tipped, fare_amount, passenger_count,trip_time_in_secs,trip_distance, 
-    pickup_datetime, dropoff_datetime, 
-    dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance,
-    pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude
-    FROM nyctaxi_sample
-    tablesample (1 percent) repeatable (98052)
+pickup_datetime, dropoff_datetime, 
+dbo.fnCalculateDistance(pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude) as direct_distance,
+pickup_latitude, pickup_longitude,  dropoff_latitude, dropoff_longitude
+FROM nyctaxi_sample
+tablesample (1 percent) repeatable (98052)
 "
 featureDataSource = RxSqlServerData(sqlQuery = featureEngineeringQuery, 
                                     colClasses = c(pickup_longitude = "numeric", pickup_latitude = "numeric", 
-                                               dropoff_longitude = "numeric", dropoff_latitude = "numeric",
-                                                  passenger_count  = "numeric", trip_distance  = "numeric",
+                                                   dropoff_longitude = "numeric", dropoff_latitude = "numeric",
+                                                   passenger_count  = "numeric", trip_distance  = "numeric",
                                                    trip_time_in_secs  = "numeric", direct_distance  = "numeric"),
                                     connectionString = connStr)
 
@@ -176,7 +174,7 @@ scoredOutput <- RxSqlServerData(
 )
 
 rxPredict(modelObject = logitObj, data = featureDataSource, outData = scoredOutput, 
-                   predVarNames = "Score", type = "response", writeModelVars = TRUE, overwrite = TRUE)
+          predVarNames = "Score", type = "response", writeModelVars = TRUE, overwrite = TRUE)
 
 ################################
 #        Model evaluation      #
@@ -219,28 +217,28 @@ sqlQuery (conn, q)
 # The following query selects the top 10 observations that are not in training set. 
 # This query is parsed as an input parameter to a stored procedure PredictTipBatchMode to make predictions
 input = "N'select top 10 a.passenger_count as passenger_count, 
-	a.trip_time_in_secs as trip_time_in_secs,
-	a.trip_distance as trip_distance,
-	a.dropoff_datetime as dropoff_datetime,  
-	dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude,dropoff_longitude) as direct_distance 
+a.trip_time_in_secs as trip_time_in_secs,
+a.trip_distance as trip_distance,
+a.dropoff_datetime as dropoff_datetime,  
+dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude,dropoff_longitude) as direct_distance 
 from
 (
-	select medallion, hack_license, pickup_datetime, passenger_count,trip_time_in_secs,trip_distance,  
-		dropoff_datetime, pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude
-	from nyctaxi_sample
+  select medallion, hack_license, pickup_datetime, passenger_count,trip_time_in_secs,trip_distance,  
+  dropoff_datetime, pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude
+  from nyctaxi_sample
 )a
-left outer join
-(
-select medallion, hack_license, pickup_datetime
-from nyctaxi_sample
-tablesample (1 percent) repeatable (98052)
-)b
-on a.medallion=b.medallion and a.hack_license=b.hack_license and a.pickup_datetime=b.pickup_datetime
-where b.medallion is null
-'"
-q<-paste("EXEC PredictTipBatchMode @inquery = ", input, sep="")
-sqlQuery (conn, q)
-
-# Call predict on a single observation
-q = "EXEC PredictTipSingleMode 1, 2.5, 631, 40.763958,-73.973373, 40.782139,-73.977303 "
-sqlQuery (conn, q)
+  left outer join
+  (
+  select medallion, hack_license, pickup_datetime
+  from nyctaxi_sample
+  tablesample (1 percent) repeatable (98052)
+  )b
+  on a.medallion=b.medallion and a.hack_license=b.hack_license and a.pickup_datetime=b.pickup_datetime
+  where b.medallion is null
+  '"
+  q<-paste("EXEC PredictTipBatchMode @inquery = ", input, sep="")
+  sqlQuery (conn, q)
+  
+  # Call predict on a single observation
+  q = "EXEC PredictTipSingleMode 1, 2.5, 631, 40.763958,-73.973373, 40.782139,-73.977303 "
+  sqlQuery (conn, q)
