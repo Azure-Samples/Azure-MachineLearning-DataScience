@@ -243,6 +243,7 @@ function mountfileservices {
       if [ $drivenameright = true ]
        then
 		   echo -n "File share $sharename will be mounted to your virtual machine as drive $drivename "
+		   echo 
 		   k=`azure storage account keys list  $sa -g $rg --json |  python -c 'import json,sys;obj=json.load(sys.stdin)[0]["value"];print(obj)'`
 		   sudo mkdir -p /$drivename
 		   sudo mount -t cifs //$sa.file.core.windows.net/$sharename /$drivename -o vers=3.0,username=$sa,password=$k,dir_mode=0777,file_mode=0777
@@ -278,3 +279,4 @@ function mountfileservices {
   done
  fi
 
+rm -rf acctlist.json storlist.json grplist.json
