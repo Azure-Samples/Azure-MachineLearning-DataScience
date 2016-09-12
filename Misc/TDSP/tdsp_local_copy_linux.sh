@@ -60,11 +60,11 @@ select_your_role() {
 	 then
 			reponame1='Your GroupProjectTemplate repository'
 			reponame2='Your TeamProjectTemplate repository'
-			reponame3='Your GroupUtilities repository'
-			reponame4='Your TeamUtilities repository'
+			#reponame3='Your GroupUtilities repository'
+			#reponame4='Your TeamUtilities repository'
 
 			TDSP_local_copy_linux "$reponame1" "$reponame2"
-			TDSP_local_copy_linux "$reponame3" "$reponame4"
+			#TDSP_local_copy_linux "$reponame3" "$reponame4"
 
 	else
 			reponame1='Your TeamProjectTemplate repository'
