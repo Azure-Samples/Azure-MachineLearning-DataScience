@@ -12,11 +12,10 @@ mkdir Code/MRS Code/SparkR Code/UseCaseHTS Code/learning_curves
 
 cd /home/remoteuser
 
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/update_sparklyr.R
-chmod +x downloadRun.sh
-chmod +x downloadRun_sparklyr.sh
+#wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
+#wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
+#wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/update_sparklyr.R
+#chmod +x downloadRun.sh
 
 cd  /home/remoteuser/Code/SparkR
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparkR_sparklyr_NYCTaxi.Rmd
@@ -44,6 +43,15 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/learning_curves/sim_data.R
 
 ###########################################################################
+## Download sparklyr version 0.2.32
+###########################################################################
+wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
+unzip sparklyr0801.zip
+tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
+sudo rm -r sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
+sudo rm sparklyr0801.zip
+
+###########################################################################
 ## Store the AML token in azureml-settings.json
 ###########################################################################
 
@@ -60,7 +68,7 @@ sudo sed -i.bak 's/INFO/WARN/' /etc/spark/2.4.2.4-5/0/log4j.properties
 ###########################################################################
 cd /home/remoteuser
 
-# the tibble package now seems to require /bin/gtar
+# The tibble package now requires /bin/gtar
 sudo ln -s /bin/tar /bin/gtar
 
 sudo apt-get -y -qq install libcurl4-openssl-dev
@@ -90,16 +98,12 @@ if [[ -d randomForest ]]; then sudo rm -Rf randomForest; fi;
 cd /home/remoteuser/R/x86_64-pc-linux-gnu-library/3.2
 if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
 
-# Call R file to install packages
+###########################################################################
+## Call R file to install packages
+###########################################################################
 cd /home/remoteuser
 sudo R --vanilla --quiet  <  /home/remoteuser/github_installs.R
 
-# update sparklyr to version 0.2.32
-wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
-unzip sparklyr0801.zip
-tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
-
-sudo R --vanilla --quiet  <  /home/remoteuser/update_sparklyr.R
 ###########################################################################
 ## Change permission of Code directory
 ###########################################################################
@@ -109,3 +113,4 @@ sudo chmod -R 777 /home/remoteuser/Code
 ## Set final working directory
 ###########################################################################
 cd /home/remoteuser/Code
+
