@@ -12,10 +12,9 @@ mkdir Code/MRS Code/SparkR Code/UseCaseHTS Code/learning_curves
 
 cd /home/remoteuser
 
-#wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
-#wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
-#wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/update_sparklyr.R
-#chmod +x downloadRun.sh
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
+chmod +x downloadRun.sh
 
 cd  /home/remoteuser/Code/SparkR
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/SparkR/SparkR_sparklyr_NYCTaxi.Rmd
@@ -113,4 +112,3 @@ sudo chmod -R 777 /home/remoteuser/Code
 ## Set final working directory
 ###########################################################################
 cd /home/remoteuser/Code
-
