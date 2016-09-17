@@ -1,0 +1,1 @@
+Folder contains information and files for running script actions on the HDI cluster edge nodes (MRS node), so environments and packages are prepared for running MRS, and sparklyr functions
