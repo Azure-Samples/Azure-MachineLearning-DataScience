@@ -1,0 +1,1 @@
+This folder contains files that define the cluster configuration information (e.g. how many worker nodes, size of the head, edge and worker nodes, cluster login and passwords, storage account information etc.)
