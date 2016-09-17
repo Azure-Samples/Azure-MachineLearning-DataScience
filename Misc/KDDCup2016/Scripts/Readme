@@ -1,1 +1,1 @@
-Folder contains scripts for various installations.
+Folder contains scripts for provisioning clusters, installing software and packages using script actions, copying files from a public blob to the cluster HDFS storage, and deleting clusters.
