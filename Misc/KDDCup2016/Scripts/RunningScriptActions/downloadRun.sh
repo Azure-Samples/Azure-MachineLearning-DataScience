@@ -12,8 +12,8 @@ mkdir Code/MRS Code/SparkR Code/UseCaseHTS Code/learning_curves
 
 cd /home/remoteuser
 
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/downloadRun.sh
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/github_installs.R
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/RunningScriptActions/downloadRun.sh
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/RunningScriptActions/github_installs.R
 chmod +x downloadRun.sh
 
 cd  /home/remoteuser/Code/SparkR
@@ -44,11 +44,11 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 ###########################################################################
 ## Download sparklyr version 0.2.32
 ###########################################################################
-wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
-unzip sparklyr0801.zip
-tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
-sudo rm -r sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
-sudo rm sparklyr0801.zip
+#wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
+#unzip sparklyr0801.zip
+#tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
+#sudo rm -r sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
+#sudo rm sparklyr0801.zip
 
 ###########################################################################
 ## Store the AML token in azureml-settings.json
