@@ -1,0 +1,17 @@
+Parameter,Value
+ScriptPath,
+SubscriptionName,
+SubscriptionID,
+TenantID,
+ResourceGroup,
+Location,South Central US
+Profilepath,AzureSubscriptionInfo.json
+ClusterStartIndex,1
+ClusterEndIndex,3
+ClusterPrefix,hdimrs
+SourceDataStorageName,cdspsparksamples
+SourceDataContainerName,data
+ClusterInfoOutputFileName,clusterOutFile.csv
+NumWorkerNodes,2
+AdminUsername,admin
+SshUsername,remoteuser
