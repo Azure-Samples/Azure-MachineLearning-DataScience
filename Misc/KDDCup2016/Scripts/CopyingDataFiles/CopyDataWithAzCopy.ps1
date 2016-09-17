@@ -8,8 +8,8 @@ Login-AzureRmAccount
 #######################################################################
 Set-Location -Path C:\Users\deguhath\Desktop\CDSP\Spark\KDDBlog\ProvisionScripts
 
-$currentPathTmp = Get-Location
-$currentPath = [string]$currentPathTmp + "\Configuration"
+$basepath= Get-Location
+$currentPath = [string]$basepath + "\Configuration"
 #######################################################################
 # READ IN PARAMETERS
 #######################################################################
