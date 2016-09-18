@@ -96,6 +96,14 @@ cd /home/remoteuser
 sudo R --vanilla --quiet  <  /home/remoteuser/github_installs.R
 
 ###########################################################################
+## Install Rstudio
+###########################################################################
+sudo cd /home/remoteuser
+sudo wget http://mrsactionscripts.blob.core.windows.net/rstudio-server-community-v01/InstallRStudio.sh
+sudo chmod 755 InstallRStudio.sh
+sudo ./InstallRStudio.sh
+
+###########################################################################
 ## Change permission of Code directory
 ###########################################################################
 sudo chmod -R 777 /home/remoteuser/Code
