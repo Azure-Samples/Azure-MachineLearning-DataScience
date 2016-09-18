@@ -7,7 +7,6 @@ Login-AzureRmAccount
 # SET WORKING FOLDER PATH
 #######################################################################
 Set-Location -Path C:\Users\deguhath\Desktop\CDSP\Spark\KDDBlog\ProvisionScripts
-
 $basepath= Get-Location
 $currentPath = [string]$basepath + "\Configuration"
 #######################################################################
