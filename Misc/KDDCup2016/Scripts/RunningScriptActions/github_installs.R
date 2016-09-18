@@ -24,4 +24,3 @@ install.packages("fpp", repos='http://cran.us.r-project.org')
 install.packages("randomForest", repos='http://cran.us.r-project.org')
 install.packages("readr", repos='http://cran.us.r-project.org')
 devtools::install_github("rstudio/sparklyr");
-#install.packages("/home/remoteuser/sparklyr0801.tar.gz", repos=NULL, type="source")
