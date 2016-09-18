@@ -194,9 +194,6 @@ trip_fare_featSampled <- sample(trip_fare_feat, withReplacement=FALSE,
 ###########################################
 write.df(df=trip_fare_featSampled, 
          path='/HdiSamples/HdiSamples/NYCTaxi/JoinedParquetSampledFile2', source="parquet", mode="overwrite")
-#saveDF(df=trip_fare_featSampled, 
-#         path='/HdiSamples/HdiSamples/NYCTaxi/JoinedParquetSampledFile3', source="parquet", #mode="overwrite")
-
 ```
 
 <br>
