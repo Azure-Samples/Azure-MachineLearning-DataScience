@@ -190,23 +190,19 @@ fit <- partitions$training %>% ml_linear_regression(response = "tip_amount", fea
 # Show summary of fitted Elastic Net model
 summary(fit)
 
-# Predict on test data & evaluate in local data-frame
-predictedVals <- predict(fit, newdata =  partitions$test)
-predictedVals2 <- partitions$test %>% select(tip_amount) %>% collect %>% mutate(fitted = predictedVals)
-predictedDF <- as.data.frame(predictedVals2)
-
 # Predict on test data and keep predictions in Spark context
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
+predictedDF <- as.data.frame(predictedVals)
 
 # Evaluate and plot predictions (R-sqr)
-Rsqr = cor(predictedDF$tip_amount, predictedDF$fitted)^2; Rsqr;
+Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
 
 # Sample predictions for plotting
 predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot actual vs. predicted tip amounts
-lm_model <- lm(fitted ~ tip_amount, data = predictedDFSampled)
-ggplot(predictedDFSampled, aes(tip_amount, fitted)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
+ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
 ```
 
 ###Creating Random Forest Model
@@ -218,23 +214,19 @@ fit <- partitions$training %>% ml_random_forest(response = "tip_amount", feature
 # Show summary of fitted Random Forest model
 summary(fit)
 
-# Predict on test data & evaluate in local data-frame
-predictedVals <- predict(fit, newdata =  partitions$test)
-predictedVals2 <- partitions$test %>% select(tip_amount) %>% collect %>% mutate(fitted = predictedVals)
-predictedDF <- as.data.frame(predictedVals2)
-
 # Predict on test data and keep predictions in Spark context
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
+predictedDF <- as.data.frame(predictedVals)
 
 # Evaluate and plot predictions (R-sqr)
-Rsqr = cor(predictedDF$tip_amount, predictedDF$fitted)^2; Rsqr;
+Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
 
 # Sample predictions for plotting
 predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot
-lm_model <- lm(fitted ~ tip_amount, data = predictedDFSampled)
-ggplot(predictedDFSampled, aes(tip_amount, fitted)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
+ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
 ```
 
 
@@ -247,23 +239,19 @@ fit <- partitions$training %>% ml_gradient_boosted_trees(response = "tip_amount"
 # Show summary of fitted Random Forest model
 summary(fit)
 
-# Predict on test data & evaluate in local data-frame
-predictedVals <- predict(fit, newdata =  partitions$test)
-predictedVals2 <- partitions$test %>% select(tip_amount) %>% collect %>% mutate(fitted = predictedVals)
-predictedDF <- as.data.frame(predictedVals2)
-
 # Predict on test data and keep predictions in Spark context
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
+predictedDF <- as.data.frame(predictedVals)
 
 # Evaluate and plot predictions (R-sqr)
-Rsqr = cor(predictedDF$tip_amount, predictedDF$fitted)^2; Rsqr;
+Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
 
 # Sample predictions for plotting
 predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot
-lm_model <- lm(fitted ~ tip_amount, data = predictedDFSampled)
-ggplot(predictedDFSampled, aes(tip_amount, fitted)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
+ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
 ```
 
 <br>
