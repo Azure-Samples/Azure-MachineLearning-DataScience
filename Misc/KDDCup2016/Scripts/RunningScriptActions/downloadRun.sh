@@ -44,9 +44,9 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 ###########################################################################
 ## Download sparklyr version 0.2.32
 ###########################################################################
-#wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
-#unzip sparklyr0801.zip
-#tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
+#sudo wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
+#sudo unzip sparklyr0801.zip
+#sudo tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
 #sudo rm -r sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
 #sudo rm sparklyr0801.zip
 
@@ -93,6 +93,7 @@ if [[ -d rjson ]]; then sudo rm -Rf rjson; fi;
 if [[ -d hts ]]; then sudo rm -Rf hts; fi;
 if [[ -d fpp ]]; then sudo rm -Rf fpp; fi;
 if [[ -d randomForest ]]; then sudo rm -Rf randomForest; fi;
+if [[ -d readr ]]; then sudo rm -Rf readr; fi;
 
 cd /home/remoteuser/R/x86_64-pc-linux-gnu-library/3.2
 if [[ -d rmarkdown ]]; then sudo rm -Rf rmarkdown; fi;
