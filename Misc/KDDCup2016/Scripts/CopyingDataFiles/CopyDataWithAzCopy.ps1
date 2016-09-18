@@ -46,7 +46,7 @@ for ($i=$clusterstartIndex; $i -le $clusterendIndex; $i++){
 	# Copy airline data, csv data in parts
     $destStorage = "https://$destinationStorageName.blob.core.windows.net/$destinationContainerName/HdiSamples/HdiSamples/FlightDelay"
     $sourceStorage = "https://$sourcedatastoragename.blob.core.windows.net/$sourcedatacontainername/Airline"
-	&'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe' /sourceType:blob /destType:blob /Source:$sourceStorage /Dest:$destStorage /DestKey:$destKey  /S /V /Y
+	&'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe' /Source:$sourceStorage /Dest:$destStorage /DestKey:$destKey /S /V /Y
 
     # Copy NYC taxi original csv data for month 12
     $destStorage = "https://$destinationStorageName.blob.core.windows.net/$destinationContainerName/HdiSamples/HdiSamples/NYCTaxi/Csv"
@@ -57,5 +57,5 @@ for ($i=$clusterstartIndex; $i -le $clusterendIndex; $i++){
     # Copy sampled NYC taxi joined data (small file in parquet format)
     $destStorage = "https://$destinationStorageName.blob.core.windows.net/$destinationContainerName/HdiSamples/HdiSamples/NYCTaxi/JoinedParquetSampledFile"
     $sourceStorage = "https://$sourcedatastoragename.blob.core.windows.net/$sourcedatacontainername/NYCTaxi/KDD2016/JoinedParquetSampledFile"
-    &'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe' /Source:$sourceStorage /Dest:$destStorage /DestKey:$destKey  /Pattern:"part-r" /S /V /Y
+    &'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe' /Source:$sourceStorage /Dest:$destStorage /DestKey:$destKey /Pattern:"part-r" /S /V /Y
 }
