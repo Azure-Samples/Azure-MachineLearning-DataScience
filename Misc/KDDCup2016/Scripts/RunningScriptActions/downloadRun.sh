@@ -42,15 +42,6 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Code/learning_curves/sim_data.R
 
 ###########################################################################
-## Download sparklyr version 0.2.32
-###########################################################################
-#sudo wget https://github.com/rstudio/sparklyr/archive/df9de9a5c52a89ae025483652d2c033162f185cd.zip -O sparklyr0801.zip
-#sudo unzip sparklyr0801.zip
-#sudo tar -czvf sparklyr0801.tar.gz sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
-#sudo rm -r sparklyr-df9de9a5c52a89ae025483652d2c033162f185cd
-#sudo rm sparklyr0801.zip
-
-###########################################################################
 ## Store the AML token in azureml-settings.json
 ###########################################################################
 
