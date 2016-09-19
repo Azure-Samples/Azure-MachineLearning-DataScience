@@ -45,7 +45,7 @@ if (!$createornot -or ($createornot.ToLower() -eq 'y')){
 		$subindex = Read-Host $promptstring
 		#$index = [array]::indexof($subnamelist,$sub)
 
-		if (($subindex -gt 0) -and ($subindex -le $subnamelist.Length)) #selected index is in the range of 1 to the number of subscriptions
+		if (([int]$subindex -gt 0) -and ([int]$subindex -le $subnamelist.Length)) #selected index is in the range of 1 to the number of subscriptions
 		{
 			
 			$sub = $subnamelist[$subindex-1]
