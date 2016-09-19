@@ -1,0 +1,12 @@
+### Welcome to the Deep Learning toolkit for the Microsoft Data Science Virtual Machine
+
+The data science virtual machine on Azure, based on Windows Server 2012, contains popular tools for data science modeling and development activities. The main tools include Microsoft R Server Developer Edition, Anaconda Python distribution, Jupyter notebooks for Python and R, Visual Studio Community Edition with Python and R Tools, Power BI desktop, SQL Server Express edition. Jump start modeling and development for your data science project using software commonly used for analytics and machine learning tasks in a variety of languages including R, Python, SQL, C# all pre-installed.
+
+The deep learning toolkit provides GPU versions of mxnet and CNTK for use on [Azure GPU N-series](https://azure.microsoft.com/en-us/blog/azure-n-series-preview-availability/) instances. It also provides a set of sample solutions that use the GPU, including the ImageNet image recognition database, image classification on the CIFAR database, an implementation of [Neural Algorithm of Artistic Style](http://arxiv.org/abs/1508.06576), and a word prediction sample from character inputs.
+
+For more information on provisioning and using the Data Science VM, please check out the [documentation page](https://azure.microsoft.com/documentation/articles/machine-learning-data-science-provision-vm/). 
+Youy can also find a [How-To Guide to the data science VM](https://azure.microsoft.com/documentation/articles/machine-learning-data-science-vm-do-ten-things/) that demonstrates some of the things you can do on the VM.
+
+You can click on the "Deploy to Azure" button to immediately try out the VM (Azure subscription required. Hardware compute [fees](https://azure.microsoft.com/en-us/marketplace/partners/microsoft-ads/standard-data-science-vm/) applies. 
+
+**IMPORTANT NOTE**: Before you proceed to use the **Deploy to Azure** button you must perform a one-time task to accept the terms of the data science virtual machine on your Azure subscription. You can do this by visiting [Configure Programmatic Deployment](https://ms.portal.azure.com/#blade/Microsoft_Azure_Marketplace/LegalTermsSkuProgrammaticAccessBlade/legalTermsSkuProgrammaticAccessData/%7B%22product%22%3A%7B%22publisherId%22%3A%22microsoft-ads%22%2C%22offerId%22%3A%22standard-data-science-vm%22%2C%22planId%22%3A%22standard-data-science-vm%22%7D%7D)
