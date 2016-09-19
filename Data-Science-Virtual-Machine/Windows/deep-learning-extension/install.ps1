@@ -38,6 +38,5 @@ $R_path = "C:\Program Files\Microsoft SQL Server\130\R_SERVER\bin\x64\R.exe"
 & $R_path CMD INSTALL --no-multiarch R-package
 
 # copy over the samples
-mkdir C:\dsvm\deep-learning-toolkit
-mkdir C:\dsvm\deep-learning-toolkit\solutions
-Copy-Item -Recurse solutions\* C:\dsvm\deep-learning-toolkit\solutions\
+mkdir C:\dsvm\solutions\deep-learning
+Copy-Item -Recurse solutions\* C:\dsvm\solutions\deep-learning
