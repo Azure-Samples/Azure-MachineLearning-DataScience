@@ -25,7 +25,7 @@ $env:Path += ";C:\dsvm\tools\cntk\cntk"
 [Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
 
 # set up the environment
-.\setupenv.cmd 
+.\setupenv.cmd
 
 # python installation
 cd mxnet\python
@@ -36,3 +36,8 @@ cd ..\..
 $R_path = "C:\Program Files\Microsoft SQL Server\130\R_SERVER\bin\x64\R.exe"
 & $R_path -e "install.packages(c('Rcpp', 'DiagrammeR', 'data.table', 'jsonlite', 'magrittr', 'stringr'))"
 & $R_path CMD INSTALL --no-multiarch R-package
+
+# copy over the samples
+mkdir C:\dsvm\deep-learning-toolkit
+mkdir C:\dsvm\deep-learning-toolkit\solutions
+Copy-Item -Recurse solutions\* C:\dsvm\deep-learning-toolkit\solutions\
