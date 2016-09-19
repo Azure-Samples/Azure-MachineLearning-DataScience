@@ -212,7 +212,7 @@ if (!$createornot -or ($createornot.ToLower() -eq 'y')){
 			while(!$validexistingsasaname -and $saretry) {
 				$prompt1 = 'Enter the index of the storage account to use(1-'+$storageaccountnames.Length+')'
 				$saindex = Read-Host $prompt1
-				if ($saindex -gt 0 -and $saindex -le $storageaccountnames.Length) #storage accont name already exists. 
+				if ([int]$saindex -gt 0 -and [int]$saindex -le $storageaccountnames.Length) #storage accont name already exists. 
 				{
 					$sa = $storageaccountnames[$saindex-1]
 					$rg = $resourcegroupnames[$saindex-1]
