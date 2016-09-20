@@ -26,8 +26,7 @@ function mountfileservices
         $sublist = Get-AzureRmSubscription
     }
     $subnamelist = $sublist.SubscriptionName
-    Write-Host "Here are the subscription names under your Azure account:" -ForegroundColor Yellow
-    printarray $subnamelist
+    
     # Select your subscription
     $inputfileyesorno = Read-Host "Do you have a file with the information of the file share you want to mount?[Y]-yes/N-no"
     if (!($inputfileyesorno.ToLower() -eq 'n'))
@@ -43,7 +42,7 @@ function mountfileservices
         $inputfileright = $false
         while (!$inputfilequit -and !$inputfileright)
         {
-            $filename = Read-Host "Please provide the full path and the name of the file with the information of the file share you want to mount"
+            $filename = Read-Host "Please provide the name of the file with the information of the file share you want to mount"
             if (!$filename)
             {
                 $retryinput = Read-Host "File name cannot be empty. [R]-retry/S-skip"
@@ -94,20 +93,34 @@ function mountfileservices
 
     $subnameright = $false
     $quitornot = $false
-    
+
+    if ($sub -eq 'NA')
+    {
+        Write-Host "Here are the subscription names under your Azure account:" -ForegroundColor Yellow
+        printarray $subnamelist
+    }
+
     DO
     {
         if ($sub -eq 'NA')
         {
-            $sub = Read-Host 'Enter the subscription name where the Azure file share service has been created'
-        }
-        $index = [array]::indexof($subnamelist,$sub)
-        if ($index -ge 0)
-        {
-            $subnameright = $true
+            
+            $promptstring = 'Enter the index of the subscription name where the Azure file storage was created(1-'+$subnamelist.Length+')'
+            $subindex = Read-Host $promptstring
+            $subindex = [int]$subindex - 1
         } else
         {
-            $quitornotask = Read-Host 'The subscription name you input does not exist. [R]-retry/Q-quit'
+            $subindex = [array]::indexof($subnamelist,$sub)
+        }
+        
+        if ([int]$subindex -ge 0 -and [int]$subindex -lt $subnamelist.Length)
+        {
+            $subnameright = $true
+            $sub = $subnamelist[[int]$subindex]
+        } else
+        {
+            $promptstring = "Index out of bounds (1-"+$subnamelist.Length+").[R]-retry/Q-quit"
+            $quitornotask = Read-Host $promptstring
             $sub = 'NA'
             $sa = 'NA'
             $sharename = 'NA'
@@ -146,17 +159,22 @@ function mountfileservices
         {
             $storageaccountnames = $storageaccountlist.StorageAccountName #get the storage account names
             $resourcegroupnames = $storageaccountlist.ResourceGroupName #get the resource group for storage accounts
-            Write-Host "Here are the storage account names under subsription "$sub
-            printarray $storageaccountnames
+            
             $goodsaname = $false
             $quitornot = $false
+            if ($sa -eq 'NA')
+            {
+                Write-Host "Here are the storage account names under subsription "$sub
+                printarray $storageaccountnames
+            }
             while (!$goodsaname -and !$quitornot)
             {
                 if ($sa -eq 'NA')
                 {
+                    
                     $prompt1 = "Enter the index of the storage account name where your Azure file share you want to mount is created (1-"+$storageaccountnames.Length+")"
                     $saindex = Read-Host $prompt1
-                    if ($saindex -gt 0 -and $saindex -le $storageaccountnames.Length)
+                    if ([int]$saindex -gt 0 -and [int]$saindex -le $storageaccountnames.Length)
                     {
                         $sa = $storageaccountnames[$saindex-1]
                         $rg = $resourcegroupnames[$saindex-1]
@@ -190,7 +208,6 @@ function mountfileservices
             if ($goodsaname){
                 $sharenameexist = $false
                 $quitnewsharename = $false
-                #$storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Value[0]
                 Try{
                     $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Value[0]
                 } 
