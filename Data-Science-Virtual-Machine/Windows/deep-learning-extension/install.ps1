@@ -40,7 +40,6 @@ $R_path = "C:\Program Files\Microsoft SQL Server\130\R_SERVER\bin\x64\R.exe"
 # copy over the samples
 mkdir C:\dsvm\deep-learning
 mkdir C:\dsvm\deep-learning\solutions
-Copy-Item 
 Copy-Item -Recurse solutions\* C:\dsvm\deep-learning\solutions
 
 # add the readme
