@@ -40,4 +40,17 @@ $R_path = "C:\Program Files\Microsoft SQL Server\130\R_SERVER\bin\x64\R.exe"
 # copy over the samples
 mkdir C:\dsvm\deep-learning
 mkdir C:\dsvm\deep-learning\solutions
+Copy-Item 
 Copy-Item -Recurse solutions\* C:\dsvm\deep-learning\solutions
+
+# add the readme
+Copy-Item readme.txt C:\dsvm\deep-learning
+# and link to it on the desktop
+$WshShell = New-Object -comObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\deep learning toolkit readme.lnk")
+$Shortcut.TargetPath = "C:\dsvm\deep-learning\readme.txt"
+$Shortcut.Save()
+
+# copy nvidia-smi
+mkdir C:\dsvm\NVSMI
+Copy-Item -Recurse NVSMI\* C:\dsvm\NVSMI\
