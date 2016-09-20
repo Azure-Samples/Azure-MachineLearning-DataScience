@@ -43,7 +43,7 @@ function mountfileservices
         $inputfileright = $false
         while (!$inputfilequit -and !$inputfileright)
         {
-            $filename = Read-Host "Please provide the name of the file with the information of the file share you want to mount"
+            $filename = Read-Host "Please provide the full path and the name of the file with the information of the file share you want to mount"
             if (!$filename)
             {
                 $retryinput = Read-Host "File name cannot be empty. [R]-retry/S-skip"
@@ -190,7 +190,13 @@ function mountfileservices
             if ($goodsaname){
                 $sharenameexist = $false
                 $quitnewsharename = $false
-                $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Value[0]
+                #$storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Value[0]
+                Try{
+                    $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Value[0]
+                } 
+                Catch{
+                    $storKey = (Get-AzureRmStorageAccountKey -Name $sa -ResourceGroupName $rg ).Key1
+                }
                 $sharenameright = $false
                 $quitornot = $false
                 while ((!$sharenameexist) -and (!$quitnewsharename))
