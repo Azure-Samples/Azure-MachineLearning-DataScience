@@ -37,7 +37,10 @@ $R_path = "C:\Program Files\Microsoft SQL Server\130\R_SERVER\bin\x64\R.exe"
 & $R_path -e "install.packages(c('Rcpp', 'DiagrammeR', 'data.table', 'jsonlite', 'magrittr', 'stringr'))"
 & $R_path CMD INSTALL --no-multiarch R-package
 
-# copy over the samples
+# prep work for the sample solutions
+Rscript -e "install.packages(c('argparse', 'mlbench', 'imager'))"
+
+# copy over the sample solutions
 mkdir C:\dsvm\deep-learning
 mkdir C:\dsvm\deep-learning\solutions
 Copy-Item -Recurse solutions\* C:\dsvm\deep-learning\solutions
