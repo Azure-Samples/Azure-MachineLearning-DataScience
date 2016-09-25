@@ -34,7 +34,7 @@ cd ..\..
 
 # R installation
 $R_path = "C:\Program Files\Microsoft SQL Server\130\R_SERVER\bin\x64\R.exe"
-& $R_path -e "install.packages(c('Rcpp', 'DiagrammeR', 'data.table', 'jsonlite', 'magrittr', 'stringr'))"
+& $R_path -e "install.packages(c('Rcpp', 'DiagrammeR', 'data.table', 'jsonlite', 'magrittr', 'stringr', 'argparse'))"
 & $R_path CMD INSTALL --no-multiarch R-package
 
 # copy over the sample solutions
