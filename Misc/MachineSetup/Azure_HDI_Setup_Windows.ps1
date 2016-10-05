@@ -21,7 +21,8 @@ function InstallAnacondaAndPythonDependencies
 {
     ##### Install Anaconda #####
     #Downloading Anaconda
-    $anaconda_url = "http://09c8d0b2229f813c1b93-c95ac804525aac4b6dba79b00b39d1d3.r79.cf1.rackcdn.com/Anaconda-2.1.0-Windows-x86_64.exe"
+    #$anaconda_url = "http://09c8d0b2229f813c1b93-c95ac804525aac4b6dba79b00b39d1d3.r79.cf1.rackcdn.com/Anaconda-2.1.0-Windows-x86_64.exe"
+    $anaconda_url = "https://repo.continuum.io/archive/Anaconda2-4.2.0-Windows-x86_64.exe"
     $local_anaconda_file = $pwd.path + "\anaconda.exe"
     $web_client.DownloadFile($anaconda_url, $local_anaconda_file)
 
@@ -44,8 +45,8 @@ function InstallAnacondaAndPythonDependencies
     # Note: this isn't available yet so is currently a noop
     Start-Process -FilePath "$pathToAnaconda\scripts\pip" -ArgumentList "install -U azureml" -Wait
 
-    Write-Output "easy_install pyodbc"
-    Start-Process -FilePath "$pathToAnaconda\scripts\easy_install" -ArgumentList "https://pyodbc.googlecode.com/files/pyodbc-3.0.7.win-amd64-py2.7.exe" -Wait
+    #Write-Output "easy_install pyodbc"
+    #Start-Process -FilePath "$pathToAnaconda\scripts\easy_install" -ArgumentList "https://pyodbc.googlecode.com/files/pyodbc-3.0.7.win-amd64-py2.7.exe" -Wait
 }
 
 function UnzipFile($File, $Destination)
