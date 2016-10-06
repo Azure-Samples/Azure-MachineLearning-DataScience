@@ -8,4 +8,4 @@ if [[ -f ClusterVerification.R ]]; then sudo rm -Rf ClusterVerification.R; fi;
 
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/KDDCup2016/Scripts/VerifyClusters/ClusterVerification.R
 
-Rscript --default-packages= /home/remoteuser/ClusterVerification.R $amlAuth > /tmp/verif/rout.log
+Rscript --default-packages= /home/remoteuser/ClusterVerification.R > /tmp/verif/rout.log
