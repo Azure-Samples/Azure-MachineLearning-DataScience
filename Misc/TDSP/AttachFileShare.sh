@@ -93,7 +93,7 @@ function mountfileservices {
    fi
    azure account list --json > acctlist.json
    sublist=$(cat acctlist.json | jq '.[] .name' --raw-output)
-   if [[ $sublist =~ $sub ]]
+   if [[ $sublist=~$sub ]]
 		then
 		#echo "$sub is in $sublist"
 		subnameright=true
@@ -171,7 +171,7 @@ function mountfileservices {
 			 fi
 		else
 			 storageaccountnames2=$(cat storlist.json | jq '.[] .name' --raw-output)
-			 if [[ ! $storageaccountnames2 =~ $sa ]]
+			 if [[ ! $storageaccountnames2=~$sa ]]
 				  then
 				  echo -n " Storage account name $sa from the file does not exist. Please manually input it next. "
 				  sa='NA'
@@ -226,7 +226,7 @@ function mountfileservices {
 		   echo -n "Enter the name of the drive to be added to your virtual machine. This name should be diferent from the disk names your virtual machine has: "
 		   read drivename
 		   drivelist=$(df -h | rev | cut -d" " -f1 | rev)
-		   if [[ $drivelist =~ $drivename ]]
+		   if [[ $drivelist=~$drivename ]]
 		   #if echo "$sublist" | grep -q "$sub" ; then echo "matched" ;else echo "not matched"; fi;
 				then
 				echo -n "The disk drive $drivename you want to mount the file sahre already exists. [R]-retry/Q-quit"
