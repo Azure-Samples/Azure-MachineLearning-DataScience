@@ -230,7 +230,8 @@ function mountfileservices {
 		   echo -n "Enter the name of the drive to be added to your virtual machine. This name should be diferent from the disk names your virtual machine has: "
 		   read drivename
 		   drivelist=$(df -h | rev | cut -d" " -f1 | rev)
-		   if [[ $drivelist=~$drivename ]]
+		   #if [[ $drivelist=~$drivename ]]
+		   if [[ ${drivelist} = *"$drivename"* ]]
 		   #if echo "$sublist" | grep -q "$sub" ; then echo "matched" ;else echo "not matched"; fi;
 				then
 				echo -n "The disk drive $drivename you want to mount the file share already exists. [R]-retry/Q-quit"
