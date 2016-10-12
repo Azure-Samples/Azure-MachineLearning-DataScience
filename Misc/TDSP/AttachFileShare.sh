@@ -20,8 +20,8 @@ function mountfileservices {
   sublist=$(cat acctlist.json | jq '.[] .name' --raw-output| cat -n)  
   #echo " Here are the subscription names under your account :"
   #echo
-  echo "$sublist"
-  echo
+  #echo "$sublist"
+  #echo
   echo -n "Do you have a file with the information of the file share you want to mount? Y/N "
   read inputfileyesorno
   if [ "${inputfileyesorno,,}" != 'n' ]
@@ -143,16 +143,20 @@ function mountfileservices {
    num_stor=$(jq '.| length' storlist.json)
    storageaccountnames=$(cat storlist.json | jq '.[] .name' --raw-output | cat -n)
    resourcegroupnames=$(cat storlist.json | jq '.[] .resourceGroup' --raw-output | cat -n)
-   echo -n "Here are the storage account names under subscription $sub "
-   echo
-   echo -n "$storageaccountnames"
-   echo
+   #echo -n "Here are the storage account names under subscription $sub "
+   #echo
+   #echo -n "$storageaccountnames"
+   #echo
    goodsaname=false
    quitornot=false
    while [  $goodsaname = false ] && [  $quitornot = false ]
    do
 		if [ "$sa" = 'NA' ]
 			 then
+			 echo -n "Here are the storage account names under subscription $sub "
+   			 echo
+			 echo -n "$storageaccountnames"
+			 echo 
 			 echo -n "Enter the index of the storage account name where your Azure file share you want to mount is created: "
 			 read saindex
 			 if [ "$saindex" -gt 0 ] && [ "$saindex" -le $num_stor ]
@@ -229,7 +233,7 @@ function mountfileservices {
 		   if [[ $drivelist=~$drivename ]]
 		   #if echo "$sublist" | grep -q "$sub" ; then echo "matched" ;else echo "not matched"; fi;
 				then
-				echo -n "The disk drive $drivename you want to mount the file sahre already exists. [R]-retry/Q-quit"
+				echo -n "The disk drive $drivename you want to mount the file share already exists. [R]-retry/Q-quit"
 				read inputnewdrive
 				if [ "${inputnewdrive,,}" = 'q' ]
 					 then
