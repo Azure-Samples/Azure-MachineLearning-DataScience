@@ -291,6 +291,7 @@ then
 							  echo "Subscription name:$sub" >> $filename
 							  echo "Storage account name:$sa" >> $filename
 							  echo "File share name:$sharename" >> $filename
+							  echo "Resource group name:$rg" >> $filename
 							  echo "File share information output to $filename. Share it with your team members who want to mount it to their virtual machines. "
 						 fi
 					fi
