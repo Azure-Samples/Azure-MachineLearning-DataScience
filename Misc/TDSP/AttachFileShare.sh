@@ -72,8 +72,8 @@ function mountfileservices {
 			#echo "from the file sa is $sa"
 			sharename=$(cat $filename | cut -d':' -f2  | head -4 | tail -1)
 			#echo "from the file sharename is $sharename"
-      rg=$(cat $filename | cut -d':' -f2  | head -5 | tail -1)
-      #echo "from the file rg is $rg"
+      			rg=$(cat $filename | cut -d':' -f2  | head -5 | tail -1)
+      			#echo "from the file rg is $rg"
 			if [ "$sub" = 'NA' ] || [ "$sa" = 'NA' ] || [ "$sharename" = 'NA' ]
 				 then
 				 echo -n "Information about the file share to be mounted is incomplete. You have to manually input information later. "
