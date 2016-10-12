@@ -319,6 +319,7 @@ if (!$createornot -or ($createornot.ToLower() -eq 'y')){
 					"Subscription name:"+$sub >> $filename
 					"Storage account name:"+$sa >> $filename
 					"File share name:"+$sharename >> $filename
+					"Resource group name:"+$rg >> $filename
 					Write-Host "File share information output to"$filename". Share it with your team members who want to mount it to their virtual machines." -ForegroundColor Yellow
 				}
 			}
