@@ -90,8 +90,15 @@ function mountfileservices {
  do
    if [ "$sub" = 'NA' ]
 		then
-		echo -n "Enter the subscription name where the Azure file share service has been created: "
-		read sub
+		sublist=$(cat acctlist.json | jq '.[] .name' --raw-output| cat -n)
+    		echo "Here are your subscriptions: "
+    		echo
+    		echo "$sublist"
+    		echo
+		echo -n "Enter the index of the subscription name where resources will be created: "
+    		read subnbr
+    		let subnbr2=subnbr-1
+    		sub=$(cat acctlist.json | jq  '.['$subnbr2'] .name' --raw-output)
    fi
    azure account list --json > acctlist.json
    sublist=$(cat acctlist.json | jq '.[] .name' --raw-output)
