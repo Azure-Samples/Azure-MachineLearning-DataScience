@@ -72,6 +72,8 @@ function mountfileservices {
 			#echo "from the file sa is $sa"
 			sharename=$(cat $filename | cut -d':' -f2  | head -4 | tail -1)
 			#echo "from the file sharename is $sharename"
+      rg=$(cat $filename | cut -d':' -f2  | head -5 | tail -1)
+      #echo "from the file rg is $rg"
 			if [ "$sub" = 'NA' ] || [ "$sa" = 'NA' ] || [ "$sharename" = 'NA' ]
 				 then
 				 echo -n "Information about the file share to be mounted is incomplete. You have to manually input information later. "
@@ -230,7 +232,6 @@ function mountfileservices {
 		   echo -n "Enter the name of the drive to be added to your virtual machine. This name should be diferent from the disk names your virtual machine has: "
 		   read drivename
 		   drivelist=$(df -h | rev | cut -d" " -f1 | rev)
-		   #if [[ $drivelist=~$drivename ]]
 		   if [[ ${drivelist} = *"$drivename"* ]]
 		   #if echo "$sublist" | grep -q "$sub" ; then echo "matched" ;else echo "not matched"; fi;
 				then
@@ -248,8 +249,13 @@ function mountfileservices {
       if [ $drivenameright = true ]
        then
 		   echo -n "File share $sharename will be mounted to your virtual machine as drive $drivename "
-		   echo 
-		   k=`azure storage account keys list  $sa -g $rg --json |  python -c 'import json,sys;obj=json.load(sys.stdin)[0]["value"];print(obj)'`
+		   echo
+       #echo "999 $rg" 
+		   k=`azure storage account keys list  $sa --resource-group $rg --json |  python -c 'import json,sys;obj=json.load(sys.stdin)[0]["value"];print(obj)'`
+       #echo "999 $k"
+       #echo "999 $drivename"
+       #echo "999 $sa"
+       #echo "999 $sharename"
 		   sudo mkdir -p /$drivename
 		   sudo mount -t cifs //$sa.file.core.windows.net/$sharename /$drivename -o vers=3.0,username=$sa,password=$k,dir_mode=0777,file_mode=0777
 		   sharenameexist=true
