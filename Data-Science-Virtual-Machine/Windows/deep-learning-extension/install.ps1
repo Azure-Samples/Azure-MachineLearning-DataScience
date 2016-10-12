@@ -40,7 +40,7 @@ cd ..
 $R_path = "C:\Program Files\Microsoft SQL Server\130\R_SERVER\bin\x64\R.exe"
 & $R_path -e "install.packages(c('argparse', 'Rcpp', 'DiagrammeR', 'data.table', 'jsonlite', 'magrittr', 'stringr'))"
 & $R_PATH CMD INSTALL .\R-package
-cd ..\..
+cd ..
 
 # copy over the sample solutions
 cd dsvm-deep-learning
