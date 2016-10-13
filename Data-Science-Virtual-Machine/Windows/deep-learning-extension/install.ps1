@@ -1,7 +1,7 @@
 cd C:\Windows\temp
 
 Import-Module BitsTransfer
-Start-BitsTransfer -Source https://deeplearningtoolkit.blob.core.windows.net/assets/dsvm-deep-learning.zip -Destination ".\dsvm-deep-learning.zip"
+Start-BitsTransfer -Source https://deeplearningtoolkit.blob.core.windows.net/assets/dsvm-deep-learning-v4.zip -Destination ".\dsvm-deep-learning.zip"
 Start-BitsTransfer -Source https://deeplearningtoolkit.blob.core.windows.net/assets/mxnet.zip -Destination ".\mxnet.zip"
 Start-BitsTransfer -Source https://deeplearningtoolkit.blob.core.windows.net/assets/cuda_8.0.44_windows.zip -Destination ".\cuda_8.0.44_windows.zip"
 unzip dsvm-deep-learning.zip
