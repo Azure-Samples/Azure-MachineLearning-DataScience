@@ -1,0 +1,138 @@
+# An end-to-end experiment that trains and scores
+# 1. SAR recommender
+# 2. Matrix factorization model
+# on the provided sample dataset. 
+# Precision@k and diversity are computed.
+# Note that the input dataset must be sorted by UserId.
+
+# Main steps:
+# 1. Split the data into training/test sets
+# 2. Convert data into the format TLC can use
+# 3. Build SAR model and Matrix Factorization model
+# 4. Score SAR and Matrix Factorizaiton model
+# 5. Compute precision@k and diviersity
+# 6. Save item-item similarity trained in SAR as plain text
+
+
+Chain  
+  # (1) Split the data into training and test datasets
+  # Training dataset contains data before 2016/04/17
+  # We use C#-based transform in TLC to split the data
+  cmd=Save{
+    data=..\Data\UsageforSageSARtlc.csv
+    dout=..\Data\train.tsv
+    loader=Text{col=User:TX:0 col=Item:TX:1 col=Date:DT:2 sep=,}
+    xf=CST{in=Date filter+ code={return (DateTime)I.Date < new DateTime(2016, 4, 17);}}
+  }
+
+  # Test dataset contains data starting from 2016/04/17 (2 days)
+  # The test dataset is used as ground truth.
+  cmd=Save{
+    data=..\Data\UsageforSageSARtlc.csv
+    dout=..\Data\test.tsv
+    loader=Text{col=User:TX:0 col=Item:TX:1 col=Date:DT:2 sep=,}
+    xf=CST{in=Date filter+ code={return (DateTime)I.Date >= new DateTime(2016, 4, 17);}}
+  }  
+  
+  # (2) Convert data
+  # We need to convert User and Item from text to keys in TLC.
+  cmd=Save{ 
+    data=..\Data\train.tsv
+    dout=..\Data\train-keys.tsv
+    xf=Term{col=User col=Item} 
+    out=..\Data\keys.zip
+  }
+  
+  # Apply the same transformation for the test dataset
+  cmd=Save{ 
+    data=..\Data\test.tsv
+    dout=..\Data\test-keys.tsv 
+    in=..\Data\keys.zip
+  }
+  
+  # (3) Training models: SAR and Matrix factorization    
+  # Training SAR (item-item similarity recommender).
+  cmd=Train{
+    data=..\Data\train-keys.tsv 
+    col[User]=User col[Item]=Item
+    tr=SAR{calc=Jaccard{th=5}}
+    out=..\Data\sar.zip
+  }
+
+  # MF model requires injecting the 'fake negative' ratings, 
+  # and generating the rating column.
+  cmd=Save{
+    data=..\Data\train-keys.tsv
+    xf=CST{out=Label:R4 code={O.Label=1;}}
+    xf=DupeFlip
+    dout=..\Data\train-mf.tsv
+  }
+  
+  # Training MF modified for one-class recommendation.
+  cmd=Train{
+    data=..\Data\train-mf.tsv 
+    col[Y]=User col[X]=Item
+    tr=MF{k=10}
+    out=..\Data\mf.zip
+  }
+  
+  # (4) Scoring test data.
+  # Scoring using SAR model
+  cmd=Score{
+    in=..\Data\sar.zip
+    data=..\Data\train-keys.tsv
+    col[User]=User col[Item]=Item col[Date]=Date
+    scorer=Reco{n=10 hist- decay=20.79 referenceDate=2016-03-01}
+    dout=..\Data\scores-sar.tsv
+    saver=Text
+    all+
+    pxf=Choose{col=User:User col=Item:Recommended col=Score}
+  }
+  
+  # Scoring using MF model
+  cmd=Score{
+    in=..\Data\mf.zip
+    data=..\Data\train-keys.tsv
+    col[User]=User col[Item]=Item col[Date]=Date
+    scorer=Reco{n=10 hist-}
+    dout=..\Data\scores-mf.tsv
+    saver=Text
+    all+
+    pxf=Choose{col=User col=Item:Recommended col=Score}
+  }
+  
+  # (5) Evaluation.  
+  # Evaluating SAR:
+  cmd=EvalReco{
+    eval=pk{k=10}
+    score=..\Data\scores-sar.tsv
+    truth=..\Data\test-keys.tsv
+    sf=..\Data\metrics-precision-sar.tsv
+  }
+  cmd=EvalReco{
+    eval=div
+    score=..\Data\scores-sar.tsv
+    truth=..\Data\train-keys.tsv
+    sf=..\Data\metrics-diverisity-sar.tsv
+  }
+  
+  # Evaluating MF:
+  cmd=EvalReco{
+    eval=pk{k=10}
+    score=..\Data\scores-mf.tsv
+    truth=..\Data\test-keys.tsv
+    sf=..\Data\metrics-precision-mf.tsv
+  }
+  cmd=EvalReco{
+    eval=div
+    score=..\Data\scores-mf.tsv
+    truth=..\Data\train-keys.tsv
+    sf=..\Data\metrics-diverisity-mf.tsv
+  }
+  
+  # (6) Optional: save the item-item similarity matrix computed 
+  # by SAR in plain text
+  cmd=savemodel{
+    in=..\Data\sar.zip
+    text=..\Data\sar_plainText.txt
+  }
