@@ -1,8 +1,6 @@
 ###  Linux Data Science Virtual Machine with Jupyterhub custom extension
 
-**UPDATE**: The Linux data science VM now has JupyterHub installed by default. This extension will fail to install during deployment and should not be used.
-
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.svg)](https://azuredeploy.net/)
+**UPDATE**: The Linux data science VM now has JupyterHub installed by default. This extension will fail to install during deployment and should not be used. This is left here for historical purposes. We also hope that this method, instruction/scripts will help anyone else trying to setup JupyterHub on your own machine. 
 
 This Linux based virtual machine contains popular tools for data science modeling and development activities. The main tools include Microsoft R Open, Anaconda Python distribution, Jupyter notebooks for Python and R, Postgres database, Azure command line tools, libraries to access various Azure services like AzureML, databases, Azure storage and big data services. It also has machine learning tools and algorithms like CNTK (a deep learning toolkit from Microsoft Research), Vowpal Wabbit and xgboost. 
 
@@ -20,4 +18,3 @@ You can click on the "Deploy to Azure" button to try out the VM (Azure subscript
 
 **IMPORTANT NOTE**: Before you proceed to use the **Deploy to Azure** button you must perform a one-time task to accept the terms of the data science virtual machine on your Azure subscription. You can do this by visiting [Configure Programmatic Deployment](https://ms.portal.azure.com/#blade/Microsoft_Azure_Marketplace/LegalTermsSkuProgrammaticAccessBlade/legalTermsSkuProgrammaticAccessData/%7B%22product%22%3A%7B%22publisherId%22%3A%22microsoft-ads%22%2C%22offerId%22%3A%22linux-data-science-vm%22%2C%22planId%22%3A%22linuxdsvm%22%7D%7D)
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.svg)](https://azuredeploy.net/)
