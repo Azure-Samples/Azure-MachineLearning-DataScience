@@ -31,3 +31,6 @@ cd directory-containing-plink.exe
 
 * for _Parallel models: training many parallel models for hierarchical time series optimization_
  * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/UseCaseHTS)
+
+## Video Record of this Tutorial
+http://videolectures.net/kdd2016_tutorial_scalable_r_on_spark/?q=Spark
