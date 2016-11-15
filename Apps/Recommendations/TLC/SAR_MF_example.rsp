@@ -1,6 +1,7 @@
 # An end-to-end experiment that trains and scores
 # 1. SAR recommender
 # 2. Matrix factorization model
+# 3. Baseline model (most popular items)
 # on the provided sample dataset. 
 # Precision@k and diversity are computed.
 # Note that the input dataset must be sorted by UserId.
@@ -8,9 +9,10 @@
 # Main steps:
 # 1. Split the data into training/test sets
 # 2. Convert data into the format TLC can use
-# 3. Build SAR model and Matrix Factorization model
-# 4. Score SAR and Matrix Factorizaiton model
-# 5. Compute precision@k and diviersity
+# 3. Build SAR, Matrix Factorization and Baseline models
+# 4. Score SAR, Matrix Factorization and Baseline models
+# 5. Compute precision@k for SAR, Matrix Factorization and Baseline models
+#    and diversity for SAR and Matrix Factorization models
 # 6. Save item-item similarity trained in SAR as plain text
 
 
@@ -50,7 +52,7 @@ Chain
     in=..\Data\keys.zip
   }
   
-  # (3) Training models: SAR and Matrix factorization    
+  # (3) Training models: SAR, Matrix factorization, and Baseline models
   # Training SAR (item-item similarity recommender).
   cmd=Train{
     data=..\Data\train-keys.tsv 
@@ -76,6 +78,14 @@ Chain
     out=..\Data\mf.zip
   }
   
+  # Training Baseline (most popular items).  
+  cmd=Train{    
+    data=..\Data\train-keys.tsv
+    col[User]=User col[Item]=Item
+    tr=SAR{calc={} backfill+}
+    out=..\Data\baseline.zip  
+  }
+  
   # (4) Scoring test data.
   # Scoring using SAR model
   cmd=Score{
@@ -99,6 +109,19 @@ Chain
     saver=Text
     all+
     pxf=Choose{col=User col=Item:Recommended col=Score}
+  }
+  
+  # Scoring using baseline model  
+  cmd=Score{
+    in=..\Data\baseline.zip
+    data=..\Data\train-keys.tsv
+    col[User]=User col[Item]=Item
+    col[Date]=Date
+    scorer=Reco{n=10 hist- decay=20.79 referenceDate=2016-03-01}
+    dout=..\Data\scores-baseline.tsv
+    saver=Text
+    all+
+    pxf=Choose{col=User:User col=Item:Recommended col=Score}  
   }
   
   # (5) Evaluation.  
@@ -130,6 +153,14 @@ Chain
     sf=..\Data\metrics-diverisity-mf.tsv
   }
   
+  # Evaluating Baseline:
+  cmd=EvalReco{
+    eval=pk{k=10}
+    score=..\Data\scores-baseline.tsv
+    truth=..\Data\test-keys.tsv    
+    sf=..\Data\metrics-precision-baseline.tsv  
+  }
+    
   # (6) Optional: save the item-item similarity matrix computed 
   # by SAR in plain text
   cmd=savemodel{
