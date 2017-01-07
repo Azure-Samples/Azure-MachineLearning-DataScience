@@ -195,6 +195,26 @@ while line:
 fin_recom.close()
 fout.close()
 
+# For all items in the catalog, determine their types, and summarize number of
+# items of different types.
+for itemId in D_catalog:
+    if itemId not in D_item_type:
+        itemFreq = 0
+        if itemId in D_item_user:
+            itemFreq = len(D_item_user[itemId])
+        if itemFreq > cold_upper_bound:
+            itemType = 'W'
+        elif itemFreq > 0:
+            itemType = 'C2'
+        else:
+            itemType = 'C1'
+        D_item_type[itemId] = itemType
+all_item_type_list = list(D_item_type.values())
+n_item_warm = all_item_type_list.count('W')
+n_item_C1 = all_item_type_list.count('C1')
+n_item_C2 = all_item_type_list.count('C2')
+        
+
 # Summarize some statistics in the end
 n_item_total = len(D_catalog)
 n_seed_nomatch = len(D_item_nomatch)
@@ -202,3 +222,9 @@ percent_nomatch = float(n_seed_nomatch) / n_item_total
 print('the total number of items in catalog is %d'%n_item_total)
 print('the total number of seed items which generate recom items with no feature match is %d'%n_seed_nomatch)
 print('the percentage of seed items which generate recom items with no feature match is %f'%percent_nomatch)
+print('the total number of warm item is %d'%n_item_warm)
+print('the percentage of warm item is %f'%(float(n_item_warm)/n_item_total))
+print('the total number of C1 item is %d'%n_item_C1)
+print('the percentage of C1 item is %f'%(float(n_item_C1)/n_item_total))
+print('the total number of C2 item is %d'%n_item_C2)
+print('the percentage of C2 item is %f'%(float(n_item_C2)/n_item_total))
