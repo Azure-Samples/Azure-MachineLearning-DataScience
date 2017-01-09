@@ -11,6 +11,6 @@ Spark 1.6 NBs are:
 
 
 
-Spark 2.0 NBs are:
+Spark 2.0 NB is:
 
 pySpark3-Spark2.0-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb.ipynb
