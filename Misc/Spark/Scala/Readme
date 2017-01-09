@@ -11,3 +11,10 @@ It shows how to use Scala for:
 6. Loading saved models and scoring data-sets with these models. 
  
 We do not show automated / scheduled model consumption. Users can easily get that from the pySpark walkthrough and associated notebooks. 
+
+For further details check: https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-process-scala-walkthrough
+
+
+We now have Spark 1.6 as well as Spark 2.0 versions of notebooks:
+1. Spark 1.6: Exploration-Modeling-and-Scoring-using-Scala.ipynb 
+2. Spark 2.0: Spark2.0-Exploration-Modeling-and-Scoring-using-Scala.ipynb
