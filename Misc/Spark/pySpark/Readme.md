@@ -9,4 +9,5 @@ Spark 1.6 NBs are:
 3. pySpark-machine-learning-data-science-spark-model-consumption.ipynb
 
 Spark 2.0 NBs are:
+
 pySpark3-Spark2.0-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb.ipynb
