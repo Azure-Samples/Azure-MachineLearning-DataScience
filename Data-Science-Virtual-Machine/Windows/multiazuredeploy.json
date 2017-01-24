@@ -16,7 +16,6 @@
         },
         "numberOfInstances": {
             "type": "string",
-            "defaultValue": "1",
             "metadata": {
                 "description": "Number of VMs to deploy."
             }
