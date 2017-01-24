@@ -16,3 +16,14 @@ You can click on the "Deploy to Azure" button to immediately try out the VM (Azu
 
 
 [![Deploy to Azure](http://azuredeploy.net/deploybutton.svg)](https://azuredeploy.net/)
+
+To create multiple instances of the Windows DSVM you can run the following command from a Azure CLI.
+
+```
+azure login
+# Change to your subscription if you want to create VMs in non defaulty subscription
+azure group create -n [RGNAME] -l "West US 2"
+azure group deployment create -g [RGNAME] --template-uri https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Data-Science-Virtual-Machine/Windows/multiazuredeploy.json
+```
+
+
