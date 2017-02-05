@@ -17,7 +17,7 @@ cd directory-containing-plink.exe
 ```
 * After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server on the edge node of your cluster
 
-## Suggested Reading and Tutorial Scripts
+## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
 * for _Exploration and visualization using SparkSQL and R_
  * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/KDDCup2016/Code/SparkSQL/SparkSQL.R)
 * for _End to end scalable data analysis in R: Data exploration, visualization, modeling and deployment using distributed R functions and Hadoop/Spark_
@@ -32,5 +32,5 @@ cd directory-containing-plink.exe
 * for _Parallel models: training many parallel models for hierarchical time series optimization_
  * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/UseCaseHTS)
 
-## Video Record of this Tutorial
+## Video Record of an earlier version of this tutorial (presented at the KDD conference in August 2016)
 http://videolectures.net/kdd2016_tutorial_scalable_r_on_spark/?q=Spark
