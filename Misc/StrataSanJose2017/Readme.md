@@ -1,5 +1,8 @@
 This folder has content for the Strata San Jose March 2017 tutorial "Scalable Data Science with R, from Single Nodes to Spark Clusters".
 
+## Tutorial link (Strata San Jose, March 2017)
+https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/55806
+
 ## Tutorial Prerequisites
 * Make sure your machine has an ssh client with port-forwarding capability. On Mac or Linux, simply run the ssh command in a terminal window.
 On Windows, download [plink.exe](https://the.earth.li/~sgtatham/putty/latest/x86/plink.exe)
