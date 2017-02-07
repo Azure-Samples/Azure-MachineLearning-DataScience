@@ -1,0 +1,202 @@
+---
+title: "Using SparkR and sparklyr with 2013 NYCTaxi Data: Data manipulations, modeling, and evaluation"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+author: "Algorithms and Data Science, Microsoft Data Group"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 4
+    highlight: espresso
+    keep_md: yes
+    number_sections: yes
+    theme: journal
+    toc: yes
+    toc_float: yes
+runtime: knit
+---
+
+<hr>
+#Introduction
+This Markdown document shows the use of <a href="https://spark.apache.org/docs/latest/sparkr.html" target="_blank">SparkR</a> and <a href="http://spark.rstudio.com/index.html" target="_blank">sparklyr</a> packages for data manipulation, and creating machine learning models in spark context. The data used for this exercise is the public NYC Taxi Trip and Fare data-set (2013, December, ~4 Gb, ~13 million rows) available from: http://www.andresmh.com/nyctaxitrips. Data for this exercise can be downloaded from the public blob (see below). The data can be uploaded to the blob (or other storage) attached to your HDInsight cluster (HDFS) and used as input into the scripts shown here.
+
+We can use SparkR for data manipulations (e.g. data joining) and sparklyr for creating and evaluating models. Where necessary, small amounts of data is brought to the local data frames for plotting and visualization. This is not shown here. We focus here entirely on creating ML models using sparklyr.
+<hr>
+<br>
+
+<br>
+
+##Creating spark context / connections and loading required packages
+```{r Load Packages, message=FALSE, warning=FALSE, echo=TRUE}
+###########################################
+# LOAD LIBRARIES FROM SPECIFIED PATH
+###########################################
+.libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
+library(SparkR)
+library(rmarkdown)
+library(knitr)
+library(sparklyr)
+library(dplyr)
+library(DBI)
+library(gridExtra)
+library(ggplot2)
+
+###########################################
+# CREATE SPARK CONTEXT
+###########################################
+sparkEnvir <- list(spark.executor.instance = '4', spark.yarn.executor.memoryOverhead = '8000')
+sc <- sparkR.session(
+  sparkEnvir = sparkEnvir,
+  sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
+)
+
+###########################################
+## SPECIFY BASE HDFS DIRECTORY
+###########################################
+fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi"
+```
+<hr>
+<br>
+<br>
+
+#Using sparklyr for creating ML models
+sparklyr provides bindings to Spark’s distributed machine learning library. In particular, sparklyr allows you to access the machine learning routines provided by the spark.ml package. Together with sparklyr’s dplyr interface, you can easily create and tune machine learning workflows on Spark, orchestrated entirely within R.
+
+<br>
+##Load joined trip-fare data in sparklyr spark connection and cache in memory
+If a data-set is large, it may need to be down-sampled for modeling in reasonable amount of time. Here we used the <b>sample</b> function from SparkR to down-sample the joined tax-fare data. We then save the data in HDFS for use as input into the sparklyr modeling functions.
+```{r Load data in sparklyr dataframe, message=FALSE, warning=FALSE, echo=TRUE}
+###########################################
+## CREATE SPARKLYR SPARK CONNECTION
+###########################################
+sp <- spark_connect(master = "yarn-client")
+
+###########################################
+# LOAD SAMPLED JOINED TAXI DATA FROM HDFS, CACHE
+###########################################
+joinedDF <- spark_read_parquet(sp, name = "joined_table", 
+                               path = file.path(fullDataDir, "NYCjoinedParquetSubset"), memory = TRUE, overwrite = TRUE)
+head(joinedDF, 3)
+
+###########################################
+# SHOW THE NUMBER OF OBSERVATIONS IN DATA 
+###########################################
+count(joinedDF)
+```
+
+<hr>
+##Use feature transformation functions from sparklyr
+Spark provides feature transformers, faciliating many common transformations of data within in a Spark DataFrame, and sparklyr exposes these within the <a href="http://spark.rstudio.com/mllib.html#transformers" target="_blank">ft_* family of functions</a>. These routines generally take one or more input columns, and generate a new output column formed as a transformation of those columns. Here, we show the use of two such functions to bucketize (categorize) or binarize features. Payment type (CSH or CRD) is binarized using string-indexer and binerizer functions. And, traffic-time bins is bucketized using the bucketizer function.
+```{r Using ft_ functions for feature transformation, message=FALSE, warning=FALSE, echo=TRUE}
+###########################################
+# CREATE TRANSFORMED FEATURES, BINAZURE OR BUCKET FEATURES
+###########################################
+# Binarizer
+joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', output_col = 'pt_ind') %>% ft_binarizer(input_col = 'pt_ind', output_col = 'pt_bin', threshold = 0.5)
+
+# Bucketizer
+joinedDF3 <- joinedDF2 %>% ft_string_indexer(input_col = 'TrafficTimeBins', output_col = 'TrafficTimeInd') %>% ft_bucketizer(input_col = 'TrafficTimeInd', output_col = 'TrafficTimeBuc', splits=c(-1,0.5,1.5,2.5,3.5))
+```
+
+<hr>
+##Create train-test partitions
+Data can be partitioned into training and testing using the <b>sdf_partition</b> function. 
+```{r Partition data into train/test, message=FALSE, warning=FALSE, echo=TRUE}
+###########################################
+# CREATE TRAIN/TEST PARTITIONS
+###########################################
+partitions <- joinedDF3 %>% sdf_partition(training = 0.75, test = 0.25, seed = 1099)
+```
+<hr>
+
+##Creating ML models
+Spark’s machine learning library can be accessed from sparklyr through the <a href="http://spark.rstudio.com/mllib.html#algorithms" target="_blank">ml_* family of functions</a>. Here we create ML models for the prediction of tip-amount for taxi trips.
+
+###Creating Elastic Net model
+Create a elastic net model using training data, and evaluate on test data-set
+```{r Elastic net modeo, message=FALSE, warning=FALSE, echo=TRUE, fig.width=4, fig.height=4}
+# Fit elastic net regression model
+fit <- partitions$training %>% ml_linear_regression(tip_amount ~ pt_bin + pickup_hour + passenger_count + trip_distance + TrafficTimeBuc, alpha = 0.5, lambda = 0.01)
+#fit <- partitions$training %>% ml_linear_regression(response = "tip_amount", features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count", "trip_distance", "TrafficTimeBuc"), alpha = 0.5, lambda = 0.01)
+
+# Show summary of fitted Elastic Net model
+summary(fit)
+
+# Predict on test data and keep predictions in Spark context
+predictedVals <- sdf_predict(fit, newdata =  partitions$test)
+predictedDF <- as.data.frame(predictedVals)
+
+# Evaluate and plot predictions (R-sqr)
+Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
+
+# Sample predictions for plotting
+predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
+
+# Plot actual vs. predicted tip amounts
+lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
+ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+```
+
+###Creating Random Forest Model
+Create a random forest model using training data, and evaluate on test data-set
+```{r Random forest model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=4, fig.height=4}
+# Fit Random Forest regression model
+fit <- partitions$training %>% ml_random_forest(response = "tip_amount", features = c("pt_bin", "fare_amount", "pickup_hour", "passenger_count",  "trip_distance", "TrafficTimeBuc"), max.bins = 500L, max.depth = 5L, num.trees = 50L)
+
+# Show summary of fitted Random Forest model
+summary(fit)
+
+# Predict on test data and keep predictions in Spark context
+predictedVals <- sdf_predict(fit, newdata =  partitions$test)
+predictedDF <- as.data.frame(predictedVals)
+
+# Evaluate and plot predictions (R-sqr)
+Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
+
+# Sample predictions for plotting
+predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
+
+# Plot
+lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
+ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+```
+
+
+###Creating Gradient Boosted Tree Model
+Create a gradient boosted tree model using training data, and evaluate on test data-set
+```{r Boosted tree model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=4, fig.height=4}
+# Fit Gradient Boosted Tree regression model
+#fit <- partitions$training %>% ml_gradient_boosted_trees(response = "tip_amount", features = c("pt_bin", "fare_amount","pickup_hour","passenger_count","trip_distance","TrafficTimeBuc"), max.bins = 32L, max.depth = 3L, type = "regression")
+fit <- partitions$training %>% ml_gradient_boosted_trees(tip_amount ~ pt_bin + pickup_hour + passenger_count + trip_distance + TrafficTimeBuc, max.bins = 32L, max.depth = 3L, type = "regression")
+
+
+# Show summary of fitted Random Forest model
+summary(fit)
+
+# Predict on test data and keep predictions in Spark context
+predictedVals <- sdf_predict(fit, newdata =  partitions$test)
+predictedDF <- as.data.frame(predictedVals)
+
+# Evaluate and plot predictions (R-sqr)
+Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
+
+# Sample predictions for plotting
+predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
+
+# Plot
+lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
+ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+
+###########################################
+# DISCONNECT SPARK CONNECTION
+###########################################
+spark_disconnect(sp)
+```
+
+<br>
+<hr>
+<hr>
+<br>
+
+#Summary
+The examples shown here can be adopted to fit other data exploration and modeling scenarios having different data-types or prediction tasks (e.g. classification)
