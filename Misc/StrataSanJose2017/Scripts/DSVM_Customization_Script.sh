@@ -72,7 +72,7 @@ sudo rstudio-server start
 #######################################################################################################################################
 # Install packages
 cd
-wget 
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/InstallPackages.R
 cd /usr/bin
 sudo Revo64-9.0 --vanilla --quiet  <  /home/remoteuser/InstallPackages.R
 
