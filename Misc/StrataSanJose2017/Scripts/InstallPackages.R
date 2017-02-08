@@ -1,0 +1,5 @@
+install.packages("sparklyr", repos='http://cran.us.r-project.org')
+install.packages("ggplot2", repos='http://cran.us.r-project.org')
+install.packages("gridExtra", repos='http://cran.us.r-project.org')
+install.packages("rmarkdown", repos='http://cran.us.r-project.org')
+install.packages("knitr", repos='http://cran.us.r-project.org')
