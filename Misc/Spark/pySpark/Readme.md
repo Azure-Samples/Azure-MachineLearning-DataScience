@@ -3,7 +3,7 @@
 
 ## Description:  ##
 
-For reference, please see the following links: 
+For conceptual documentation and walkthroughs, see the following links: 
 
 >**Overview:** <br>
 [https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-overview](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-overview)
@@ -16,16 +16,16 @@ For reference, please see the following links:
 [https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-model-consumption](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-model-consumption)
 
 <br>
-> The descriptions above are with code that will run on Spark 1.6. However, we now have notebooks for both Spark 1.6, and Spark 2.0 that can be run on the Jupyter notebook servers of Azure Spark HDInsight clusters.
+> The descriptions above are with code that runs on Spark 1.6. However, we have now released notebooks for both Spark 1.6 and Spark 2.0 that can be run on the Jupyter notebook servers of Azure Spark HDInsight clusters. Links to these notebooks are provided below.
 
 ------------------------------------------------------------------------------------------------------------
-## Spark 1.6 NBs (to be run in the pyspark kernel of Jupyter notebook server): ##
+## Spark 1.6 NBs (to be run in the pyspark kernel of Jupyter Notebook server): ##
 
-NOTE: Tested on Spark 1.6.4 HDInsight clusters.
+NOTE: These notebooks have been tested on Spark 1.6.4 HDInsight clusters.
 
 > **[pySpark-machine-learning-data-science-spark-data-exploration-modeling.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/pySpark-machine-learning-data-science-spark-data-exploration-modeling.ipynb)**
 
-Provides information on how to perform data exploration, modeling, and scoring with a few different algorithms
+Provides information on how to perform data exploration, modeling, and scoring with several different algorithms
 <br>
 
 
@@ -36,7 +36,7 @@ Includes topics in notebook #1, and model development using hyperparameter tunin
 
 > **[pySpark-machine-learning-data-science-spark-model-consumption.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/pySpark-machine-learning-data-science-spark-model-consumption.ipynb)**
 
-Shows how to operationalize a saved model using python on HDInsight clusters
+Shows how to operationalize a saved model using Python on HDInsight clusters
 <br>
 
 <br>
@@ -48,8 +48,8 @@ Shows how to operationalize a saved model using python on HDInsight clusters
 NOTES: 
 
 
-1. Currently tested on Spark 2.0.2 HDInsight clusters
-2. In addition to the NYC Taxi trip and fare dataset which we used for the Spark 1.6 notebooks, for Spark 2.0 we've used the Airline On-time departure dataset (below). This dataset shows: (i) how to integrate weather features in the model, and (ii) how to deal with large number of categorical features in modeling (e.g. the distinct number of airports).
+1. These notebooks have been tested on Spark 2.0.2 HDInsight clusters
+2. In addition to the NYC Taxi trip and fare dataset which we used for the Spark 1.6 notebooks, we have used the Airline On-time departure dataset (below) for Spark 2.0. This dataset shows: (i) how to integrate weather features into the model, and (ii) how to deal with a large number of categorical features in modeling (e.g. the distinct number of airports).
 
 <BR>
 > **[Spark2.0-pySpark3-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/Spark2.0-pySpark3-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb)**
@@ -76,7 +76,7 @@ See the following links for information about airline on-time departure dataset 
 
 > **Operationalization of a model and model consumption for scoring**
 
-Please see [the description above for Spark 1.6](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/pySpark-machine-learning-data-science-spark-model-consumption.ipynb). The code file (in python) needs to be replaced with [this file](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/Python/Spark2.0_ConsumeRFCV_NYCReg.py), which works on Spark 2.0.
+See [the description above for Spark 1.6](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/pySpark-machine-learning-data-science-spark-model-consumption.ipynb). The code file (in python) needs to be replaced with [this file](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/Python/Spark2.0_ConsumeRFCV_NYCReg.py), which works on Spark 2.0.
 
  
 -------------------------------------------------------------------------------------------------------------
