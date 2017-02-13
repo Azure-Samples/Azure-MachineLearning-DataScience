@@ -3,7 +3,7 @@
 
 ## Description:  ##
 
-For conceptual documentation and walkthroughs, see the following links: 
+For conceptual documentation and walkthroughs, see the following topics: 
 
 >**Overview:** <br>
 [https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-overview](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-overview)
@@ -58,7 +58,7 @@ This file provides information on how to perform data exploration, modeling, and
 
 > **[Spark2.0-pySpark3_NYC_Taxi_Tip_Regression.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/Spark2.0_pySpark3_NYC_Taxi_Tip_Regression.ipynb)**
 
-This file shows how to perform data wrangling (Spark SQL and dataframe operations), exploration, modeling and scoring using the NYC Taxi trip and fare data-set (see above links ).
+This file shows how to perform data wrangling (Spark SQL and dataframe operations), exploration, modeling and scoring using the NYC Taxi trip and fare data-set described [here](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-overview).
 
 > **[Spark2.0-pySpark3_Airline_Departure_Delay_Classification.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/Spark2.0_pySpark3_Airline_Departure_Delay_Classification.ipynb)**
 
