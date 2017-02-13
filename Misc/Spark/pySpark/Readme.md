@@ -5,13 +5,16 @@ We now have notebooks in both Spark 1.6, and Spark 2.0, that can be run on the J
 ------------------------------------------------------------------------------------------------------------
 <b>Spark 1.6 NBs (to be run in the pyspark kernel of Jupyter notebook server):</b>
 
+
 > pySpark-machine-learning-data-science-spark-data-exploration-modeling.ipynb
 
 Provides information on how to perform data explorationand modeling with a few different algorithms
 
+
 > pySpark-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb
 
-Insludes topics in notebook #1, and model development using hyperparameter tuning and cross-validation
+Includes topics in notebook #1, and model development using hyperparameter tuning and cross-validation
+
 
 > pySpark-machine-learning-data-science-spark-model-consumption.ipynb
 
