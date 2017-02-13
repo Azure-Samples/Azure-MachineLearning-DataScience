@@ -16,7 +16,7 @@ For conceptual documentation and walkthroughs, see the following links:
 [https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-model-consumption](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-model-consumption)
 
 <br>
-> The descriptions above are with code that runs on Spark 1.6. However, we have now released notebooks for both Spark 1.6 and Spark 2.0 that can be run on the Jupyter notebook servers of Azure Spark HDInsight clusters. Links to these notebooks are provided below.
+> These documents provide walkthroughs with code that runs on Spark 1.6. However, we have now released notebooks for both Spark 1.6 and Spark 2.0 that can be run on the Jupyter notebook servers of Azure Spark HDInsight clusters. Links to these notebooks are provided below.
 
 ------------------------------------------------------------------------------------------------------------
 ## Spark 1.6 NBs (to be run in the pyspark kernel of Jupyter Notebook server): ##
@@ -76,7 +76,7 @@ See the following links for information about airline on-time departure dataset 
 
 > **Operationalization of a model and model consumption for scoring**
 
-See [the description above for Spark 1.6](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/pySpark-machine-learning-data-science-spark-model-consumption.ipynb). The code file (in python) needs to be replaced with [this file](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/Python/Spark2.0_ConsumeRFCV_NYCReg.py), which works on Spark 2.0.
+See the [Spark 1.6 document on consumption](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/pySpark-machine-learning-data-science-spark-model-consumption.ipynb) for an example of how to operationalize a model. To use this on Spark 2.0, replace the Python code file with [this file](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/Python/Spark2.0_ConsumeRFCV_NYCReg.py).
 
  
 -------------------------------------------------------------------------------------------------------------
