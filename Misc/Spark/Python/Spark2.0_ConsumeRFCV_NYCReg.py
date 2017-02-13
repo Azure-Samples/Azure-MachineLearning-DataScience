@@ -1,4 +1,14 @@
 ###################################################################################################################
+###################################################################################################################
+## THIS FILE PROVIDES THE PYTHON SCRIPTS THAT CAN BE USED TO OPERATIONALIZE SCORING 
+## WITH SAVED MODELS (TRAINED IN PYSPARK3) IN SPARK 2.0.2 HDINSIGHT CLUSTERS
+## YOU CAN RUN THIS USING THE FOLLOWING COMMAND: 
+# curl -k --user "<admin_login>:<admin_password>" -X POST --data "{\"file\": \"wasb:///example/Spark2.0_ConsumeRFCV_NYCReg.py\"}" -H "Content-Type: application/json" "https://<HDINSIGHT_clustername>.azurehdinsight.net/livy/batches"
+###################################################################################################################
+###################################################################################################################
+
+
+###################################################################################################################
 ## IMPORT LIBRARIES
 ###################################################################################################################
 ## IF FOLLOWING LIBRARIES ARE NOT INSTALLED, INSTALL THEM FIRST
