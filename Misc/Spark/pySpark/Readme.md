@@ -3,7 +3,7 @@ This folder contains pySpark notebooks for published data science walk-throughs 
 We now have notebooks in both Spark 1.6, and Spark 2.0, that can be run on the Jupyter notebook servers of Azure Spark HDInsight clusters.
 
 ------------------------------------------------------------------------------------------------------------
-Spark 1.6 NBs (to be run in the pyspark kernel of Jupyter notebook server):
+<b>Spark 1.6 NBs (to be run in the pyspark kernel of Jupyter notebook server):</b>
 
 1. pySpark-machine-learning-data-science-spark-data-exploration-modeling.ipynb
 
