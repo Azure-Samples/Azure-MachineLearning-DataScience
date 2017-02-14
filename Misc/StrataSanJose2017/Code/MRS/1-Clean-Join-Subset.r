@@ -40,7 +40,7 @@ weatherDF <- read.df(sqlContext, weatherPath, source = "com.databricks.spark.csv
 # Data Cleaning and Transformation
 ################################################
 
-airDF <- rename(airDF,
+airDF <- SparkR::rename(airDF,
                 ArrDel15 = airDF$ARR_DEL15,
                 Year = airDF$YEAR,
                 Month = airDF$MONTH,
@@ -65,7 +65,7 @@ weatherDF <- agg(groupBy(weatherDF, "AdjustedYear", "AdjustedMonth", "AdjustedDa
                  DryBulbCelsius="avg", DewPointCelsius="avg", RelativeHumidity="avg", WindSpeed="avg", Altimeter="avg"
 )
 
-weatherDF <- rename(weatherDF,
+weatherDF <- SparkR::rename(weatherDF,
                     Visibility = weatherDF$'avg(Visibility)',
                     DryBulbCelsius = weatherDF$'avg(DryBulbCelsius)',
                     DewPointCelsius = weatherDF$'avg(DewPointCelsius)',
@@ -95,7 +95,7 @@ varsToDrop <- c('AdjustedYear', 'AdjustedMonth', 'AdjustedDay', 'AdjustedHour', 
 varsToKeep <- vars[!(vars %in% varsToDrop)]
 joinedDF1 <- select(joinedDF, varsToKeep)
 
-joinedDF2 <- rename(joinedDF1,
+joinedDF2 <- SparkR::rename(joinedDF1,
                     VisibilityOrigin = joinedDF1$Visibility,
                     DryBulbCelsiusOrigin = joinedDF1$DryBulbCelsius,
                     DewPointCelsiusOrigin = joinedDF1$DewPointCelsius,
@@ -108,7 +108,7 @@ joinedDF2 <- rename(joinedDF1,
 # Join airline data with weather at Destination Airport
 #######################################################
 
-joinedDF3 <- join(
+joinedDF3 <- SparkR::join(
   joinedDF2,
   weatherDF,
   airDF$DestAirportID == weatherDF$AirportID &
@@ -125,7 +125,7 @@ varsToDrop <- c('AdjustedYear', 'AdjustedMonth', 'AdjustedDay', 'AdjustedHour', 
 varsToKeep <- vars[!(vars %in% varsToDrop)]
 joinedDF4 <- select(joinedDF3, varsToKeep)
 
-joinedDF5 <- rename(joinedDF4,
+joinedDF5 <- SparkR::rename(joinedDF4,
                     VisibilityDest = joinedDF4$Visibility,
                     DryBulbCelsiusDest = joinedDF4$DryBulbCelsius,
                     DewPointCelsiusDest = joinedDF4$DewPointCelsius,
