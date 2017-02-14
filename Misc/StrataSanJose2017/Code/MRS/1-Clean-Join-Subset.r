@@ -1,4 +1,4 @@
-setwd("/home/sshuser/Code/MRS")
+setwd("/home/remoteuser/Code/MRS")
 source("SetComputeContext.r")
 
 if(Sys.getenv("SPARK_HOME")=="")
