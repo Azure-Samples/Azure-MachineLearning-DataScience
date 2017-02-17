@@ -34,6 +34,7 @@ hadoop fs -mkdir /user/RevoShare/rserve2
 hadoop fs -mkdir /user/RevoShare/rserve2/Predictions
 hadoop fs -chmod -R 777 /user/RevoShare/rserve2
 
+hadoop fs -mkdir /user/RevoShare/remoteuser
 #######################################################################################################################################
 # Copy data and code to VM
 #######################################################################################################################################
