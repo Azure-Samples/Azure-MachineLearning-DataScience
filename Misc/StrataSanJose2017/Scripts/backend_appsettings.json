@@ -1,0 +1,43 @@
+{
+  "Kestrel": {
+    "Port": 12805,
+    "HttpsEnabled": false,
+    "HttpsCertificate": {
+      "Enabled": false,
+      "Description": "Enable this section if you want to enable SSL on Kestrel",
+      "StoreName": "My",
+      "StoreLocation": "LocalMachine",
+      "SubjectName": ""
+    }
+  },
+  "Logging": {
+    "IncludeScopes": false,
+    "LogsPath": "",
+    "MaxLogsFilesNumber": 10,
+    "LogLevel": {
+      "Default": "Warning",
+      "System": "Warning",
+      "Microsoft": "Warning",
+      "AllowedLogLevels": {
+        "Verbose": "Verbose is the noisiest level, rarely (if ever) enabled for a production app.",
+        "Debug": "Debug is used for internal system events that are not necessarily observable from the outside, but useful when determining how something happened.",
+        "Information": "Information events describe things happening in the system that correspond to its responsibilities and functions",
+        "Warning": "When service is degraded, endangered, or may be behaving outside of its expected parameters, Warning level events are used.",
+        "Error": "When functionality is unavailable or expectations broken, an Error event is used.",
+        "Fatal": "The most critical level, Fatal events demand immediate attention."
+      }
+    }
+  },
+  "ClientCertificate": {
+    "Enabled": false,
+    "Description": "Enable this section if you want to enforce certificate authentication for front-end to back-end",
+    "Issuer": "<issuer name>",
+    "Subject": "<subject name>"
+  },
+  "Pool": {
+    "InitialSize": 5,
+    "MaxSize": 80
+  },
+  "RServePort": "9054",
+  "configured": "configured"
+}

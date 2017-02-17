@@ -1,0 +1,106 @@
+{
+  "Kestrel": {
+    "Port": 12800,
+    "Host": "localhost",
+    "HttpsEnabled": false,
+    "HttpsCertificate": {
+      "Enabled": false,
+      "Description": "Enable this section if you want to enable SSL on Kestrel",
+      "StoreName": "My",
+      "StoreLocation": "LocalMachine",
+      "SubjectName": ""
+    }
+  },
+  "Logging": {
+    "IncludeScopes": false,
+    "LogsPath": "",
+    "MaxLogsFilesNumber": 10,
+    "LogLevel": {
+      "Default": "Warning",
+      "System": "Warning",
+      "Microsoft": "Warning",
+      "Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerMiddleware": "Warning",
+      "AllowedLogLevels": {
+        "Verbose": "Verbose is the noisiest level, rarely (if ever) enabled for a production app.",
+        "Debug": "Debug is used for internal system events that are not necessarily observable from the outside, but useful when determining how something happened.",
+        "Information": "Information events describe things happening in the system that correspond to its responsibilities and functions",
+        "Warning": "When service is degraded, endangered, or may be behaving outside of its expected parameters, Warning level events are used.",
+        "Error": "When functionality is unavailable or expectations broken, an Error event is used.",
+        "Fatal": "The most critical level, Fatal events demand immediate attention."
+      }
+    }
+  },
+  "MaxNumberOfThreadsPerBatchExecution": 100,
+  "Authentication": {
+    "AdminPassword": "Y5XlDPBNk6IioDpoFrFQQEEBHpbqJEazeDY40Rwhs+jmdfsWGAJbzRXdhzUXVOBt",
+    "AzureActiveDirectory": {
+      "Enabled": false,
+      "Description": "Enable this section if you want to enable authentication via Azure AD",
+      "Values": [
+        {
+          "Authority": "https://login.windows.net/<yourtenant.com>",
+          "Audience": "<clientId>"
+        }
+      ]
+    },
+    "LDAP": {
+      "Enabled": false,
+      "Description": "Enable this section if you want to enable authentication via LDAP",
+      "Values": [
+        {
+          "Host": "<domain controller>",
+          "UseLDAPS": "True",
+          "BindFilter": "CN={0},DC=YOURDOMAIN,DC=COM",
+          "QueryUserDn": "CN=<read user>,DC=YOURDOMAIN,DC=COM",
+          "QueryUserPassword": "",
+          "SearchBase": "DC=YOURDOMAIN,DC=COM",
+          "SearchFilter": "cn={0}"
+        }
+      ]
+    },
+    "JWTKey": "eyJEIjoienY5OGFFOThmSmpsUm4vaktRS3ZucTY4eE10ZnNSek14ZDdhOXBIZU8zSHJLTDR0V2FCMUluaFhybU1lWXdyOTJVcGtnVm8wSkNnQlBSUEJ1RTRFWGpDYUZ6eGxZYjVOQkc5YlRGeDA4U0ZpRG1aVUk3Tmh3aTNQQVBhNjByRHRnNUQ2aWxDTHJQbW9PMXQ4eVdWcjBzVkNsYTlyemh5a0tCMWN4RWRqL0NMK1RvQnh2VTJCcDB3cEE0WkhPZHNOblBFV0IwcVZXbXNKemh3QTR0ZFZuemppallFSDgwN0hCRTViWWx1azdxUnVLQzRnZzlxMGg4aUZYWS9UcUs2eDVINzdobkZVZnRONEtsQnVQVURYbW1vTWRsMmhyTUkrU3VMSEtDRUd6ang0MjlSYlBHSVZveEd4QW1renVQTFVrM3kvRFN0T0JPMXpGd3I3M0p4cVFRPT0iLCJEUCI6Ikh5Q3hxSVNkVWVWbnFVZkpUT1ZRZlA3cmVVWkliR0RoV1dVSkJ6aWw1U0R1bWE5RTJhWmJOZFB0N3hVK3NBdDRLZ25PNG9SSHF1ejVPeEd1UTVJZ2RrWXp1bFE4cnJEbFA5aFVWYWxFK2JWMVBHOHE0cnF1YzM1MkZmRkZ5c2JZbUNwZDFoMm56dVg1aWdPbmtKV3VuWVczQWtvV25ZRlViWlpPL1k4VStzRT0iLCJEUSI6IkVrRnZMOUtpaUVocWJQUUpHL2s0SnlPY0pGeTdxTnZxZkNWK3JWWUJCQk9iRklZVVQ2bGJ1Y2Q2Vy9hWk9qOUJkREs3ajNROEpnekl0SzF5bHRIKzhxMzR2cHI5YklLWGI2b0hyMk0xWTFQTldLd2c1NmF1Um9NK1QreUE5azYzcisvZTlXOWFKUEhvNHhEemc2azYyVWx2NS8zSGRDTlVUQ3JwRXhXVlpyYz0iLCJFeHBvbmVudCI6IkFRQUIiLCJJbnZlcnNlUSI6IkpzM05kc05Tc2x3UE1iM2VsOHJSeDk5bUU4cUNET2NkbGhTMnBtcTJXa3l1KzUvSWJEcFBrMEYyelY1S3RYV3JjUXpSb2w0c2NYbnpMRHF6NEtuRjdEL0FZcUhwRnJFdEI5VEhVOHFkbGEvMm9aTDJoYVBIbXAwUmtTK2hBQUxRTmxTcVE1QVQxcVdyS0ZQdU4yL0dhOHk2Rkc1SGFwa1ZwR1FWVFJrRWJ0QT0iLCJNb2R1bHVzIjoiMjJiQ01ZaVU5M0dWUjBSTjhKYmZsRWZLS0lKQkduTXdpT2lGRzFBQ2NKMk9QS2JrMXRIOUIvalNTVStET01iZVJETC9yeTFNNzRXOFlzcGUyRm9UL1cvakptcE93YVdCYTBSbFZlcmZvVHNpejNIWjBaZ1Y4eVdaTHlnRzdhcDYxY05nL3JBWjlSZUJTOFB6VFNaNTdFT0dXdVVrNjdzdWpsMWJwOGU2RDVwK0dBWWhTcFREN254TW9vaGpxY3RsQXNMd1pZTklJbWpEdWRGbUU1YTNDTlM2UjVxYWk3cUhpUENRTEZ3QmNmNTgvOEpmdjJraEs1MlRSVU1Ra3oxOEUyYnBGV2dsd2NOK1JwOW5RQm1mK3B5dm94bDFSbzc3REtqdGcwWkFjaHQwbUJFbU5vMVJscngxODlnc1RsdndKSHhRcWx6a0NJWHZ4b3NwS2hZQWt3PT0iLCJQIjoiL240OGx2QlltMnloOENSY292VXZtRUNuV2Z6OUJPVmJTRUIxNnBlckcwekVDeXhvaGp2d2pIM1NHN0cveVNPRkI3cEg3amVDeVBac2xZM1d4MHMrR0wxaG5SL25rUXBZYkVBQmVBRFp4WkliSkd1S0JrODlRbFFiT1BRY2ZSVU95V3QvUDdwdzBPdFJ3Wkl3cmFVRk5rMU5hYzY0TWRHUUQ2d1hIaFlObVgwPSIsIlEiOiIzTE5VV3BFV2thN08vOGtoQW9TMGFXUnBOcFd6U2hMejlmelQ0cENGZFVrMFNHYk1YMGd0R3UxYWFEaUpMWC9TRXAxdXY1L1ZhdWxTTU81WjFRM1RXN1JxTDY3M0pVS2hWQlNQRDN2L3ZmRmtkNlBreWVqREwxZTd4UUpDNkRzMzVZaXBIMnNoZnVTT0dGd2RIbVpudWsrczlDSEpOMjR4ajZvY2hkejduMDg9In0=",
+    "JWTSigningCertificate": {
+      "Enabled": false,
+      "Description": "Enable this section if you want to sign the access token with a certificate instead of a randomly generated key",
+      "StoreName": "My",
+      "StoreLocation": "LocalMachine",
+      "SubjectName": "<subject name>"
+    }
+  },
+  "ConnectionStrings": {
+    "Description": "If both sqlserver and postgresql connection strings are provided, DeployR will use sqlserver connection. If no connection string is provided, the system will throw ConfigurationException.",
+    "sqlserver": {
+      "Enabled": false,
+      "Connection": "<connection string to your Microsoft SQL Server installation>"
+    },
+    "postgresql": {
+      "Enabled": false,
+      "Connection": "<connection string to your PostgreSQL installation>"
+    },
+    "defaultDb": {
+      "Enabled": true,
+      "Connection": "./deployrdb_9.0.0.db"
+    }
+  },
+  "BackEndConfiguration": {
+    "ClientCertificate": {
+      "Enabled": false,
+      "Description": "Enable this section if your backend(s) require certificate authentication",
+      "StoreName": "My",
+      "StoreLocation": "LocalMachine",
+      "SubjectName": "<subject name>"
+    },
+    "Uris": {
+      "Description": "Update 'Values' section to point to your backend machines. Using HTTPS is highly recommended",
+      "Values": [
+        "http://localhost:12805"
+      ]
+    }
+  },
+  "CORS": {
+    "Enabled": false,
+    "Origins": []
+  },
+  "AdminPassword": "Y5XlDPBNk6IioDpoFrFQQEEBHpbqJEazeDY40Rwhs+jmdfsWGAJbzRXdhzUXVOBt",
+  "configured": "configured"
+}
