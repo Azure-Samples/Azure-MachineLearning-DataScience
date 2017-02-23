@@ -57,6 +57,7 @@
         "imagePublisher": "microsoft-ads",
         "imageOffer": "linux-data-science-vm",
         "OSDiskName": "osdiskforlinuxsimple",
+        "DataDiskName": "datadiskforlinuxsimple",        
         "sku": "linuxdsvm",
         "nicName": "[parameters('vmName')]",
         "addressPrefix": "10.0.0.0/16",
@@ -194,7 +195,17 @@
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
-                    }
+                    },
+                    "dataDisks": [
+                        {
+                            "name": "data-0",
+                            "vhd": {
+                              "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('DataDiskName'), variables('vmName'), copyIndex(),  '.vhd')]"
+                            },
+                            "createOption": "fromImage",
+                            "lun": 0
+                        }
+                    ]                    
                 },
                 "networkProfile": {
                     "networkInterfaces": [
