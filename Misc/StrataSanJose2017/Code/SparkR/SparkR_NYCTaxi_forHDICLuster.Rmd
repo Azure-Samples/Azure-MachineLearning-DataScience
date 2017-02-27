@@ -7,7 +7,7 @@ output:
     fig_caption: yes
     fig_height: 4
     fig_width: 4
-    highlight: espresso
+    highlight: haddock
     keep_md: yes
     number_sections: yes
     theme: journal
@@ -18,18 +18,13 @@ runtime: knit
 
 <hr>
 #Introduction
-This Markdown document shows the use of <a href="https://spark.apache.org/docs/latest/sparkr.html" target="_blank">SparkR</a> for data wrangling, manipulation, and creating machine learning models. The data used for this exercise is the public NYC Taxi Trip and Fare data-set (2013, December, ~4 Gb, ~13 million rows) available from: http://www.andresmh.com/nyctaxitrips. Data for this exercise can be downloaded from the public blob (see below). The data can be uploaded to the blob (or other storage) attached to your HDInsight cluster (HDFS) and used as input into the scripts shown here.
+This Markdown document shows the use of <a href="https://spark.apache.org/docs/latest/sparkr.html" target="_blank">SparkR</a> for data wrangling, manipulation, and creating machine learning models. The data used for this exercise is the public NYC Taxi Trip and Fare data-set (2013,  ~45 Gb, ~140 million rows) available from: http://www.andresmh.com/nyctaxitrips. Data for this exercise can be downloaded from the public blob (see below). The data can be uploaded to the blob (or other storage) attached to your HDInsight cluster (HDFS) and used as input into the scripts shown here.
 
 We use Spark SQL for many of the data wrangling tasks. For plotting and visualization, small amounts of data from Spark dataframes are transformed to the local data frames.
 <hr>
 <br>
 
-#Using SparkR for data wrangling & manipulation
-SparkR is an R package that provides a light-weight frontend to use Apache Spark from R. In Spark 2.0, SparkR provides a distributed data frame implementation that supports operations like selection, filtering, aggregation etc. (similar to R data frames, dplyr) but on large datasets. SparkR also provides support for distributed machine learning using MLlib.
-
-<br>
-
-##Creating spark context / connections and loading required packages
+#Creating spark context / connections and loading required packages
 ```{r Load Packages, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
@@ -45,9 +40,9 @@ library(ggmap)
 ###########################################
 # CREATE SPARK CONTEXT
 ###########################################
-sparkEnvir <- list(spark.executor.instance = '4', spark.yarn.executor.memoryOverhead = '4000')
+#sparkEnvir <- list(spark.executor.instance = '12', spark.yarn.executor.memoryOverhead = '2048', spark.driver.memory = '12g')
 sc <- sparkR.session(
-  sparkEnvir = sparkEnvir,
+  #sparkEnvir = sparkEnvir,
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
 
@@ -58,40 +53,61 @@ fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi"
 ```
 <hr>
 
-##Reading in files from HDFS (csv or parquet format) and manipulate using SQL
+#Using SparkR for data wrangling & manipulation
+SparkR is an R package that provides a light-weight frontend to use Apache Spark from R. In Spark 2.0, SparkR provides a distributed data frame implementation that supports operations like selection, filtering, aggregation etc. (similar to R data frames, dplyr) but on large datasets. SparkR also provides support for distributed machine learning using MLlib.
+<br>
+
+##Reading in files from HDFS (csv or parquet)
 Data for this exercise can be downloaded from the public blob locations below: 
 <br>
-1. Trip (Csv): http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/KDD2016/trip_data_12.csv
+1. Trip (Csv): http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/combined_taxi_trip_w_header.csv (~19 Gb)
 <br>
-2. Fare (Csv): http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/KDD2016/trip_fare_12.csv
+2. Fare (Csv): http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/combined_taxi_fare_w_header.csv (~28 Gb)
 <br>
 The data can be uploaded to the blob (or other storage) attached to your HDInsight cluster (HDFS) and used as input into the scripts shown here. The csv files can be read into Spark context and saved in parquet format. Once saved in parquet format, data can be read in much more quickly than csv files.
 
 ###You can read in raw files in csv.
 ```{r Read in files, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
-# TRIP FILE (CSV format)
+# TRIP FILE (CSV format, or PARQUET format)
 ###########################################
-tripPath <- file.path(fullDataDir, "trip_data_12.csv")
-tripDF <- read.df(tripPath, source = "com.databricks.spark.csv", 
-                  header = "true", inferSchema = "true")
-SparkR::cache(tripDF); SparkR::count(tripDF)
+#tripPath <- file.path(fullDataDir, "combined_taxi_trip_w_header.csv")
+#tripDF <- read.df(tripPath, source = "com.databricks.spark.csv", 
+#                  header = "true", inferSchema = "true")
+#head(tripDF, 3)
+#printSchema(tripDF)
+
+#tripPathParquet <- file.path(fullDataDir, "CombinedTaxiTripParquet2013")
+#tripDFRepartitioned <- repartition(tripDF, 20) # write.df below will produce this many files
+#write.parquet(tripDFRepartitioned, tripPathParquet)
+
+tripPathParquet <- file.path(fullDataDir, "CombinedTaxiTripParquet2013")
+tripDF <- read.parquet(tripPathParquet)
 head(tripDF, 3)
 printSchema(tripDF)
 
 ###########################################
-# FARE FILE (parquet format)
+# FARE FILE (CSV or PARQUET format)
 ###########################################
-farePath <- file.path(fullDataDir, "trip_fare_12.csv")
-fareDF <- read.df(farePath, source = "com.databricks.spark.csv", 
-                  header = "true", inferSchema = "true")
-SparkR::cache(fareDF); SparkR::count(fareDF)
+#farePath <- file.path(fullDataDir, "combined_taxi_fare_w_header.csv")
+#fareDF <- read.df(farePath, source = "com.databricks.spark.csv", 
+#                  header = "true", inferSchema = "true")
+#head(fareDF, 3)
+#printSchema(fareDF)
+
+#farePathParquet <- file.path(fullDataDir, "CombinedTaxiFareParquet2013")
+#fareDFRepartitioned <- repartition(fareDF, 20) # write.df below will produce this many files
+#write.parquet(fareDFRepartitioned, farePathParquet)
+
+farePathParquet <- file.path(fullDataDir, "CombinedTaxiFareParquet2013")
+fareDF <- read.parquet(farePathParquet)
+SparkR::cache(fareDF); SparkR::count(fareDF);
 head(fareDF, 3)
 printSchema(fareDF)
 ```
 
 
-###Register tables and join using SQL. 
+##Join datasets using SQL 
 You can register dataframes as tables in SQLContext and join using multiple columns. The following SQL also filters the data for some outliers.
 ```{r Register tables, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
@@ -123,9 +139,25 @@ createOrReplaceTempView(trip_fareDF, "trip_fare")
 SparkR::cache(trip_fareDF); SparkR::count(trip_fareDF);
 
 ###########################################
+# WRITE JOINED FILE IN PARQUET FORMAT IN HDFS
+###########################################
+#tripfarePathParquet <- file.path(fullDataDir, "CombinedTaxi_Trip_and_Fare_Parquet2013")
+#tripfareDFRepartitioned <- repartition(trip_fareDF, 20) # write.df below will produce this many files
+#write.parquet(tripfareDFRepartitioned, tripfarePathParquet)
+
+###########################################
 # SHOW REGISTERED TABLES
 ###########################################
 head(SparkR::sql("show tables"))
+
+###########################################
+# IF THE JOINED FILE IS SAVED, YOU CAN DIRECTLY READ IT IN
+###########################################
+#tripfarePathParquet <- file.path(fullDataDir, "CombinedTaxi_Trip_and_Fare_Parquet2013")
+#trip_fareDF <- read.parquet(tripfarePathParquet)
+#head(trip_fareDF, 3)
+#printSchema(trip_fareDF)
+#createOrReplaceTempView(trip_fareDF, "trip_fare")
 ```
 
 
@@ -157,14 +189,14 @@ head(trip_fare_feat, 3)
 <hr>
 
 #Data visualization
-##Generating simple plots to inspect data and explore relationship between target and features
+##Data exploration and plotting
 For visualization, a small portion data will have to be sampled and brought into local memory as a data.frame object. R's plotting functions (e.g. from those in ggplot package) can then be applied to the data.frame for visualization.
 ```{r Exploration and visualization, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=4}
 ###########################################
 # SAMPLE SMALL PORTION OF DATA
 ###########################################
 trip_fare_featSampled <- SparkR::sample(trip_fare_feat, withReplacement=FALSE, 
-                                fraction=0.0001, seed=123)
+                                fraction=0.00001, seed=123)
 
 ###########################################
 # CONVERT SPARK DF TO LOCAL DATA.FRAME IN MEMORY OF R-SERVER EDGE NODE
@@ -192,8 +224,8 @@ scatter <- ggplot(trip_fare_featSampledDF, aes(tip_amount, trip_distance)) +
 grid.arrange(hist, scatter, ncol=2)
 ```
 
-##Advanced summarization using SQL and plotting:
-##Trips in NYC area during rush and non-rush hours
+##Advanced SQL summarization and plotting:
+###Trips in NYC area during rush and non-rush hours
 This section shows more examples of SQL and advanced plotting and visualization, using ggmap. We plot the number of trips by day of the month, as well as number of trips on the NY City map during rush and non-rush hours.
 ```{r Advanced SQL and Visualization 1, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=4}
 ###########################################
@@ -223,15 +255,16 @@ nyc_map13 <- get_map(location=c(nyc_geocode$lon, nyc_geocode$lat), zoom=13)
 
 trips_2014_June_18_5am <- SparkR::sql("select * from trip_fare where hour(pickup_datetime) = 5 and day(pickup_datetime) = 11 and month(pickup_datetime) = 12 and year(pickup_datetime) = 2013 and trip_distance > 2")
 trips_2014_June_18_5amDF <- as.data.frame(trips_2014_June_18_5am)
-map1 <- ggmap(nyc_map13) + geom_point(data=trips_2014_June_18_5amDF, aes(pickup_longitude, pickup_latitude), color="darkred", alpha=0.02)
+map1 <- ggmap(nyc_map13) + geom_point(data=trips_2014_June_18_5amDF, aes(pickup_longitude, pickup_latitude), color="darkred", alpha=0.04)
 
 
 trips_2014_June_18_5pm <- SparkR::sql("select * from trip_fare where hour(pickup_datetime) = 17 and day(pickup_datetime) = 11 and month(pickup_datetime) = 12 and year(pickup_datetime) = 2013 and trip_distance > 2")
 trips_2014_June_18_5pmDF <- as.data.frame(trips_2014_June_18_5pm)
-map2 <- ggmap(nyc_map13) + geom_point(data=trips_2014_June_18_5pmDF, aes(pickup_longitude, pickup_latitude), color="darkred", alpha=0.02)
+map2 <- ggmap(nyc_map13) + geom_point(data=trips_2014_June_18_5pmDF, aes(pickup_longitude, pickup_latitude), color="darkred", alpha=0.04)
 
 grid.arrange(map1, map2, ncol=2)
 ```
+
 ###Net exflux from NY City during AM and PM rush hours
 This section examples of advanced SQL, as well as plotting. Nex efflux is shown on NY City maps during morning and evening rush hours.
 ```{r Advanced SQL and Visualization 2, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=4}
@@ -289,14 +322,14 @@ evening_efflux <- SparkR::sql("select lon, lat, sum(flux) as net_flux from
       ) piecewise_flux
       group by lon, lat")
 evening_efflux <- as.data.frame(evening_efflux)
-map2 <- ggmap(nyc_map13) + geom_point(data=evening_efflux, aes(lon, lat, color=net_flux), alpha = 0.4, size=0.5) + scale_color_continuous(low="blue", high="red")
+map2 <- ggmap(nyc_map13) + geom_point(data=evening_efflux, aes(lon, lat, color=net_flux), alpha = 0.4, size=0.5) + scale_color_continuous(low="red", high="darkgreen")
 
 grid.arrange(map1, map2, ncol=2)
 ```
 
 
 #Modeling with SparkR
-##Down-sample data for modeling
+##Down-sampling data for modeling
 If a data-set is large, it may need to be down-sampled for modeling in reasonable amount of time. Here we used the <b>sample</b> function from SparkR to down-sample the joined trip-fare data. We then save the data in HDFS for use as input into the sparklyr modeling functions.
 ```{r Downsample data for training, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
@@ -304,19 +337,23 @@ If a data-set is large, it may need to be down-sampled for modeling in reasonabl
 ###########################################
 trip_fare_featSampled <- sample(trip_fare_feat, withReplacement=FALSE, 
                                 fraction=0.1, seed=123)
+SparkR::cache(trip_fare_featSampled); SparkR::count(trip_fare_featSampled);
+createOrReplaceTempView(trip_fare_featSampled, "trip_fare_featSampled")
 ```
 
-
-##Create a SparkR::glm model, and evaluate on a test set
-Partition data into train/test, and train a glm model and evaluate it.
-```{r Partition data, glm train and evaluate, message=FALSE, warning=FALSE, echo=TRUE, fig.width=4, fig.height=4}
+##Partition data into train/test
+```{r Partition data, message=FALSE, warning=FALSE, echo=TRUE, fig.width=5, fig.height=4}
 ###########################################
 # PARTITION DATA INTO TRAIN-TEST USIN SQL
 ###########################################
-dfrand <- SparkR::sql("SELECT *, RAND() as randnum from trip_fare_feat" );
-trainDF <- SparkR::filter(dfrand, dfrand$randnum <= 0.7)
-testDF <- SparkR::filter(dfrand, dfrand$randnum > 0.7)
+dfrand <- SparkR::sql("SELECT *, RAND() as randnum from trip_fare_featSampled" );
+trainDF <- SparkR::filter(dfrand, dfrand$randnum <= 0.75)
+testDF <- SparkR::filter(dfrand, dfrand$randnum > 0.75)
+```
 
+##Create a SparkR::glm model
+Train a glm model.
+```{r Glm train, message=FALSE, warning=FALSE, echo=TRUE, fig.width=5, fig.height=4}
 ########################################### 
 ## CREATE GLM MODEL
 ###########################################
@@ -324,17 +361,25 @@ model <- SparkR::glm(tip_amount ~ payment_type + pickup_hour +
                     fare_amount + passenger_count + trip_distance + 
                     trip_time_in_secs + TrafficTimeBins, 
                     data = trainDF, family = "gaussian", 
-                    epsilon = 1e-06, maxit = 5)
+                    epsilon = 1e-05, maxit = 10)
 print (summary(model));
+```
 
+##Evaluate predictions on test set
+```{r Evaluate glm model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=5, fig.height=4}
 ########################################### 
 ## PREDICT ON TEST SET, AND EVALUATE ACCURACY
 ###########################################
 predictions <- SparkR::predict(model, newData = testDF)
 predfilt <- SparkR::select(predictions, c("label","prediction"))
-predfilt_local <- SparkR::collect(predfilt)
+SparkR::cache(predfilt); SparkR::count(predfilt);
 
-# Evaluate and plot predictions (R-sqr)
+## SAMPLE PREDICTIONS FOR EVALUATION USINGS R DATAFRAME
+predfiltSampled <- sample(predfilt, withReplacement=FALSE, 
+                                fraction=0.01, seed=123)
+predfilt_local <- as.data.frame(predfiltSampled)
+
+# EVALUATE AND PLOT PREDICTIONS (R-sqr)
 Rsqr = cor(predfilt_local$label, predfilt_local$prediction)^2; Rsqr;
 
 # Sample predictions for plotting
@@ -346,7 +391,7 @@ ggplot(predictedSampled, aes(label, prediction)) + geom_point(col='darkgreen', a
 ```
 
 
-#Save data & model, and exit Spark
+#Save data & model
 ##Save model for deployment
 Partition data into train/test, and train a glm model and evaluate it.
 ```{r Persist model, message=FALSE, warning=FALSE, echo=TRUE}
@@ -357,25 +402,44 @@ modelPath =  file.path(fullDataDir, "SparkGlmModel");
 write.ml(model, modelPath) 
 ```
 
+##Save predictions to CSV
+```{r Save predictions to csv, message=FALSE, warning=FALSE, echo=TRUE}
+###########################################
+## REPARTITION DATA FOR SAVING, AND WRITE TO CSV
+###########################################
+predictFile <- file.path(fullDataDir, "SparkRGLMPredictions")
+predfiltRepartition <- repartition(predfilt, 10)
+
+write.df(df=predfiltRepartition, path=predictFile, 
+        source = "com.databricks.spark.csv", 
+        mode = "overwrite")
+```
+
 ##Save joined and sampled data
 Repartition the data in specific number of chunks and save
-```{r Downsample and save data, message=FALSE, warning=FALSE, echo=TRUE}
+```{r Save data, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
-# REPARTITION DATA FOR SAVING
+# REPARTITION DATA FOR SAVING, AND WRITE TO PARQUET FILE
 ###########################################
-trip_fare_featSampledRepartitioned <- repartition(trip_fare_featSampled, 10) # write.df below will produce this many files
+joinedFilePath <- file.path(fullDataDir, "NYCjoinedParquetSubset")
 
-###########################################
-# SAVE DATAFRANE AS PARQUET file
-###########################################
+trip_fare_featSampledRepartitioned <- repartition(trip_fare_featSampled, 10) # write.df below will produce this many files
 write.df(df=trip_fare_featSampledRepartitioned, 
-         path=file.path(fullDataDir, "NYCjoinedParquetSubset"), 
+         path=joinedFilePath, 
          source="parquet", mode="overwrite")
 
+```
+
+#Clear cache and exit
+```{r Clear chace and exit Spark, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
-# UNPERSIST CACHED DATA FRAME
+# UNPERSIST CACHED DATA FRAMES
 ###########################################
+SparkR::unpersist(fareDF)
+SparkR::unpersist(trip_fareDF)
 SparkR::unpersist(trip_fare_feat)
+SparkR::unpersist(trip_fare_featSampled)
+SparkR::unpersist(predfilt)
 
 ###########################################
 # STOP SPARKR CONTEXT
