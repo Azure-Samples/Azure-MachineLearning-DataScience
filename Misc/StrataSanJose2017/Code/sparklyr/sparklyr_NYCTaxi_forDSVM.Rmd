@@ -144,7 +144,8 @@ Create a random forest model using training data, and evaluate on test data-set
 fit <- partitions$training %>% 
           ml_random_forest(response = "tip_amount",
                            features = c("pay_type_bin", "fare_amount", "pickup_hour", 
-                                        "passenger_count",  "trip_distance", "TrafficTimeBins"), 
+                                        "passenger_count",  "trip_distance", 
+                                        "TrafficTimeBins"), 
                            max.bins = 500L, max.depth = 5L, num.trees = 50L)
 
 # Show summary of fitted Random Forest model
@@ -189,7 +190,8 @@ Create a gradient boosted tree model using training data, and evaluate on test d
 # Fit Gradient Boosted Tree regression model
 fit <- partitions$training %>% 
         ml_gradient_boosted_trees(tip_amount ~ pay_type_bin + pickup_hour + 
-                                    passenger_count + trip_distance + TrafficTimeBins, 
+                                    passenger_count + trip_distance + 
+                                    TrafficTimeBins, 
                                   max.bins = 32L, max.depth = 3L, 
                                   type = "regression")
 
