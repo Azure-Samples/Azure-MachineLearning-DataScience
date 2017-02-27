@@ -1,4 +1,5 @@
-
+>
+* Command line to connect with ssh (Linux, Mac) - replace XXX with the number of your cluster
 This folder has content for the Strata San Jose March 2017 tutorial "Scalable Data Science with R, from Single Nodes to Spark Clusters".
 
 ## Tutorial link (Strata San Jose, March 2017)
@@ -10,7 +11,7 @@ On Windows, download [plink.exe](https://the.earth.li/~sgtatham/putty/latest/x86
 from http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 
 ## Connecting to the Data Science Virtual Machine (with Spark 2.0.2) on Microsoft Azure
-* Command line to connect with ssh (Linux, Mac) - replace XXX with the number of your cluster
+* Command line to connect with ssh (Linux, Mac) - replace IPaddress IP of your DSVM
 ```bash
 ssh -L localhost:8787:localhost:8787 remoteuser@IPaddress
 ```
@@ -22,9 +23,11 @@ cd directory-containing-plink.exe
 * After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server on the edge node of your cluster
 
 ## Connecting to R server operationalization service on your DSVM
+* Command line to connect with ssh (Linux, Mac) - replace IPaddress IP of your DSVM
 ```bash
 .\plink.exe -L localhost:12800:localhost:12800 remoteuser@IPaddress
 ```
+<hr>
 
 ## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
 * for _Exploration and visualization using SparkSQL and R_
