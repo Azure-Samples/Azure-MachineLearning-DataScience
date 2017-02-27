@@ -11,14 +11,19 @@ from http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 ## Connecting to the Data Science Virtual Machine (with Spark 2.0.2) on Microsoft Azure
 * Command line to connect with ssh (Linux, Mac) - replace XXX with the number of your cluster
 ```bash
-ssh -L localhost:8787:localhost:8787 remoteuser@r-server.kddXXX-ssh.azurehdinsight.net
+ssh -L localhost:8787:localhost:8787 remoteuser@IPaddress
 ```
 * Command line to connect with plink.exe (Windows) - run the following commands in a Windows command prompt window - replace XXX with the number of your cluster
 ```bash
 cd directory-containing-plink.exe
-.\plink.exe -L localhost:8787:localhost:8787 remoteuser@r-server.kddXXX-ssh.azurehdinsight.net
+.\plink.exe -L localhost:8787:localhost:8787 remoteuser@IPaddress
 ```
 * After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server on the edge node of your cluster
+
+## Connecting to R server operationalization service on your DSVM
+```bash
+.\plink.exe -L localhost:12800:localhost:12800 remoteuser@IPaddress
+```
 
 ## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
 * for _Exploration and visualization using SparkSQL and R_
@@ -34,6 +39,12 @@ cd directory-containing-plink.exe
 
 * for _Parallel models: training many parallel models for hierarchical time series optimization_
  * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/UseCaseHTS)
+
+* SparkR (Spark 2.0.2): https://spark.apache.org/docs/2.0.2/api/R/index.html
+
+* sparklyR: http://spark.rstudio.com/
+
+* R-Server Operationalization service: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial
 
 ## Video Record of an earlier version of this tutorial (presented at the KDD conference in August 2016)
 http://videolectures.net/kdd2016_tutorial_scalable_r_on_spark/?q=Spark
