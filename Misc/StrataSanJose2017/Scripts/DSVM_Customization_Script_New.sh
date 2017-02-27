@@ -41,6 +41,8 @@ hadoop fs -mkdir /user/RevoShare/rserve2/Predictions
 hadoop fs -chmod -R 777 /user/RevoShare/rserve2
 
 hadoop fs -mkdir /user/RevoShare/remoteuser
+
+
 #######################################################################################################################################
 # Copy data and code to VM
 #######################################################################################################################################
@@ -56,11 +58,14 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/MRS/azureml-settings.json
 
 cd
+cd Code/SparkR
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/SparkR/SparkR_NYCTaxi_forDSVM.Rmd
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/SparkR/SparkR_NYCTaxi_forDSVM.html
+
+cd
 cd Code/sparklyr
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/sparklyr/SparkR_sparklyr_NYCTaxi.Rmd
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/sparklyr/SparkR_sparklyr_NYCTaxi.html
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/sparklyr/sparklyr_NYCTaxi.Rmd
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/sparklyr/sparklyr_NYCTaxi.html
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/sparklyr/sparklyr_NYCTaxi_forDSVM.Rmd
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/sparklyr/sparklyr_NYCTaxi_forDSVM.html
 
 ## DOWNLOAD ALL DATA FILES
 # NYC Taxi data
@@ -101,4 +106,3 @@ sudo Revo64-9.0 --vanilla --quiet  <  ~/InstallPackages.R
 ## END
 #######################################################################################################################################
 #######################################################################################################################################
-
