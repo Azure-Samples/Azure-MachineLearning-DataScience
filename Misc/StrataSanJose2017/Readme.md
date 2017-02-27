@@ -1,3 +1,4 @@
+
 This folder has content for the Strata San Jose March 2017 tutorial "Scalable Data Science with R, from Single Nodes to Spark Clusters".
 
 ## Tutorial link (Strata San Jose, March 2017)
@@ -45,6 +46,6 @@ cd directory-containing-plink.exe
 * sparklyR: http://spark.rstudio.com/
 
 * R-Server Operationalization service: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial
-
+<hr>
 ## Video Record of an earlier version of this tutorial (presented at the KDD conference in August 2016)
 http://videolectures.net/kdd2016_tutorial_scalable_r_on_spark/?q=Spark
