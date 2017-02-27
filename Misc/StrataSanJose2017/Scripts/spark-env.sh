@@ -37,10 +37,10 @@ HADOOP_CONF_DIR=/opt/hadoop/hadoop-2.7.3/etc/hadoop
 
 # Options read in YARN client mode
 HADOOP_CONF_DIR=/opt/hadoop/hadoop-2.7.3/etc/hadoop
-SPARK_EXECUTOR_INSTANCES=2
+SPARK_EXECUTOR_INSTANCES=3
 SPARK_EXECUTOR_CORES=1
 SPARK_EXECUTOR_MEMORY=2G
-SPARK_DRIVER_MEMORY=4G
+SPARK_DRIVER_MEMORY=6G
 
 # Options for the daemons used in the standalone deploy mode
 # - SPARK_MASTER_HOST, to bind the master to a different IP address or hostname
