@@ -98,8 +98,8 @@ library(mrsdeploy)
 #ssh -L localhost:12800:localhost:12800 remoteuser@DebrajSpark2-ed-ssh.azurehdinsight.net
 remoteLogin(
   "http://127.0.0.1:12800",
-  username = "admin",
-  password = "Strata2017@SJC",
+  username = "****",
+  password = "*******",
   session = FALSE
 )
 listServices()
