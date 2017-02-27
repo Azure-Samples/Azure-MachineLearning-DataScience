@@ -7,7 +7,7 @@ output:
     fig_caption: yes
     fig_height: 4
     fig_width: 4
-    highlight: espresso
+    highlight: haddock
     keep_md: yes
     number_sections: yes
     theme: journal
@@ -18,7 +18,9 @@ runtime: knit
 
 <hr>
 #Introduction
-This Markdown document shows the use of <a href="http://spark.rstudio.com/index.html" target="_blank">sparklyr</a> for feature engineering and creating machine learning models. The data used for this exercise is the public NYC Taxi Trip and Fare data-set (2013, December, ~4 Gb, ~13 million rows) available from: http://www.andresmh.com/nyctaxitrips. Data for this exercise can be downloaded from the public blob (see below). The data can be uploaded to the blob (or other storage) attached to your HDInsight cluster (HDFS) and used as input into the scripts shown here.
+This Markdown document shows the use of <a href="http://spark.rstudio.com/index.html" target="_blank">sparklyr</a> for feature engineering and creating machine learning models. The data used for this exercise is the public NYC Taxi Trip and Fare data-set (2013, sampled to about ~13 million rows) available from: http://www.andresmh.com/nyctaxitrips. Data for this exercise can be downloaded from the public blob (see below). The data can be uploaded to the blob (or other storage) attached to your HDInsight cluster (HDFS) and used as input into the scripts shown here.
+
+sparklyr provides bindings to Spark’s distributed machine learning library. In particular, sparklyr allows you to access the machine learning routines provided by the spark.ml package. Together with sparklyr’s dplyr interface, you can easily create and tune machine learning workflows on Spark, orchestrated entirely within R.
 
 Where necessary, small amounts of data is brought to the local data frames for plotting and visualization. 
 <hr>
@@ -26,7 +28,7 @@ Where necessary, small amounts of data is brought to the local data frames for p
 
 <br>
 
-##Creating spark context / connections and loading required packages
+#Creating spark context / connections and loading required packages
 ```{r Load Packages, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
@@ -53,20 +55,18 @@ fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi"
 ```
 <hr>
 <br>
-<br>
-
-#Using sparklyr for creating ML models
-sparklyr provides bindings to Spark’s distributed machine learning library. In particular, sparklyr allows you to access the machine learning routines provided by the spark.ml package. Together with sparklyr’s dplyr interface, you can easily create and tune machine learning workflows on Spark, orchestrated entirely within R.
 
 <br>
-##Load joined trip-fare data in sparklyr spark connection and cache in memory
-If a data-set is large, it may need to be down-sampled for modeling in reasonable amount of time. Here we used the <b>sample</b> function from SparkR to down-sample the joined tax-fare data. We then save the data in HDFS for use as input into the sparklyr modeling functions.
+#Load trip-fare data and cache in memory
+The taxi and fare files were previously joined using SparkR SQL and down-sampled to about 10% of the full dataset.
 ```{r Load data in sparklyr dataframe, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # LOAD SAMPLED JOINED TAXI DATA FROM HDFS, CACHE
 ###########################################
+joinedFilePath <- file.path(fullDataDir, "NYCjoinedParquetSubset")
 joinedDF <- spark_read_parquet(sp, name = "joined_table", 
-                               path = file.path(fullDataDir, "NYCjoinedParquetSubset"), memory = TRUE, overwrite = TRUE)
+                               path = joinedFilePath, memory = TRUE, 
+                               overwrite = TRUE)
 tbl_cache(sp, "joined_table")
 head(joinedDF, 3)
 
@@ -77,46 +77,59 @@ count(joinedDF)
 ```
 
 <hr>
-##Use feature transformation functions from sparklyr
+#Transformations using sparklyr functions
 Spark provides feature transformers, faciliating many common transformations of data within in a Spark DataFrame, and sparklyr exposes these within the <a href="http://spark.rstudio.com/mllib.html#transformers" target="_blank">ft_* family of functions</a>. These routines generally take one or more input columns, and generate a new output column formed as a transformation of those columns. Here, we show the use of two such functions to bucketize (categorize) or binarize features. Payment type (CSH or CRD) is binarized using string-indexer and binerizer functions. And, traffic-time bins is bucketized using the bucketizer function.
 ```{r Using ft_ functions for feature transformation, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # CREATE TRANSFORMED FEATURES, BINARIZE PAYMENT-TYPE
 ###########################################
 # Binarizer
-joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', output_col = 'payment_ind') %>% ft_binarizer(input_col = 'payment_ind', output_col = 'pay_type_bin', threshold = 0.5)
+joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', 
+                                            output_col = 'payment_ind') %>% 
+                                            ft_binarizer(input_col = 'payment_ind', 
+                                                        output_col = 'pay_type_bin', 
+                                                        threshold = 0.5)
+head(joinedDF2)
 ```
 
 <hr>
-##Create train-test partitions
+#Create train-test partitions
 Data can be partitioned into training and testing using the <b>sdf_partition</b> function. 
 ```{r Partition data into train/test, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # CREATE TRAIN/TEST PARTITIONS
 ###########################################
-partitions <- joinedDF2 %>% sdf_partition(training = 0.7, test = 0.2, seed = 1099)
-head(joinedDF2)
+partitions <- joinedDF2 %>% sdf_partition(training = 0.75, 
+                                          test = 0.25, seed = 123)
 ```
 <hr>
-
-##Creating ML models
+#Using sparklyr for creating ML models
 Spark’s machine learning library can be accessed from sparklyr through the <a href="http://spark.rstudio.com/mllib.html#algorithms" target="_blank">ml_* family of functions</a>. Here we create ML models for the prediction of tip-amount for taxi trips.
 
-###Creating Elastic Net model
+##Creating Elastic Net model
 Create a elastic net model using training data, and evaluate on test data-set
 ```{r Elastic net modeo, message=FALSE, warning=FALSE, echo=TRUE, fig.width=5, fig.height=4}
-# Fit elastic net regression model
-fit <- partitions$training %>% ml_linear_regression(tip_amount ~ pay_type_bin + pickup_hour + passenger_count + trip_distance + TrafficTimeBins, alpha = 0.5, lambda = 0.01)
-#fit <- partitions$training %>% ml_linear_regression(response = "tip_amount", features = c("pay_type_bin", "fare_amount", "pickup_hour", "passenger_count", "trip_distance", "TrafficTimeBins"), alpha = 0.5, lambda = 0.01)
+###########################################
+# FIT ELASTIC NET REGRESSION MODEL
+###########################################
+fit <- partitions$training %>% 
+      ml_linear_regression(tip_amount ~ 
+                          pay_type_bin + pickup_hour + passenger_count + 
+                          trip_distance + TrafficTimeBins, alpha = 0.5, lambda = 0.01)
 
-# Show summary of fitted Elastic Net model
+###########################################
+# SHOW MODEL SUMMARY
+###########################################
 summary(fit)
 
-# Predict on test data and keep predictions in Spark context
+###########################################
+# PREDICT ON TEST DATA, AND EVALUATE
+###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
-predictedDF <- as.data.frame(predictedVals)
+predictedValsSampled <- sdf_sample(x=predictedVals, 
+                                   fraction=0.01, replacement=FALSE, seed=123)
+predictedDF <- as.data.frame(predictedValsSampled)
 
-# Evaluate and plot predictions (R-sqr)
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
 
 # Sample predictions for plotting
@@ -124,30 +137,53 @@ predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot actual vs. predicted tip amounts
 lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
-ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+ggplot(predictedDFSampled, aes(tip_amount, prediction)) + 
+  geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
+  geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], 
+                  intercept = summary(lm_model)$coefficients[1,1]), 
+              color = "red")
+
+###########################################
+# SAVE PREDICTIONS TO A CSV FILE IN HDFS
+###########################################
+sparklyRPredictionsPath <- file.path(fullDataDir, "sparklyRElasticNetPredictions")
+spark_write_csv(predictedVals, sparklyRPredictionsPath)
 ```
 
-###Creating Random Forest Model
+##Creating Random Forest Model
 Create a random forest model using training data, and evaluate on test data-set
 ```{r Random forest model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
-# Fit Random Forest regression model
-fit <- partitions$training %>% ml_random_forest(response = "tip_amount", features = c("pay_type_bin", "fare_amount", "pickup_hour", "passenger_count",  "trip_distance", "TrafficTimeBins"), max.bins = 500L, max.depth = 5L, num.trees = 50L)
+###########################################
+# FIT RANDOM FOREST REGRESSION MODEL
+###########################################
+fit <- ml_random_forest(x=partitions$training, 
+                        response = "tip_amount", 
+                        features = c("pay_type_bin", "fare_amount", 
+                                     "pickup_hour", "passenger_count",  
+                                     "trip_distance", "TrafficTimeBins"), 
+                        max.bins = 32L, max.depth = 5L, num.trees = 25L)
 
-# Show summary of fitted Random Forest model
+###########################################
+# SHOW SUMMARY OF RANDOM FOREST MODEL
+###########################################
 summary(fit)
 
-# Get feature importance of RF model
+###########################################
+# PLOT FEATURE IMPORTANCE
+###########################################
 feature_importance <- ml_tree_feature_importance(sp, fit) %>%
     mutate(importance = as.numeric(levels(importance))[importance]) %>%
     mutate(feature = as.character(feature));
 
 plot1 <- feature_importance %>%
   ggplot(aes(reorder(feature, importance), importance)) + 
-  geom_bar(stat = "identity") + coord_flip() + xlab("") +
+  geom_bar(stat = "identity", fill = 'darkgreen') + coord_flip() + xlab("") +
   ggtitle("Feature Importance")
 
 
-# Predict on test data and keep predictions in Spark context
+###########################################
+# PREDICT ON TEST SET AND EVALUATE
+###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
 predictedDF <- as.data.frame(predictedVals)
 
@@ -159,34 +195,47 @@ predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot
 lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
-plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) + 
+  geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
+  geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], 
+                  intercept = summary(lm_model)$coefficients[1,1]), color = "red")
 
 grid.arrange(plot1, plot2, ncol=2)
 ```
 
 
-###Creating Gradient Boosted Tree Model
+##Creating Gradient Boosted Tree Model
 Create a gradient boosted tree model using training data, and evaluate on test data-set
 ```{r Boosted tree model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
-# Fit Gradient Boosted Tree regression model
-#fit <- partitions$training %>% ml_gradient_boosted_trees(response = "tip_amount", features = c("pay_type_bin", "fare_amount","pickup_hour","passenger_count","trip_distance","TrafficTimeBuc"), max.bins = 32L, max.depth = 3L, type = "regression")
-fit <- partitions$training %>% ml_gradient_boosted_trees(tip_amount ~ pay_type_bin + pickup_hour + passenger_count + trip_distance + TrafficTimeBins, max.bins = 32L, max.depth = 3L, type = "regression")
+###########################################
+# FIT GRADIENT BOOSTED TREE REGRESSION MODEL
+###########################################
+fit <- partitions$training %>% 
+       ml_gradient_boosted_trees(tip_amount ~ 
+                                pay_type_bin + pickup_hour + passenger_count + 
+                                trip_distance + TrafficTimeBins, 
+                                max.bins = 32L, max.depth = 3L, type = "regression")
 
-
-# Show summary of fitted Random Forest model
+###########################################
+# SHOW SUMMARY OF MODEL
+###########################################
 summary(fit)
 
-# Get feature importance of GBT model
+###########################################
+# PLOT FEATURE IMPORTANCE OF GBT MODEL
+###########################################
 feature_importance <- ml_tree_feature_importance(sp, fit) %>%
     mutate(importance = as.numeric(levels(importance))[importance]) %>%
     mutate(feature = as.character(feature));
 
 plot1 <- feature_importance %>%
   ggplot(aes(reorder(feature, importance), importance)) + 
-  geom_bar(stat = "identity") + coord_flip() + xlab("") +
+  geom_bar(stat = "identity", fill = 'darkgreen') + coord_flip() + xlab("") +
   ggtitle("Feature Importance")
 
-# Predict on test data and keep predictions in Spark context
+###########################################
+# PREDICT ON TEST SET AND EVALUATE
+###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
 predictedDF <- as.data.frame(predictedVals)
 
@@ -198,9 +247,21 @@ predictedDFSampled <- predictedDF[base::sample(1:nrow(predictedDF), 1000),]
 
 # Plot
 lm_model <- lm(prediction ~ tip_amount, data = predictedDFSampled)
-plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) + 
+  geom_point(col='darkgreen', alpha=0.3, pch=19, cex=2) + 
+  geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], 
+                  intercept = summary(lm_model)$coefficients[1,1]), 
+              color = "red")
 
 grid.arrange(plot1, plot2, ncol=2)
+```
+
+#Uncache objects, and disconnect Spark session
+```{r Uncache objects and disconnect Spark, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
+###########################################
+# UNCACHE TABLES
+###########################################
+tbl_uncache(sp, "joined_table")
 
 ###########################################
 # DISCONNECT SPARK CONNECTION
