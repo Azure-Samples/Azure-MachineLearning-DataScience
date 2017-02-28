@@ -15,7 +15,7 @@ chown hadoop /opt/hadoop/.ssh/authorized_keys
 #######################################################################################################################################
 ## Start up several services, yarn, hadoop, rstudio server
 #######################################################################################################################################
-sudo systemctl start hadoop-namenode hadoop-datanode hadoop-yarn rstudio-server
+systemctl start hadoop-namenode hadoop-datanode hadoop-yarn rstudio-server
 
 #######################################################################################################################################
 ## MRS Deploy Setup
@@ -24,17 +24,17 @@ cd
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/backend_appsettings.json
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/webapi_appsettings.json
 
-sudo mv backend_appsettings.json /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.BackEnd/appsettings.json
-sudo mv webapi_appsettings.json /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.WebAPI/appsettings.json
+mv backend_appsettings.json /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.BackEnd/appsettings.json
+mv webapi_appsettings.json /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.WebAPI/appsettings.json
 
-sudo cp /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.WebAPI/autoStartScriptsLinux/*    /etc/systemd/system/.
-sudo cp /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.BackEnd/autoStartScriptsLinux/*   /etc/systemd/system/.
-sudo systemctl enable frontend
-sudo systemctl enable rserve
-sudo systemctl enable backend
-sudo systemctl start frontend
-sudo systemctl start rserve
-sudo systemctl start backend
+cp /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.WebAPI/autoStartScriptsLinux/*    /etc/systemd/system/.
+cp /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.BackEnd/autoStartScriptsLinux/*   /etc/systemd/system/.
+systemctl enable frontend
+systemctl enable rserve
+systemctl enable backend
+systemctl start frontend
+systemctl start rserve
+systemctl start backend
 
 hadoop fs -mkdir /user/RevoShare/rserve2
 hadoop fs -mkdir /user/RevoShare/rserve2/Predictions
@@ -93,13 +93,14 @@ cd
 cd Data
 hadoop fs -mkdir /user/RevoShare/remoteuser/Data
 hadoop fs -copyFromLocal * /user/RevoShare/remoteuser/Data
+
 #######################################################################################################################################
 #######################################################################################################################################
 # Install R packages
 cd
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/InstallPackages.R
 cd /usr/bin
-sudo Revo64-9.0 --vanilla --quiet  <  ~/InstallPackages.R
+Revo64-9.0 --vanilla --quiet  <  ~/InstallPackages.R
 
 #######################################################################################################################################
 #######################################################################################################################################
