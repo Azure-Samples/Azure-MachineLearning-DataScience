@@ -4,4 +4,4 @@ install.packages("gridExtra", repos='http://cran.us.r-project.org', dependencies
 install.packages("rmarkdown", repos='http://cran.us.r-project.org', dependencies=TRUE)
 install.packages("knitr", repos='http://cran.us.r-project.org', dependencies=TRUE)
 install.packages("formatR", repos='http://cran.us.r-project.org', dependencies=TRUE)
-install.packages("ggmap", repos='http://cran.us.r-project.org', dependencies=TRUE)
+#install.packages("ggmap", repos='http://cran.us.r-project.org', dependencies=TRUE)
