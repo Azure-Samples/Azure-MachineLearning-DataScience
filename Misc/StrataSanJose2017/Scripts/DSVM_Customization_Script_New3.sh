@@ -14,3 +14,4 @@ cd /home/remoteuser
 /opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser
 /opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser/Data
 /opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser/Models
+#/var/lib/waagent/custom-script/download/0
