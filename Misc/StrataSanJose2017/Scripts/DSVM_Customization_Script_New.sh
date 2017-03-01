@@ -36,12 +36,6 @@ systemctl start frontend
 systemctl start rserve
 systemctl start backend
 
-hadoop fs -mkdir /user/RevoShare/rserve2
-hadoop fs -mkdir /user/RevoShare/rserve2/Predictions
-hadoop fs -chmod -R 777 /user/RevoShare/rserve2
-
-hadoop fs -mkdir /user/RevoShare/remoteuser
-
 
 #######################################################################################################################################
 # Copy data and code to VM
@@ -93,7 +87,14 @@ rm WeatherSubsetCsv.tar AirlineSubsetCsv.tar
 ## Copy data to HDFS
 cd /home/remoteuser
 cd Data
+
+hadoop fs -mkdir /user/RevoShare/rserve2
+hadoop fs -mkdir /user/RevoShare/rserve2/Predictions
+hadoop fs -chmod -R 777 /user/RevoShare/rserve2
+hadoop fs -mkdir /user/RevoShare/remoteuser
 hadoop fs -mkdir /user/RevoShare/remoteuser/Data
+hadoop fs -mkdir /user/RevoShare/remoteuser/Models
+
 hadoop fs -copyFromLocal * /user/RevoShare/remoteuser/Data
 
 #######################################################################################################################################
