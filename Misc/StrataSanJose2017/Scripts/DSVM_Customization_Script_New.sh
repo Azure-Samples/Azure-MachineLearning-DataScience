@@ -4,6 +4,8 @@
 ## SAN JOSE 2017 EXERCISES.
 #######################################################################################################################################
 #######################################################################################################################################
+#!/bin/bash
+source /etc/profile.d/hadoop.sh
 
 #######################################################################################################################################
 ## Setup autossh for hadoop service account
@@ -90,14 +92,15 @@ rm WeatherSubsetCsv.tar AirlineSubsetCsv.tar
 cd /home/remoteuser
 cd Data
 
-hadoop fs -mkdir /user/RevoShare/rserve2
-hadoop fs -mkdir /user/RevoShare/rserve2/Predictions
-hadoop fs -chmod -R 777 /user/RevoShare/rserve2
-hadoop fs -mkdir /user/RevoShare/remoteuser
-hadoop fs -mkdir /user/RevoShare/remoteuser/Data
-hadoop fs -mkdir /user/RevoShare/remoteuser/Models
+/opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/rserve2
+/opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/rserve2/Predictions
+/opt/hadoop/current/bin/hadoop fs -chmod -R 777 /user/RevoShare/rserve2
 
-hadoop fs -copyFromLocal * /user/RevoShare/remoteuser/Data
+/opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser
+/opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser/Data
+/opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser/Models
+
+/opt/hadoop/current/bin/hadoop fs -copyFromLocal * /user/RevoShare/remoteuser/Data
 
 #######################################################################################################################################
 #######################################################################################################################################
