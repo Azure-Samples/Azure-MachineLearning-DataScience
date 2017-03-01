@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cat /opt/hadoop/.ssh/id_rsa.pub >> /opt/hadoop/.ssh/authorized_keys
 chmod 0600 /opt/hadoop/.ssh/authorized_keys
 chown hadoop /opt/hadoop/.ssh/authorized_keys
