@@ -35,7 +35,9 @@ systemctl enable backend
 systemctl start frontend
 systemctl start rserve
 systemctl start backend
-
+#https://msdn.microsoft.com/en-us/microsoft-r/operationalize/admin-utility
+#cd /usr/lib64/microsoft-deployr/9.0.1
+#/usr/local/bin/dotnet Microsoft.DeployR.Utils.AdminUtil/Microsoft.DeployR.Utils.AdminUtil.dll
 
 #######################################################################################################################################
 # Copy data and code to VM
