@@ -41,7 +41,6 @@ library(rmarkdown)
 library(knitr)
 library(gridExtra)
 library(ggplot2)
-#library(ggmap)
 
 ###########################################
 # CREATE SPARK CONTEXT
