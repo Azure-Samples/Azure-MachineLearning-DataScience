@@ -33,7 +33,7 @@ Sys.setenv(YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop",
            HADOOP_HOME="/opt/hadoop/current", 
            JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
            SPARK_HOME = "/dsvm/tools/spark/current",
-           PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin:/dsvm/tools/spark/current/bin"))
+           PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin:/dsvm/tools/spark/current/bin"))
 
 .libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
 library(SparkR)
@@ -240,6 +240,7 @@ createOrReplaceTempView(trip_fare_featSampled, "trip_fare_featSampled")
 dfrand <- SparkR::sql("SELECT *, RAND() as randnum from trip_fare_featSampled" );
 trainDF <- SparkR::filter(dfrand, dfrand$randnum <= 0.7)
 testDF <- SparkR::filter(dfrand, dfrand$randnum > 0.7)
+head(trainDF, 3)
 ```
 
 ##Create a SparkR::glm model
