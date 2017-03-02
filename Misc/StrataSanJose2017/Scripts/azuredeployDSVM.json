@@ -298,7 +298,7 @@
             "typeHandlerVersion": "2.0",
             "autoUpgradeMinorVersion": true,
             "settings": {
-              "fileUris": "[variables('fileUris')]",
+              "fileUris": ["[variables('fileUris')]"],
               "commandToExecute": "[variables('commandToExecute')]"
             }
           }

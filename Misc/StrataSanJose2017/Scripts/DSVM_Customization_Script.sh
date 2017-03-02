@@ -69,6 +69,9 @@ cd /home/remoteuser
 cd Code/SparkR
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/SparkR/SparkR_NYCTaxi_forDSVM.Rmd
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/SparkR/SparkR_NYCTaxi_forDSVM.html
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/SparkR/Operationalization_RemoteAccessAPI_forDSVM.R
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/SparkR/SparkR_GLM_Operationalization_forDSVM.R
+
 
 cd /home/remoteuser
 cd Code/sparklyr
@@ -108,6 +111,7 @@ cd Data
 
 /opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser
 /opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser/Data
+/opt/hadoop/current/bin/hadoop fs -mkdir /user/RevoShare/remoteuser/Models
 /opt/hadoop/current/bin/hadoop fs -copyFromLocal * /user/RevoShare/remoteuser/Data
 
 
