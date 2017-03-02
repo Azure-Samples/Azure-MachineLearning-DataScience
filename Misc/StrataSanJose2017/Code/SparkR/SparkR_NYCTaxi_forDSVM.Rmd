@@ -33,7 +33,7 @@ Sys.setenv(YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop",
            HADOOP_HOME="/opt/hadoop/current", 
            JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
            SPARK_HOME = "/dsvm/tools/spark/current",
-           PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin"))
+           PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin:/dsvm/tools/spark/current/bin"))
 
 .libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
 library(SparkR)
@@ -41,7 +41,7 @@ library(rmarkdown)
 library(knitr)
 library(gridExtra)
 library(ggplot2)
-library(ggmap)
+#library(ggmap)
 
 ###########################################
 # CREATE SPARK CONTEXT
