@@ -1,0 +1,312 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "remoteuser"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "StrataSJC@0314"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "StrataR"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_DS12_v2",
+            "metadata": {
+                "description": "Standard_DS12_v2"
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "imagePublisher": "microsoft-ads",
+        "imageOffer": "linux-data-science-vm-preview",
+        "OSDiskName": "osdiskforlinuxsimple",
+        "DataDiskName": "datadiskforlinuxsimple", 
+        "sku": "linuxdsvm",
+        "nicName": "[parameters('vmName')]",
+        "addressPrefix": "10.0.0.0/16",
+        "subnetName": "Subnet",
+        "subnetPrefix": "10.0.0.0/24",
+        "storageAccountType": "Standard_LRS",
+        "storageAccountName": "[concat(parameters('vmName'),'sjcstorage')]",
+        "publicIPAddressType": "Dynamic",
+        "publicIPAddressName": "[parameters('vmName')]",
+        "vmStorageAccountContainerName": "vhds",
+        "vmName": "[parameters('vmName')]",
+        "vmSize": "[parameters('vmSize')]",
+        "virtualNetworkName": "[parameters('vmName')]",
+        "networkSecurityGroupName": "[concat(parameters('vmName'),'_NSG')]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+        "fileUris": "https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/DSVM_Customization_Script.sh",
+        "commandToExecute": "dos2unix < DSVM_Customization_Script.sh > runscript.sh; bash runscript.sh",
+        "apiVersion": "2015-06-15",
+        "version": "latest"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[variables('location')]",
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('publicIPAddressName')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[variables('networkSecurityGroupName')]",
+          "apiVersion": "2015-05-01-preview",
+          "location": "[variables('location')]",
+          "properties": {
+            "securityRules": [
+              {
+                "name": "yarndashboard",
+                "properties": {
+                  "priority": 1010,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "8088",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "jupyterhub",
+                "properties": {
+                  "priority": 1020,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "8000",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "Jupyter",
+                "properties": {
+                  "priority": 1030,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "9999",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "RStudioServer",
+                "properties": {
+                  "priority": 1040,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "8787",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "mrsdeploy",
+                "properties": {
+                  "priority": 1050,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "12800",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+			  {
+                "name": "default-allow-ssh",
+                "properties": {
+                  "priority": 1060,
+                  "sourceAddressPrefix": "*",
+                  "protocol": "Tcp",
+                  "destinationPortRange": "22",
+                  "access": "Allow",
+                  "direction": "inbound",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              }
+            ]
+          }
+        },        
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                }                
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmName')]",
+            "location": "[variables('location')]",
+            "plan": {
+                "name": "linuxdsvm",
+                "publisher": "microsoft-ads",
+                "product": "linux-data-science-vm-preview"
+            },
+            "tags": {
+                "Application": "DataScience"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "microsoft-ads",
+                        "offer": "linux-data-science-vm-preview",
+                        "sku": "linuxdsvm",
+                        "version": "latest"
+                    },
+					"osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'), variables('vmName'),  '.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+					"dataDisks": [
+                        {
+                            "name": "data-0",
+                            "vhd": {
+                                "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('DataDiskName'), variables('vmName'), '.vhd')]"
+                            },
+                            "caching": "None",
+                            "createOption": "FromImage",
+                            "lun": 0
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": "true",
+                        "storageUri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net')]"
+                    }
+                }
+            },
+      "resources": [
+        {
+          "type": "extensions",
+          "name": "[variables('vmName')]",
+          "apiVersion": "[variables('apiVersion')]",
+          "location": "[variables('location')]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "typeHandlerVersion": "2.0",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": "[variables('fileUris')]",
+              "commandToExecute": "[variables('commandToExecute')]"
+            }
+          }
+        }
+      ]            
+        }
+    ],
+    "outputs": {
+        "DataScienceVmUrl": { "type": "string", "value": "[concat('https://ms.portal.azure.com/#resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Compute/virtualMachines/', variables('vmName'))]" }
+    }
+}
