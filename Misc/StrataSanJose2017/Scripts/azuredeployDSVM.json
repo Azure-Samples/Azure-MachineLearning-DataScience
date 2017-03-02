@@ -31,7 +31,7 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "imagePublisher": "microsoft-ads",
-        "imageOffer": "linux-data-science-vm-preview",
+        "imageOffer": "linux-data-science-vm",
         "OSDiskName": "osdiskforlinuxsimple",
         "DataDiskName": "datadiskforlinuxsimple", 
         "sku": "linuxdsvm",
@@ -224,7 +224,7 @@
             "plan": {
                 "name": "linuxdsvm",
                 "publisher": "microsoft-ads",
-                "product": "linux-data-science-vm-preview"
+                "product": "linux-data-science-vm"
             },
             "tags": {
                 "Application": "DataScience"
@@ -245,7 +245,7 @@
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "microsoft-ads",
-                        "offer": "linux-data-science-vm-preview",
+                        "offer": "linux-data-science-vm",
                         "sku": "linuxdsvm",
                         "version": "latest"
                     },
