@@ -44,13 +44,13 @@ systemctl start backend
 # Copy data and code to VM
 #######################################################################################################################################
 
-# Copy Spark configuration file
+# Copy Spark configuration files & shell script
 cd /home/remoteuser
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/spark-defaults.conf
 mv spark-defaults.conf /dsvm/tools/spark/current/conf
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/log4j.properties
 mv log4j.properties /dsvm/tools/spark/current/conf
-
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/DSVM_Customization_Script.sh
 
 ## DOWNLOAD ALL CODE FILES
 cd /home/remoteuser
