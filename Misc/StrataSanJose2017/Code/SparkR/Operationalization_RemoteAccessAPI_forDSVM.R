@@ -20,7 +20,7 @@ api_1 <- getService("scoring_input_files", version)
 
 modelfile <- "/user/RevoShare/remoteuser/Models/SparkGlmModel"
 input <- "/user/RevoShare/remoteuser/Data/NYCjoinedParquetSubset"
-output <- "/user/RevoShare/rserve2/Predictions/SparkRGLMPred2"
+output <- "/user/RevoShare/rserve2/Predictions/SparkRGLMPred"
 
 result_1 <- api_1$web_scoring(
   modelfile = modelfile,

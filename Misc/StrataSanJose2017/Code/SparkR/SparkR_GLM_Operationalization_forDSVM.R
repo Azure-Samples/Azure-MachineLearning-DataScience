@@ -15,6 +15,7 @@ library(SparkR)
 sc <- sparkR.session(
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
+SparkR::setLogLevel("OFF")
 
 ################################################################
 ## LOGIN TO OPERATIONALIZATION SERVICE ON VM AND LIST ANY EXISTING WEB SERVICES
@@ -30,6 +31,7 @@ remoteLogin(
 )
 listServices()
 
+load("SparkRGlmModel.RData")
 
 ###########################################
 ## DEFINE A FUNCTION FOR WEB-SERVICE SCORING
@@ -68,6 +70,15 @@ web_scoring <- function(modelfile, input, output) {
 
   sparkR.stop()
 }
+
+###############################################################
+## TEST THE WEB-SCORING FUNCTION
+###############################################################
+modelfile <- "/user/RevoShare/remoteuser/Models/SparkGlmModel"
+input <- "/user/RevoShare/remoteuser/Data/NYCjoinedParquetSubset"
+output <- "/user/RevoShare/rserve2/Predictions/SparkRGLMPredTest"
+web_scoring (modelfile, input, output)
+
 
 ################################################################
 ## CREATE A WEB SERVICE WTIH VERSION NUMBER
@@ -117,17 +128,6 @@ sparkR.stop()
 
 ################################################################
 ################################################################
-
-
-
-###############################################################
-## TEST THE WEB-SCORING FUNCTION
-###############################################################
-#modelfile <- "/user/RevoShare/remoteuser/Models/SparkGlmModel"
-#input <- "/user/RevoShare/remoteuser/Data/NYCjoinedParquetSubset"
-#output <- "/user/RevoShare/rserve2/Predictions/SparkRGLMPresudo"
-#web_scoring (modelfile, input, output)
-
 ################################################################
 ################################################################
 
@@ -167,11 +167,6 @@ predfilt <- SparkR::select(predictions, c("label","prediction"))
 ###########################################
 modelPath <- "/user/RevoShare/remoteuser/Models/SparkGlmModel";
 #write.ml(model, modelPath) 
-
-###########################################
-## CONVERT SPARK DATAFRAME TO LOCAL DATAFRAME
-###########################################
-df_local <- SparkR::collect(predfilt)
 
 ###########################################
 ## STOP SPARK CONTEXT
