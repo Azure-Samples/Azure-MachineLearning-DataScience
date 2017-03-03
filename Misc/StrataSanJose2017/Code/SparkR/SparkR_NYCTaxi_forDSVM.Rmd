@@ -50,6 +50,7 @@ sc <- sparkR.session(
   #sparkEnvir = sparkEnvir,
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
+SparkR::setLogLevel("OFF")
 
 ###########################################
 ## SPECIFY BASE HDFS DIRECTORY
@@ -74,6 +75,8 @@ The data can be uploaded to the blob (or other storage) attached to your HDInsig
 ###########################################
 # TRIP FILE (CSV format)
 ###########################################
+starttime <- Sys.time();
+
 tripPath <- file.path(fullDataDir, "trip_data_12.csv")
 tripDF <- read.df(tripPath, source = "com.databricks.spark.csv", 
                   header = "true", inferSchema = "true")
@@ -87,9 +90,12 @@ printSchema(tripDF)
 farePath <- file.path(fullDataDir, "trip_fare_12.csv")
 fareDF <- read.df(farePath, source = "com.databricks.spark.csv", 
                   header = "true", inferSchema = "true")
-#SparkR::cache(fareDF); SparkR::count(fareDF)
+SparkR::cache(fareDF); SparkR::count(fareDF)
 head(fareDF, 3)
 printSchema(fareDF)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 #Data wrangling & cleanup using SQL
@@ -101,6 +107,8 @@ You can register dataframes as tables in SQLContext and join using multiple colu
 # 1. REGISTER TABLES AND JOIN ON MULTIPLE COLUMNS, FILTER DATA
 # 2. REGISTER JIONED TABLE
 ###########################################
+starttime <- Sys.time();
+
 createOrReplaceTempView(tripDF, "trip")
 createOrReplaceTempView(fareDF, "fare")
 
@@ -129,6 +137,9 @@ SparkR::cache(trip_fareDF); SparkR::count(trip_fareDF);
 # SHOW REGISTERED TABLES
 ###########################################
 head(SparkR::sql("show tables"))
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 
@@ -138,6 +149,8 @@ You can create new features using sQL statements. For example, you can use case 
 ###########################################
 # CREATE FEATURES IN SQL USING CASE STATEMENTS
 ###########################################
+starttime <- Sys.time();
+
 trip_fare_feat <- SparkR::sql("SELECT 
     payment_type, pickup_hour, fare_amount, tip_amount, 
     passenger_count, trip_distance, trip_time_in_secs, 
@@ -156,6 +169,9 @@ trip_fare_feat <- SparkR::sql("SELECT
 SparkR::cache(trip_fare_feat); SparkR::count(trip_fare_feat);
 createOrReplaceTempView(trip_fare_feat, "trip_fare_feat")
 head(trip_fare_feat, 3)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 <hr>
 
@@ -166,6 +182,8 @@ For visualization, a small portion data will have to be sampled and brought into
 ###########################################
 # SAMPLE SMALL PORTION OF DATA
 ###########################################
+starttime <- Sys.time();
+
 trip_fare_featSampled <- SparkR::sample(trip_fare_feat, withReplacement=FALSE, 
                                 fraction=0.0001, seed=123)
 
@@ -193,6 +211,9 @@ scatter <- ggplot(trip_fare_featSampledDF, aes(tip_amount, trip_distance)) +
 # Plot Histogram and Scatter Plot OF TIP AMOUNT Side by Side
 ###########################################
 grid.arrange(hist, scatter, ncol=2)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 ##Advanced summarization using SQL and plotting:
@@ -201,6 +222,8 @@ We explore trips in NYC during rush and non-rush hours. This section shows more 
 ###########################################
 # GROUP TRIPS BY YEAR, MONTH, DAY, PAYMENT TYPE
 ###########################################
+starttime <- Sys.time();
+
 trip_stats_by_day <- SparkR::sql("select 
       year(pickup_datetime) as year, month(pickup_datetime) as month, 
       day(pickup_datetime) as day, payment_type, count(1) as trips 
@@ -216,6 +239,9 @@ tsbd <- as.data.frame(trip_stats_by_day)
 ggplot(data=tsbd, aes(day, trips)) + 
   geom_point(aes(color=payment_type)) + 
   geom_smooth(aes(color=payment_type))
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 #Modeling with SparkR
@@ -225,10 +251,15 @@ If a data-set is large, it may need to be down-sampled for modeling in reasonabl
 ###########################################
 # SAMPLE DATA FOR MODELING
 ###########################################
-trip_fare_featSampled <- sample(trip_fare_feat, withReplacement=FALSE, 
-                                fraction=0.1, seed=123)
+starttime <- Sys.time();
+
+trip_fare_featSampled <- SparkR::sample(trip_fare_feat, withReplacement=FALSE, 
+                                fraction=0.5, seed=123)
 SparkR::cache(trip_fare_featSampled); SparkR::count(trip_fare_featSampled);
 createOrReplaceTempView(trip_fare_featSampled, "trip_fare_featSampled")
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 
@@ -241,6 +272,9 @@ dfrand <- SparkR::sql("SELECT *, RAND() as randnum from trip_fare_featSampled" )
 trainDF <- SparkR::filter(dfrand, dfrand$randnum <= 0.7)
 testDF <- SparkR::filter(dfrand, dfrand$randnum > 0.7)
 head(trainDF, 3)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 ##Create a SparkR::glm model
@@ -248,12 +282,16 @@ head(trainDF, 3)
 ########################################### 
 ## CREATE GLM MODEL
 ###########################################
-model <- SparkR::glm(tip_amount ~ payment_type + pickup_hour + 
+starttime <- Sys.time();
+
+model <- SparkR::spark.glm(tip_amount ~ payment_type + pickup_hour + 
                     fare_amount + passenger_count + trip_distance + 
                     trip_time_in_secs + TrafficTimeBins, 
-                    data = trainDF, family = "gaussian", 
-                    epsilon = 1e-06, maxit = 5)
+                    data = trainDF, tol = 1e-05, maxIter = 10)
 print (summary(model));
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 ##Evaluate on a test set
@@ -261,7 +299,11 @@ print (summary(model));
 ########################################### 
 ## PREDICT ON TEST SET, AND EVALUATE ACCURACY
 ###########################################
+starttime <- Sys.time();
+
 predictions <- SparkR::predict(model, newData = testDF)
+predictions_sampled <- SparkR::sample(predictions, withReplacement=FALSE, 
+                                fraction=0.1, seed=123)
 predfilt <- SparkR::select(predictions, c("label","prediction"))
 predfilt_local <- SparkR::collect(predfilt)
 
@@ -278,6 +320,9 @@ ggplot(predictedSampled, aes(label, prediction)) +
   geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], 
                   intercept = summary(lm_model)$coefficients[1,1]), 
               color = "red")
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 
@@ -290,6 +335,7 @@ Partition data into train/test, and train a glm model and evaluate it.
 ###########################################
 modelPath =  file.path("/user/RevoShare/remoteuser/Models", "SparkGlmModel");
 write.ml(model, modelPath) 
+
 ```
 
 ##Save joined and sampled data
@@ -298,6 +344,8 @@ Repartition the data in specific number of chunks and save
 ###########################################
 # REPARTITION DATA FOR SAVING
 ###########################################
+starttime <- Sys.time();
+
 trip_fare_featSampledRepartitioned <- repartition(trip_fare_featSampled, 10) # write.df below will produce this many files
 
 ###########################################
@@ -307,6 +355,8 @@ write.df(df=trip_fare_featSampledRepartitioned,
          path=file.path(fullDataDir, "NYCjoinedParquetSubset"), 
          source="parquet", mode="overwrite")
 
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 #Uncache data and exit spark
