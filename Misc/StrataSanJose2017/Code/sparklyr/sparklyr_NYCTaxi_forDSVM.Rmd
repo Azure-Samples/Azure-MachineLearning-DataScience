@@ -36,9 +36,8 @@ Where necessary, small amounts of data is brought to the local data frames for p
 Sys.setenv(YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop", HADOOP_HOME="/opt/hadoop/current", 
            JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
            SPARK_HOME = "/dsvm/tools/spark/current",
-           PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin"))
+           PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin:/dsvm/tools/spark/current/bin"))
 .libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
-library(SparkR)
 library(rmarkdown)
 library(knitr)
 library(sparklyr)
@@ -67,6 +66,8 @@ If a data-set is large, it may need to be down-sampled for modeling in reasonabl
 ###########################################
 # LOAD SAMPLED JOINED TAXI DATA FROM HDFS, CACHE
 ###########################################
+starttime <- Sys.time();
+
 joinedDF <- spark_read_parquet(sp, name = "joined_table", 
                                path = file.path(fullDataDir, "NYCjoinedParquetSubset"), 
                                memory = TRUE, overwrite = TRUE)
@@ -77,6 +78,14 @@ head(joinedDF, 3)
 # SHOW THE NUMBER OF OBSERVATIONS IN DATA 
 ###########################################
 count(joinedDF)
+
+###########################################
+# SAMPLE TO A SMALLER DATAFRAME FOR FASTER MODEL BUILDING
+###########################################
+joinedDFsmall <- sdf_sample(joinedDF, fraction = 0.5, replacement = FALSE, seed = 123)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 <hr>
@@ -86,8 +95,10 @@ Spark provides feature transformers, faciliating many common transformations of 
 ###########################################
 # CREATE TRANSFORMED FEATURES, BINARIZE PAYMENT-TYPE
 ###########################################
+starttime <- Sys.time();
+
 # Binarizer
-joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', output_col = 'payment_ind') %>% 
+joinedDF2 <- joinedDFsmall %>% ft_string_indexer(input_col = 'payment_type', output_col = 'payment_ind') %>% 
       ft_binarizer(input_col = 'payment_ind', output_col = 'pay_type_bin', threshold = 0.5)
 ```
 
@@ -95,11 +106,15 @@ joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', output_c
 #Create train-test partitions
 Data can be partitioned into training and testing using the <b>sdf_partition</b> function. 
 ```{r Partition data into train/test, message=FALSE, warning=FALSE, echo=TRUE}
+starttime <- Sys.time();
 ###########################################
 # CREATE TRAIN/TEST PARTITIONS
 ###########################################
-partitions <- joinedDF2 %>% sdf_partition(training = 0.7, test = 0.2, seed = 123)
+partitions <- joinedDF2 %>% sdf_partition(training = 0.7, test = 0.3, seed = 123)
 head(joinedDF2)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 <hr>
 
@@ -109,6 +124,8 @@ Spark’s machine learning library can be accessed from sparklyr through the <a 
 ##CreateElastic Net model
 Create a elastic net model using training data, and evaluate on test data-set
 ```{r Elastic net modeo, message=FALSE, warning=FALSE, echo=TRUE, fig.width=5, fig.height=4}
+starttime <- Sys.time();
+
 # Fit elastic net regression model
 fit <- partitions$training %>% 
           ml_linear_regression(tip_amount ~ pay_type_bin + pickup_hour + 
@@ -136,17 +153,22 @@ ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
   geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], 
                   intercept = summary(lm_model)$coefficients[1,1]), 
               color = "red")
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 ##Create Random Forest Model
 Create a random forest model using training data, and evaluate on test data-set
 ```{r Random forest model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
+starttime <- Sys.time();
+
 # Fit Random Forest regression model
 fit <- partitions$training %>% 
           ml_random_forest(response = "tip_amount",
                            features = c("pay_type_bin", "fare_amount", "pickup_hour", 
                                         "passenger_count",  "trip_distance", 
                                         "TrafficTimeBins"), 
-                           max.bins = 500L, max.depth = 5L, num.trees = 50L)
+                           max.bins = 32L, max.depth = 5L, num.trees = 25L)
 
 # Show summary of fitted Random Forest model
 summary(fit)
@@ -181,18 +203,23 @@ plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
               color = "red")
 
 grid.arrange(plot1, plot2, ncol=2)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 
 ##Create Gradient Boosted Tree Model
 Create a gradient boosted tree model using training data, and evaluate on test data-set
 ```{r Boosted tree model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
+starttime <- Sys.time();
+
 # Fit Gradient Boosted Tree regression model
 fit <- partitions$training %>% 
         ml_gradient_boosted_trees(tip_amount ~ pay_type_bin + pickup_hour + 
                                     passenger_count + trip_distance + 
                                     TrafficTimeBins, 
-                                  max.bins = 32L, max.depth = 3L, 
+                                  max.bins = 32L, max.depth = 5L, 
                                   type = "regression")
 
 # Show summary of fitted Random Forest model
@@ -227,6 +254,9 @@ plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
               color = "red")
 
 grid.arrange(plot1, plot2, ncol=2)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 
