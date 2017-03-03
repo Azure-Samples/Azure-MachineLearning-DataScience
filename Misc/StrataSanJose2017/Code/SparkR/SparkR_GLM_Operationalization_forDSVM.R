@@ -23,15 +23,13 @@ SparkR::setLogLevel("OFF")
 library(mrsdeploy)
 #ssh -L localhost:12800:localhost:12800 remoteuser@<vm-name>.westus.cloudapp.azure.com:12800
 remoteLogin(
-  #"http://127.0.0.1:12800",
-  "http://<vm-name>.westus.cloudapp.azure.com:12800",
-  username = "****",
+  "http://127.0.0.1:12800",
+  #"http://<vm-name>.westus.cloudapp.azure.com:12800",
+  username = "***",
   password = "******",
   session = FALSE
 )
 listServices()
-
-load("SparkRGlmModel.RData")
 
 ###########################################
 ## DEFINE A FUNCTION FOR WEB-SERVICE SCORING
@@ -51,6 +49,7 @@ web_scoring <- function(modelfile, input, output) {
   sc <- sparkR.session(
     sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
   )
+  SparkR::setLogLevel("OFF")
   
   ## Read a df
   df <- read.df(input, source = "parquet", header = "true", inferSchema = "true", na.strings = "NA")
