@@ -15,8 +15,8 @@ listServices()
 version <- "v0.0.1"
 api_1 <- getService("scoring_input_files", version)
 
-modelfile <- "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMforOper"
-input <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubset"
+modelfile <- "/HdiSamples/HdiSamples/NYCTaxi/SparkGlmModel"
+input <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubsetSampled"
 output <- "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMPredictions"
 
 result_1 <- api_1$web_scoring(

@@ -13,43 +13,7 @@ library(SparkR)
 sc <- sparkR.session(
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
-
-
-###########################################
-## SPECIFY BASE HDFS DIRECTORY
-###########################################
-fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubset"
-
-###########################################
-## READ IN FILE
-###########################################
-df <- read.df(fullDataDir, source = "parquet", header = "true", inferSchema = "true", na.strings = "NA")
-cache(df)
-printSchema(df)
-
-########################################### 
-## CREATE GLM MODEL
-###########################################
-model <- SparkR::glm(tip_amount ~ payment_type + pickup_hour + fare_amount + passenger_count + 
-                       trip_distance + trip_time_in_secs + TrafficTimeBins, 
-                       data = df, family = "gaussian", epsilon = 1e-05, maxit = 10)
-
-########################################### 
-## PREDICT ON A DATAFRAME
-###########################################
-predictions <- SparkR::predict(model, newData = df)
-predfilt <- SparkR::select(predictions, c("label","prediction"))
-
-###########################################
-## SAVE MODEL
-###########################################
-modelPath = "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMforOper"
-write.ml(model, modelPath) 
-
-###########################################
-## CONVERT SPARK DATAFRAME TO LOCAL DATAFRAME
-###########################################
-#df_local <- SparkR::collect(predfilt)
+SparkR::setLogLevel("OFF")
 
 ###########################################
 ## DEFINE A FUNCTION FOR WEB-SERVICE SCORING
@@ -63,6 +27,7 @@ web_scoring <- function(modelfile, input, output) {
   sc <- sparkR.session(
     sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
   )
+  SparkR::setLogLevel("OFF")
   
   ## Read a df
   df <- read.df(input, source = "parquet", header = "true", inferSchema = "true", na.strings = "NA")
@@ -86,8 +51,8 @@ web_scoring <- function(modelfile, input, output) {
 ###############################################################
 ## Define file paths and test on HDI server
 ###############################################################
-modelfile <- "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMforOper"
-input <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubset"
+modelfile <- "/HdiSamples/HdiSamples/NYCTaxi/SparkGlmModel"
+input <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubsetSampled"
 output <- "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMPredictions"
 web_scoring (modelfile, input, output)
 
@@ -98,8 +63,8 @@ library(mrsdeploy)
 #ssh -L localhost:12800:localhost:12800 remoteuser@DebrajSpark2-ed-ssh.azurehdinsight.net
 remoteLogin(
   "http://127.0.0.1:12800",
-  username = "****",
-  password = "*******",
+  username = "***",
+  password = "********",
   session = FALSE
 )
 listServices()
@@ -108,7 +73,7 @@ listServices()
 ## CREATE A WEB SERVICE WTIH VERSION NUMBER
 ################################################################
 version <- "v0.0.1"
-#deleteService("scoring_string_input", version);
+#deleteService("scoring_input_files", version);
 api_string <- publishService(
   "scoring_input_files",
   code = web_scoring,
@@ -125,8 +90,8 @@ listServices()
 version <- "v0.0.1"
 api_1 <- getService("scoring_input_files", version)
 
-modelfile <- "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMforOper"
-input <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubset"
+modelfile <- "/HdiSamples/HdiSamples/NYCTaxi/SparkGlmModel"
+input <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubsetSampled"
 output <- "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMPredictions"
 
 result_1 <- api_1$web_scoring(
@@ -140,3 +105,49 @@ result_1 <- api_1$web_scoring(
 
 sparkR.stop()
 #deleteService("scoring_input_files", version)
+
+
+
+
+
+
+#################################################################
+#################################################################
+## ADDITIONAL CODE FOR MODEL CREATION AND SAVING
+#################################################################
+#################################################################
+
+
+###########################################
+## READ IN FILE, SAMPLE AND PARTITION
+###########################################
+fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubset"
+df <- read.df(fullDataDir, source = "parquet", header = "true", inferSchema = "true", na.strings = "NA")
+dfSampled <- SparkR::sample(df, withReplacement = FALSE, fraction = 0.01, seed = 123)
+SparkR::write.parquet(dfSampled, "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubsetSampled")
+cache(dfSampled); count(dfSampled)
+printSchema(dfSampled)
+
+########################################### 
+## CREATE GLM MODEL
+###########################################
+sampledDataDir <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubsetSampled"
+df <- read.df(sampledDataDir, source = "parquet", header = "true", inferSchema = "true", na.strings = "NA")
+model <- SparkR::spark.glm(tip_amount ~ payment_type + pickup_hour + 
+                             fare_amount + passenger_count + trip_distance + 
+                             trip_time_in_secs + TrafficTimeBins, 
+                           data = df, family = "gaussian", 
+                           tol = 1e-05, maxIter = 10)
+
+###########################################
+## SAVE MODEL
+###########################################
+modelPath = "/HdiSamples/HdiSamples/NYCTaxi/SparkRGLMforOper"
+write.ml(model, modelPath) 
+
+########################################### 
+## PREDICT ON A DATAFRAME
+###########################################
+#predictions <- SparkR::predict(model, newData = dfSampled)
+#predfilt <- SparkR::select(predictions, c("label","prediction"))
+#df_local <- SparkR::collect(predfilt)
