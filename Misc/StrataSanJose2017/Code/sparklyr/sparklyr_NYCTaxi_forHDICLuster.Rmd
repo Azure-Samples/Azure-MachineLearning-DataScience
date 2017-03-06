@@ -55,25 +55,35 @@ fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi"
 ```
 <hr>
 <br>
-
 <br>
-#Load trip-fare data and cache in memory
+
+#Load trip-fare data and cache sample in memory
 The taxi and fare files were previously joined using SparkR SQL and down-sampled to about 10% of the full dataset.
 ```{r Load data in sparklyr dataframe, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # LOAD SAMPLED JOINED TAXI DATA FROM HDFS, CACHE
 ###########################################
+starttime <- Sys.time()
+
 joinedFilePath <- file.path(fullDataDir, "NYCjoinedParquetSubset")
 joinedDF <- spark_read_parquet(sp, name = "joined_table", 
                                path = joinedFilePath, memory = TRUE, 
                                overwrite = TRUE)
-tbl_cache(sp, "joined_table")
+tbl_cache(sp, "joined_table", force=TRUE)
 head(joinedDF, 3)
+
+###########################################
+# SAMPLE AND CACHE IN MEMORY
+###########################################
+joinedDFSampl <- sdf_sample(joinedDF, fraction = 1)
 
 ###########################################
 # SHOW THE NUMBER OF OBSERVATIONS IN DATA 
 ###########################################
-count(joinedDF)
+count(joinedDFSampl)
+
+endtime <- Sys.time()
+print (endtime - starttime)
 ```
 
 <hr>
@@ -83,39 +93,53 @@ Spark provides feature transformers, faciliating many common transformations of 
 ###########################################
 # CREATE TRANSFORMED FEATURES, BINARIZE PAYMENT-TYPE
 ###########################################
+starttime <- Sys.time()
+
 # Binarizer
-joinedDF2 <- joinedDF %>% ft_string_indexer(input_col = 'payment_type', 
+joinedDF2 <- joinedDFSampl %>% ft_string_indexer(input_col = 'payment_type', 
                                             output_col = 'payment_ind') %>% 
                                             ft_binarizer(input_col = 'payment_ind', 
                                                         output_col = 'pay_type_bin', 
                                                         threshold = 0.5)
 head(joinedDF2)
+
+endtime <- Sys.time()
+print (endtime - starttime)
 ```
 
 <hr>
 #Create train-test partitions
 Data can be partitioned into training and testing using the <b>sdf_partition</b> function. 
 ```{r Partition data into train/test, message=FALSE, warning=FALSE, echo=TRUE}
+starttime <- Sys.time()
+
 ###########################################
 # CREATE TRAIN/TEST PARTITIONS
 ###########################################
-partitions <- joinedDF2 %>% sdf_partition(training = 0.75, 
-                                          test = 0.25, seed = 123)
+partitions <- joinedDF2 %>% sdf_partition(training = 0.70, 
+                                          test = 0.30, seed = 123)
+
+endtime <- Sys.time()
+print (endtime - starttime)
 ```
 <hr>
+
 #Using sparklyr for creating ML models
 Spark’s machine learning library can be accessed from sparklyr through the <a href="http://spark.rstudio.com/mllib.html#algorithms" target="_blank">ml_* family of functions</a>. Here we create ML models for the prediction of tip-amount for taxi trips.
 
 ##Creating Elastic Net model
 Create a elastic net model using training data, and evaluate on test data-set
 ```{r Elastic net modeo, message=FALSE, warning=FALSE, echo=TRUE, fig.width=5, fig.height=4}
+starttime <- Sys.time()
+
 ###########################################
 # FIT ELASTIC NET REGRESSION MODEL
 ###########################################
 fit <- partitions$training %>% 
       ml_linear_regression(tip_amount ~ 
                           pay_type_bin + pickup_hour + passenger_count + 
-                          trip_distance + TrafficTimeBins, alpha = 0.5, lambda = 0.01)
+                          trip_distance + TrafficTimeBins, 
+                          alpha = 0.5, lambda = 0.01)
 
 ###########################################
 # SHOW MODEL SUMMARY
@@ -127,7 +151,7 @@ summary(fit)
 ###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
 predictedValsSampled <- sdf_sample(x=predictedVals, 
-                                   fraction=0.01, replacement=FALSE, seed=123)
+                                   fraction=0.0001, replacement=FALSE, seed=123)
 predictedDF <- as.data.frame(predictedValsSampled)
 
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
@@ -148,11 +172,16 @@ ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
 ###########################################
 sparklyRPredictionsPath <- file.path(fullDataDir, "sparklyRElasticNetPredictions")
 spark_write_csv(predictedVals, sparklyRPredictionsPath)
+
+endtime <- Sys.time()
+print (endtime - starttime)
 ```
 
 ##Creating Random Forest Model
 Create a random forest model using training data, and evaluate on test data-set
 ```{r Random forest model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
+starttime <- Sys.time()
+
 ###########################################
 # FIT RANDOM FOREST REGRESSION MODEL
 ###########################################
@@ -161,7 +190,7 @@ fit <- ml_random_forest(x=partitions$training,
                         features = c("pay_type_bin", "fare_amount", 
                                      "pickup_hour", "passenger_count",  
                                      "trip_distance", "TrafficTimeBins"), 
-                        max.bins = 32L, max.depth = 5L, num.trees = 25L)
+                        max.bins = 32L, max.depth = 4L, num.trees = 10L)
 
 ###########################################
 # SHOW SUMMARY OF RANDOM FOREST MODEL
@@ -185,7 +214,9 @@ plot1 <- feature_importance %>%
 # PREDICT ON TEST SET AND EVALUATE
 ###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
-predictedDF <- as.data.frame(predictedVals)
+predictedValsSampled <- sdf_sample(x=predictedVals, 
+                                   fraction=0.0001, replacement=FALSE, seed=123)
+predictedDF <- as.data.frame(predictedValsSampled)
 
 # Evaluate and plot predictions (R-sqr)
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
@@ -201,12 +232,17 @@ plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
                   intercept = summary(lm_model)$coefficients[1,1]), color = "red")
 
 grid.arrange(plot1, plot2, ncol=2)
+
+endtime <- Sys.time()
+print (endtime - starttime)
 ```
 
 
 ##Creating Gradient Boosted Tree Model
 Create a gradient boosted tree model using training data, and evaluate on test data-set
 ```{r Boosted tree model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
+starttime <- Sys.time()
+
 ###########################################
 # FIT GRADIENT BOOSTED TREE REGRESSION MODEL
 ###########################################
@@ -214,7 +250,7 @@ fit <- partitions$training %>%
        ml_gradient_boosted_trees(tip_amount ~ 
                                 pay_type_bin + pickup_hour + passenger_count + 
                                 trip_distance + TrafficTimeBins, 
-                                max.bins = 32L, max.depth = 3L, type = "regression")
+                                max.bins = 32L, max.depth = 4L, type = "regression")
 
 ###########################################
 # SHOW SUMMARY OF MODEL
@@ -237,7 +273,9 @@ plot1 <- feature_importance %>%
 # PREDICT ON TEST SET AND EVALUATE
 ###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
-predictedDF <- as.data.frame(predictedVals)
+predictedValsSampled <- sdf_sample(x=predictedVals, 
+                                   fraction=0.0001, replacement=FALSE, seed=123)
+predictedDF <- as.data.frame(predictedValsSampled)
 
 # Evaluate and plot predictions (R-sqr)
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
@@ -254,6 +292,9 @@ plot2 <- ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
               color = "red")
 
 grid.arrange(plot1, plot2, ncol=2)
+
+endtime <- Sys.time()
+print (endtime - starttime)
 ```
 
 #Uncache objects, and disconnect Spark session
