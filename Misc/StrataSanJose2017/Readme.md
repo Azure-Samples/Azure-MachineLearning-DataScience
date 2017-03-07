@@ -42,6 +42,13 @@ sparklyr general information: http://spark.rstudio.com/
 <br>
 sparklyr MLlib functions: sparklyr MLlib functions: http://spark.rstudio.com/mllib.html
 
+### RevoScaleR: <br>
+RevoScaleR functions: https://msdn.microsoft.com/en-us/microsoft-r/scaler/scaler
+
+### Microsoft R Server: 
+<br>
+Microsoft R Server general information: https://msdn.microsoft.com/en-us/microsoft-r/rserver
+
 ### R-Server Operationalization service: <br>
 Microsoft R Server operationalization service general information: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/about
 <br>
