@@ -10,6 +10,8 @@ On Windows, download [plink.exe](https://the.earth.li/~sgtatham/putty/latest/x86
 from http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 
 ## Connecting to the Data Science Virtual Machine (with Spark 2.0.2) on Microsoft Azure
+We will provide Azure Data Science Virtual Machines (running Spark 2.0.2) for attendees to use during the tutorial. You will use your laptop to connect to your allocated virtual machine.
+
 * Command line to connect with ssh (Linux, Mac) - replace IPaddress IP of your DSVM
 ```bash
 ssh -L localhost:8787:localhost:8787 remoteuser@IPaddress
