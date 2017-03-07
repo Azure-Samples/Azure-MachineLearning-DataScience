@@ -29,6 +29,9 @@ cd directory-containing-plink.exe
 .\plink.exe -L localhost:12800:localhost:12800 remoteuser@IPaddress
 ```
 <hr>
+## Tutorial slides (not final until 03/14/2017) 
+Slide deck: <br>
+https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/StrataSanJose2017/Presentations_and_Docs/Using%20R%20for%20scalable%20data%20analytics-From%20single%20machines%20to%20Hadoop%20Spark%20clusters.pptx
 
 ## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
 
