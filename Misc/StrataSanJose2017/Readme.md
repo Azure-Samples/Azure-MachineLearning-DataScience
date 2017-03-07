@@ -1,5 +1,3 @@
->
-* Command line to connect with ssh (Linux, Mac) - replace XXX with the number of your cluster
 This folder has content for the Strata San Jose March 2017 tutorial "Scalable Data Science with R, from Single Nodes to Spark Clusters".
 
 ## Tutorial link (Strata San Jose, March 2017)
@@ -30,19 +28,6 @@ cd directory-containing-plink.exe
 <hr>
 
 ## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
-* for _Exploration and visualization using SparkSQL and R_
- * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/KDDCup2016/Code/SparkSQL/SparkSQL.R)
-* for _End to end scalable data analysis in R: Data exploration, visualization, modeling and deployment using distributed R functions and Hadoop/Spark_
- * [SparkR, ScaleR, and AzureML scripts for Airline Delay dataset](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/MRS)
- * [SparkR and sparklyr scripts for NYC Taxi dataset](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/SparkR)
-
-* for _Distributed model training and parameter optimization: Learning Curves on Big Data_
- * http://blog.revolutionanalytics.com/2015/09/why-big-data-learning-curves.html
- * http://blog.revolutionanalytics.com/2016/03/learning-from-learning-curves.html
- * [Sample scripts](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/learning_curves)
-
-* for _Parallel models: training many parallel models for hierarchical time series optimization_
- * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/StrataSanJose2017/Code/UseCaseHTS)
 
 * SparkR (Spark 2.0.2): https://spark.apache.org/docs/2.0.2/api/R/index.html
 
