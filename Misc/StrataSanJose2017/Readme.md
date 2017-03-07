@@ -1,4 +1,4 @@
-# This folder has content for the Strata San Jose March 2017 tutorial "Scalable Data Science with R, from Single Nodes to Spark Clusters".
+# This folder has content for the Strata San Jose 2017 (March 14, 9AM - 12:30PM) tutorial "Scalable Data Science with R, from Single Nodes to Spark Clusters".
 
 ## Tutorial link (Strata San Jose, March 2017)
 https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/55806
