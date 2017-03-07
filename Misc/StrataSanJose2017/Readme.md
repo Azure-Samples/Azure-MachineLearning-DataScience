@@ -32,11 +32,17 @@ cd directory-containing-plink.exe
 
 ## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
 
-* SparkR (Spark 2.0.2): https://spark.apache.org/docs/2.0.2/api/R/index.html
+* SparkR (Spark 2.0.2): 
+SparkR general information: http://spark.apache.org/docs/latest/sparkr.html
+SparkR 2.0.2 functions: https://spark.apache.org/docs/2.0.2/api/R/index.html
 
-* sparklyR: http://spark.rstudio.com/
+* sparklyr: 
+sparklyr general information: http://spark.rstudio.com/
+sparklyr MLlib functions: http://spark.rstudio.com/mllib.html
 
-* R-Server Operationalization service: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial
+* R-Server Operationalization service: 
+Microsoft R Server operationalization service general information: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/about
+Configuring operationalization: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial
 <hr>
 ## Video Record of an earlier version of this tutorial (presented at the KDD conference in August 2016)
 http://videolectures.net/kdd2016_tutorial_scalable_r_on_spark/?q=Spark
