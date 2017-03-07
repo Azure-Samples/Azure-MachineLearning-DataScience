@@ -33,7 +33,7 @@ cd directory-containing-plink.exe
 Slide deck: <br>
 https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/StrataSanJose2017/Presentations_and_Docs/Using%20R%20for%20scalable%20data%20analytics-From%20single%20machines%20to%20Hadoop%20Spark%20clusters.pptx
 
-## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
+## Suggested Reading prior to tutorial date
 
 ### SparkR (Spark 2.0.2): <br>
 SparkR general information: http://spark.apache.org/docs/latest/sparkr.html
