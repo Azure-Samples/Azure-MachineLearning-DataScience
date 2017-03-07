@@ -32,17 +32,17 @@ cd directory-containing-plink.exe
 
 ## Suggested Reading and Tutorial Scripts [Links are to earlier versions, will be updated in March 2017]
 
-* SparkR (Spark 2.0.2): <br>
+### * SparkR (Spark 2.0.2): <br>
 SparkR general information: http://spark.apache.org/docs/latest/sparkr.html
 <br>
 SparkR 2.0.2 functions: https://spark.apache.org/docs/2.0.2/api/R/index.html
 
-* sparklyr: <br>
+### * sparklyr: <br>
 sparklyr general information: http://spark.rstudio.com/
 <br>
 sparklyr MLlib functions: sparklyr MLlib functions: http://spark.rstudio.com/mllib.html
 
-* R-Server Operationalization service: <br>
+### * R-Server Operationalization service: <br>
 Microsoft R Server operationalization service general information: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/about
 <br>
 Configuring operationalization: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial
