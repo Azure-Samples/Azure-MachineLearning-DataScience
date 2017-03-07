@@ -60,7 +60,7 @@ Configuring operationalization: https://msdn.microsoft.com/en-us/microsoft-r/ope
 <br>
 <hr>
 ## Datasets used in this tutorial
-### The 2013 New York City Taxi and Fare dataset
+### The 2013 New York City Taxi and Fare dataset (used in SparkR and sparklyr samples)
 The NYC Taxi Trip data is about 20 GB of compressed comma-separated values (CSV) files (~48 GB uncompressed), comprising more than 173 million individual trips and the fares paid for each trip. Each trip record includes the pick up and drop-off location and time, anonymized hack (driver's) license number and medallion (taxi’s unique id) number. The data covers all trips in the year 2013 and is provided in the following two datasets for each month: 
 * The 'trip_data' CSV files contain trip details, such as number of passengers, pick up and dropoff points, trip duration, and trip length.
 * The 'trip_fare' CSV files contain details of the fare paid for each trip, such as payment type, fare amount, surcharge and taxes, tips and tolls, and the total amount paid.
