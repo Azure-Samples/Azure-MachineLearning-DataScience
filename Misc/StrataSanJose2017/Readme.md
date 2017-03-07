@@ -65,6 +65,8 @@ The NYC Taxi Trip data is about 20 GB of compressed comma-separated values (CSV)
 * The 'trip_data' CSV files contain trip details, such as number of passengers, pick up and dropoff points, trip duration, and trip length.
 * The 'trip_fare' CSV files contain details of the fare paid for each trip, such as payment type, fare amount, surcharge and taxes, tips and tolls, and the total amount paid.
 
+For hands-on exercises, attendees will use the data from 1 month of 2013, namely December (about 1/10th of the full 2013 data)
+
 <b>The learning problem:</b> To predict the amount of tip paid for a taxi trip (target), based on features such as trip distance, fare amount, number of passengers, time of pickup etc.
 
 Link for further details: https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-spark-overview#the-nyc-2013-taxi-data
