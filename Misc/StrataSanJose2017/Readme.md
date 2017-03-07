@@ -42,7 +42,7 @@ cd directory-containing-plink.exe
  * [Sample scripts](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/learning_curves)
 
 * for _Parallel models: training many parallel models for hierarchical time series optimization_
- * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/KDDCup2016/Code/UseCaseHTS)
+ * [Sample script](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/StrataSanJose2017/Code/UseCaseHTS)
 
 * SparkR (Spark 2.0.2): https://spark.apache.org/docs/2.0.2/api/R/index.html
 
