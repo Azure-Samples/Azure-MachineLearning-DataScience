@@ -21,7 +21,8 @@ ssh -L localhost:8787:localhost:8787 remoteuser@IPaddress
 cd directory-containing-plink.exe
 .\plink.exe -L localhost:8787:localhost:8787 remoteuser@IPaddress
 ```
-* After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server on the edge node of your cluster
+* After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server the DSVM<br>
+NOTE: During the tutorial, all attendees will use RStudio Server on their DSVMs.
 
 ## Connecting to R server operationalization service on your DSVM
 * Command line to connect with ssh (Linux, Mac) - replace IPaddress IP of your DSVM
