@@ -12,23 +12,18 @@ from http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 ## Connecting to the Data Science Virtual Machine (with Spark 2.0.2) on Microsoft Azure
 We will provide Azure Data Science Virtual Machines (running Spark 2.0.2) for attendees to use during the tutorial. You will use your laptop to connect to your allocated virtual machine.
 
-* Command line to connect with ssh (Linux, Mac) - replace IPaddress IP of your DSVM
+* Command line to connect with ssh (Linux, Mac) - replace XXX with the DNS address of your Data Science Virtual Machine
 ```bash
-ssh -L localhost:8787:localhost:8787 remoteuser@IPaddress
+ssh -L localhost:8787:localhost:8787 -L localhost:8088:localhost:8088 remoteuser@XXX
 ```
-* Command line to connect with plink.exe (Windows) - run the following commands in a Windows command prompt window - replace XXX with the number of your cluster
+* Command line to connect with plink.exe (Windows) - run the following commands in a Windows command prompt window - replace XXX with the DNS address of your Data Science Virtual Machine
 ```bash
 cd directory-containing-plink.exe
-.\plink.exe -L localhost:8787:localhost:8787 remoteuser@IPaddress (or remoteuser@VMname)
+.\plink.exe -L localhost:8787:localhost:8787 -L localhost:8088:localhost:8088 remoteuser@XXX
 ```
-* After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server the DSVM<br>
-<b>NOTE: During the tutorial, all attendees will use RStudio Server on their DSVMs.</b>
+* After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server on your Data Science Virtual Machine<br>
+<b>NOTE: During the tutorial, all attendees will use RStudio Server on their Data Science Virtual Machines.</b>
 
-## Connecting to R server operationalization service on your DSVM
-* Command line to connect with ssh (Linux, Mac) - replace IPaddress IP of your DSVM
-```bash
-.\plink.exe -L localhost:12800:localhost:12800 remoteuser@IPaddress (or remoteuser@VMname)
-```
 <hr>
 ## Tutorial slides (not final until 03/14/2017) 
 Slide deck: <br>
