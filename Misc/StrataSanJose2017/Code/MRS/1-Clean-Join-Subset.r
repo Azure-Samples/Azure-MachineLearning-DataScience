@@ -139,7 +139,7 @@ joinedDF5 <- SparkR::rename(joinedDF4,
 # Output to CSV
 ################################################
 
-joinedDF5 <- repartition(joinedDF5, 16) # write.df below will produce this many CSVs
+joinedDF5 <- repartition(joinedDF5, 2) # write.df below will produce this many CSVs
 
 # write result to directory of CSVs
 write.df(joinedDF5, file.path(fullDataDir, "joined5CsvSubset"), "com.databricks.spark.csv", "overwrite", header = "true")
