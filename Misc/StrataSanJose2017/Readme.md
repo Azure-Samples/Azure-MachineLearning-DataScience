@@ -3,7 +3,7 @@
 ## Tutorial link (Strata San Jose, March 2017)
 https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/55806
 
-## Tutorial Prerequisites
+## REQUIRED - Tutorial Prerequisites
 * Please bring a wireless enabled laptop.
 * Make sure your machine has an ssh client with port-forwarding capability. On Mac or Linux, simply run the ssh command in a terminal window.
 On Windows, download [plink.exe](https://the.earth.li/~sgtatham/putty/latest/x86/plink.exe)
