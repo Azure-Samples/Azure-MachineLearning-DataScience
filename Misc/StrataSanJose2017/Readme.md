@@ -73,6 +73,16 @@ Link for further details: https://docs.microsoft.com/en-us/azure/machine-learnin
 <br>
 <hr>
 
+## Platforms for hands-on exercises and demos
+### Azure Linux DSVM (Data Science Virtual Machine)
+Information on Linux DSVM: https://azuremarketplace.microsoft.com/en-us/marketplace/apps/microsoft-ads.linux-data-science-vm<br>
+The Linux DSVM has Spark (2.0.2) installed, as well as Yarn for job management, as well as HDFS. So, you can use the DSVM to run regular R code as well as code that run on Spark (e.g. using SparkR package). You will use DSVM as a single node Spark machine for hands-on exercises. We will provision these machines and assign them to you at the beginning of the tutorial.<br>
 
+### Azure HDInsight Spark clusters
+Information about HDInsight Spark clusters: https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-apache-spark-overview<br>
+For this tutorial, we will show how to scale the code you develop in DSVM using HDInsight clusters.
+
+<br>
+<hr>
 ## Video Record of an earlier version of this tutorial (presented at the KDD conference in August 2016)
 http://videolectures.net/kdd2016_tutorial_scalable_r_on_spark/?q=Spark
