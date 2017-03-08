@@ -2,6 +2,8 @@
 setwd("/home/remoteuser/Code/MRS")
 source("SetComputeContext.r")
 
+rxSetComputeContext("local")
+
 # Load our rxDTree Decision Tree model
 
 load("dTreeModelSubset.RData") # loads dTreeModel
@@ -13,19 +15,13 @@ scoringFn <- function(newdata){
   rxPredict(dTreeModel, newdata)
 }
 
-trainDS <- RxXdfData( file.path(dataDir, "finalDataTrainSubset") )
-
-rxSetComputeContext("local")
-exampleDF <- base::subset(head(trainDS), select = -ArrDel15)
-
 testDS <- RxXdfData( file.path(dataDir, "finalDataTestSubset") )
 
 dataToBeScored <- base::subset(head(testDS), select = -ArrDel15)
 
 # Test the scoring function locally
 
-scoringFn(exampleDF)
-
+scoringFn(dataToBeScored)
 
 ######################################################
 #   Authenticate with the Operationalization service    
