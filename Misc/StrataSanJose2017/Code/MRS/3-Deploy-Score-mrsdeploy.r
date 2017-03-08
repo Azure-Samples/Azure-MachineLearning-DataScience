@@ -45,7 +45,7 @@ remoteLogin(
 ################################################
 
 # specify the version
-version <- "v1.1"
+version <- "v1.1.0"
 
 # publish the scoring function web service
 api_frame <- publishService(
