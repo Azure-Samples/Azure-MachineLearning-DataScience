@@ -50,7 +50,8 @@ sparklyr MLlib functions: sparklyr MLlib functions: http://spark.rstudio.com/mll
 RevoScaleR functions: https://msdn.microsoft.com/en-us/microsoft-r/scaler/scaler
 
 ### Microsoft R Server: <br>
-Microsoft R Server general information: https://msdn.microsoft.com/en-us/microsoft-r/rserver
+Microsoft R Server general information: https://msdn.microsoft.com/en-us/microsoft-r/rserver. <br>
+Microsoft R Servers are installed on both Azure Linux DSVMs and HDInsight clusters (see below), and will be used to run R code in the tutorial.
 
 ### R-Server Operationalization service: <br>
 Microsoft R Server operationalization service general information: https://msdn.microsoft.com/en-us/microsoft-r/operationalize/about
@@ -73,7 +74,7 @@ Link for further details: https://docs.microsoft.com/en-us/azure/machine-learnin
 <br>
 <hr>
 
-## Platforms for hands-on exercises and demos
+## Platforms & services for hands-on exercises or demos
 ### Azure Linux DSVM (Data Science Virtual Machine)
 Information on Linux DSVM: https://azuremarketplace.microsoft.com/en-us/marketplace/apps/microsoft-ads.linux-data-science-vm<br>
 The Linux DSVM has Spark (2.0.2) installed, as well as Yarn for job management, as well as HDFS. So, you can use the DSVM to run regular R code as well as code that run on Spark (e.g. using SparkR package). You will use DSVM as a single node Spark machine for hands-on exercises. We will provision these machines and assign them to you at the beginning of the tutorial.<br>
