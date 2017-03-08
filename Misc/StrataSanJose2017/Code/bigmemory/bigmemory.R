@@ -13,7 +13,7 @@ if(!require("biganalytics")) install.packages('biganalytics')
 ##### Example of "bigmemory"
 
 # change working directory
-setwd("~/datasets")
+setwd("/home/remoteuser/Data")
 
 # call the library
 library("bigmemory")
