@@ -13,12 +13,15 @@ if(!require("biglm")) install.packages('biglm')
 
 ##### Example of "ff"
 
+# change working directory
+setwd("/home/remoteuser/Data")
+
 # call the library
 library("ff")
 
 # read airline data into a ffdf object (20 million rows * 26 columns; 1.5GB)
 # (it takes 2 mins~; depends on machine)
-airline_ff <- read.csv.ffdf(file = "http://strata2017r.blob.core.windows.net/airline/airline_20MM.csv",
+airline_ff <- read.csv.ffdf(file = "airline_20MM.csv",
                             header = TRUE,
                             na.strings = NA)
 head(airline_ff)
