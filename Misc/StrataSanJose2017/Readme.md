@@ -19,7 +19,7 @@ ssh -L localhost:8787:localhost:8787 remoteuser@IPaddress
 * Command line to connect with plink.exe (Windows) - run the following commands in a Windows command prompt window - replace XXX with the number of your cluster
 ```bash
 cd directory-containing-plink.exe
-.\plink.exe -L localhost:8787:localhost:8787 remoteuser@IPaddress
+.\plink.exe -L localhost:8787:localhost:8787 remoteuser@IPaddress (or remoteuser@VMname)
 ```
 * After connecting via the above command lines, open [http://localhost:8787/](http://localhost:8787/) in your web browser to connect to RStudio Server the DSVM<br>
 <b>NOTE: During the tutorial, all attendees will use RStudio Server on their DSVMs.</b>
@@ -27,7 +27,7 @@ cd directory-containing-plink.exe
 ## Connecting to R server operationalization service on your DSVM
 * Command line to connect with ssh (Linux, Mac) - replace IPaddress IP of your DSVM
 ```bash
-.\plink.exe -L localhost:12800:localhost:12800 remoteuser@IPaddress
+.\plink.exe -L localhost:12800:localhost:12800 remoteuser@IPaddress (or remoteuser@VMname)
 ```
 <hr>
 ## Tutorial slides (not final until 03/14/2017) 
