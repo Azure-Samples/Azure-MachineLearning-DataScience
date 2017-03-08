@@ -45,9 +45,9 @@ library(ggplot2)
 ###########################################
 # CREATE SPARK CONTEXT
 ###########################################
-#sparkEnvir <- list(spark.executor.instance = '4', spark.yarn.executor.memoryOverhead = '4000')
+sparkEnvir <- list(spark.executor.instance = '3', spark.yarn.executor.memory = '4096')
 sc <- sparkR.session(
-  #sparkEnvir = sparkEnvir,
+  sparkEnvir = sparkEnvir,
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
 SparkR::setLogLevel("OFF")
@@ -72,27 +72,32 @@ The data can be uploaded to the blob (or other storage) attached to your HDInsig
 
 ##Read in data from csv files
 ```{r Read in files, message=FALSE, warning=FALSE, echo=TRUE}
+starttime <- Sys.time();
+###########################################
+# LIST FILES FROM HDFS
+###########################################
+system("hadoop fs -ls /user/RevoShare/remoteuser/Data")
+
 ###########################################
 # TRIP FILE (CSV format)
 ###########################################
-starttime <- Sys.time();
 
-tripPath <- file.path(fullDataDir, "trip_data_12.csv")
-tripDF <- read.df(tripPath, source = "com.databricks.spark.csv", 
-                  header = "true", inferSchema = "true")
+#tripPathCSV <- file.path(fullDataDir, "trip_data_12.csv")
+#tripDF <- read.df(tripPathCSV, source = "com.databricks.spark.csv", header = "true", inferSchema = "true")
 #SparkR::cache(tripDF); SparkR::count(tripDF)
-head(tripDF, 3)
+#write.df(tripDF, file.path(fullDataDir, "TripData2013DecParquet"), "parquet", "overwrite")
+tripPath <- file.path(fullDataDir, "TripData2013DecParquet")
+tripDF <- read.df (tripPath, source = "parquet")
 printSchema(tripDF)
+SparkR::cache(tripDF); SparkR::count(tripDF)
 
 ###########################################
 # FARE FILE (parquet format)
 ###########################################
-farePath <- file.path(fullDataDir, "trip_fare_12.csv")
-fareDF <- read.df(farePath, source = "com.databricks.spark.csv", 
-                  header = "true", inferSchema = "true")
-SparkR::cache(fareDF); SparkR::count(fareDF)
-head(fareDF, 3)
+farePath <- file.path(fullDataDir, "FareData2013DecParquet")
+fareDF <- read.df (farePath, source = "parquet")
 printSchema(fareDF)
+SparkR::cache(fareDF); SparkR::count(fareDF)
 
 endtime <- Sys.time();
 print (endtime - starttime);
@@ -254,7 +259,7 @@ If a data-set is large, it may need to be down-sampled for modeling in reasonabl
 starttime <- Sys.time();
 
 trip_fare_featSampled <- SparkR::sample(trip_fare_feat, withReplacement=FALSE, 
-                                fraction=0.5, seed=123)
+                                fraction=0.1, seed=123)
 SparkR::cache(trip_fare_featSampled); SparkR::count(trip_fare_featSampled);
 createOrReplaceTempView(trip_fare_featSampled, "trip_fare_featSampled")
 
@@ -346,12 +351,12 @@ Repartition the data in specific number of chunks and save
 ###########################################
 starttime <- Sys.time();
 
-trip_fare_featSampledRepartitioned <- repartition(trip_fare_featSampled, 10) # write.df below will produce this many files
+trip_fare_featRepartitioned <- repartition(trip_fare_feat, 10) # write.df below will produce this many files
 
 ###########################################
 # SAVE DATAFRANE AS PARQUET file
 ###########################################
-write.df(df=trip_fare_featSampledRepartitioned, 
+write.df(df=trip_fare_featRepartitioned, 
          path=file.path(fullDataDir, "NYCjoinedParquetSubset"), 
          source="parquet", mode="overwrite")
 
@@ -364,9 +369,18 @@ print (endtime - starttime);
 ###########################################
 # UNPERSIST CACHED DATA FRAME
 ###########################################
+SparkR::unpersist(tripDF)
+SparkR::unpersist(fareDF)
 SparkR::unpersist(trip_fareDF)
 SparkR::unpersist(trip_fare_feat)
 SparkR::unpersist(trip_fare_featSampled)
+
+###########################################
+system("hadoop fs -ls /user/RevoShare/remoteuser/Data")
+# LIST FILES FROM HDFS
+###########################################
+system("hadoop fs -ls /user/RevoShare/remoteuser/Data/NYCjoinedParquetSubset")
+system("hadoop fs -ls /user/RevoShare/remoteuser/Models")
 
 ###########################################
 # STOP SPARKR CONTEXT
