@@ -1,37 +1,62 @@
-# 
-# DESCRIPTION
-# 
-# This script uses Australian tourism data set from 'fpp' package to
-# forecast quarterly visitor nights spent by international tourists to Australia.
-# The quarterly historic data is available for years 1999-2010.
-# 
-# The script:
-#   1 - creates hierarchical time series data set
-#   2 - splits the data into training and testing
-#   3 - generates a grid of input parameters for forecasting function
-#   4 - calls rxExec() to run forecasting over the parameter space distributed
-#       accross local cores or cluster nodes
-#   5 - finds optimal parameters based on all runs
-#   6 - forecasts the next two years using the optimal parameters
-# 
-# 
-# To run the script type: source("sample_demo.R")
+---
+title: "Parallel models: training many parallel models for hierarchical time series optimization"
+author: "Vanja Paunic"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+Training hierarchical time series forecasting models require searching through a large parameter space.
+
+The model's performance greatly varies over the parameters we choose, some of which are: 
+
+* univariate time series method for individual series prediction
+* method for reconciling forecasts across hierarchy
+* weights we use to reconcile forecasts across hierarchy
+* etc.
 
 
+This script uses Australian tourism data set from 'fpp' package as a sample data set. 
 
-# ----------------- LIBRARIES AND FUNCTIONS ----------------- #
+  Rob J Hyndman (2013). fpp: Data for "Forecasting: principles and practice". R package version 0.5.
+  https://CRAN.R-project.org/package=fpp
+
+This data set contains quarterly visitor nights spent by international tourists to Australia available for years 1999-2010. We will use this historical data to forecast nights spent by tourists in Australia:
+
+* In total
+* By state
+* By city
+
+This data can be represented as a hierarchy, as shown in the following picture:
+
+![Australia tourism hierarchy](./aust_hierarchy.png)
+
+The script:
+
+1. creates hierarchical time series data set
+2. splits the data into training and testing
+3. generates a grid of input parameters for forecasting function
+4. calls rxExec() to run forecasting over the parameter space distributed
+    accross local cores or cluster nodes
+5. finds optimal parameters based on all runs
+6. forecasts the next two years using the optimal parameters
 
 
+Let us first load necessary libraries
+
+```{r Installing libraries, message = FALSE}
 if(!require("hts")) install.packages('hts')
 if(!require("fpp")) install.packages('fpp')
 
 library(hts)
 library(fpp)
+```
+
+We will use the following function for time series forecasting. The function runs hierarchical forecast on training data set
+and returns evaluation metrics on test data set
 
 
-# Function that runs hierarchical forecast on training data set
-# and returns evaluation metrics on test data set
-
+```{r Forecasting function}
 forecast_hts <- function (traindata, testdata, htsmethod, tsmethod, combweights){
   
   # Forecasting horizon
@@ -48,11 +73,11 @@ forecast_hts <- function (traindata, testdata, htsmethod, tsmethod, combweights)
   fcast_acc <- accuracy.gts(hts_fcast, test = testdata, levels = 0)
   
 }
+```
 
+Let's process the data
 
-
-# ----------------- PROCESS THE DATA ----------------- #
-
+```{r Processing the data}
 # Create hierachical time series dataset
 htsdata <- hts(vn, nodes=list(4,c(2,2,2,2)))
 
@@ -62,19 +87,23 @@ htsdata$labels$`Level 1` <- c("NSW", "VIC", "QLD", "Other")
 htsdata$labels$`Level 2` <- c("Sydney", "NSW-Other", "Melbourne", "VIC-Other", "BrisbaneGC", "QLD-Other", "Capitals", "Other")
 names(htsdata$labels) <- c("Total", "State", "City")
 
-
-# Plot the hierarchial time series data
-plot(htsdata)
-
-
 # Split data into train and test (leave out years 2010 and 2011 for testing)
 train_data <- window(htsdata,  end = c(2009, 4))
 test_data <- window(htsdata, start = c(2010, 1))
 
+```
 
-# ----------- GENERATE PARAMETER SPACE AND RUN DISTRIBUTED JOBS ----------- #
+Let's see what the hierarchical time series data looks like.
+
+```{r Visualizing hts}
+# Plot the hierarchial time series data
+plot(htsdata)
+```
 
 
+Let's generate the parameter space
+
+```{r Generating parameter space}
 # Vary methods for generating base time series forecasts
 ts_method <- c("ets", "arima", "rw")
 
@@ -95,19 +124,22 @@ rm_inds <- param_space$hts_method != "comb"
 param_space$comb_weights[rm_inds] <- "none"
 param_space <- param_space[!duplicated.data.frame(param_space),]
 
+```
 
-# rxSetComputeContext("local") - sets compute context to "local" and causes rxExec() 
-# to execute runs locally in a serial manner.
-# 
-# rxSetComputeContext(RxLocalParallel()) - causes rxExec() to run multiple tasks 
-# in parallel, thereby using the multiple cores on your local machine. 
-# The downside is that this will use more memory and will slow down your computer 
-# for other work you may be trying to do at the same time.
-# 
-# rxSetComputeContext(RxSpark()) - for parallelized distributed execution via Spark 
-# across the nodes of a cluster
+Setting up compute context
 
+rxSetComputeContext("local") - sets compute context to "local" and causes rxExec() 
+to execute runs locally in a serial manner.
 
+rxSetComputeContext(RxLocalParallel()) - causes rxExec() to run multiple tasks 
+in parallel, thereby using the multiple cores on your local machine. 
+The downside is that this will use more memory and will slow down your computer 
+for other work you may be trying to do at the same time.
+
+rxSetComputeContext(RxSpark()) - for parallelized distributed execution via Spark 
+across the nodes of a cluster
+
+```{r Running distributed computation}
 rxSetComputeContext(RxLocalParallel())
 
 # Measure execution time
@@ -126,8 +158,12 @@ rxResult <- rxExec(FUN            = forecast_hts,
 
 cat(paste("Elapsed time: ", format(et['elapsed'], digits = 4), "seconds. \n"))
 
-# Collect the results of the rxExec(), and find the result with the best 
-# evaluation metric (smallest MAPE)
+```
+
+
+Collect the results of the rxExec(), and find the result with the bestevaluation metric (smallest MAPE)
+
+```{r Getting optimal parameters}
 all_mape <- sapply( rxResult, function(x) x["MAPE",] )
 min_mape_indx <- which.min(all_mape)
 
@@ -141,19 +177,17 @@ hts_fcast <- forecast(object  = htsdata,
                       method  = opt_params$hts_method,
                       fmethod = opt_params$ts_method)
 
+```
 
 
+Print out the optimal results
 
-# --------------- PRINT OUT AND PLOT THE RESULTS --------------- #
-
-
-cat("\n OPTIMAL RESULTS \n\n")
-
-cat(paste("Minimum obtained MAPE: ", format(min(all_mape), digits = 4), "\n"))
-
-cat(paste("Optimal method for distributing forecasts within the hierarchy: ", opt_params$hts_method, "\n"))
-
-cat(paste("Optimal forecasting method: ", opt_params$ts_method, "\n"))
+```{r Printing the results, echo=FALSE}
+output <- paste("\n OPTIMAL RESULTS \n\n",
+                "Minimum obtained MAPE: ", format(min(all_mape), digits = 4), "\n",
+                "Optimal method for distributing forecasts within the hierarchy: ", opt_params$hts_method, "\n",
+                "Optimal forecasting method: ", opt_params$ts_method, "\n")
+cat(output)
 
 if(opt_params$hts_method == "comb") cat(paste("Optimal weights used for `comb` method: ", opt_params$comb_weights, "\n"))
 
@@ -164,10 +198,12 @@ print(aggts(hts_fcast, levels = 2))
 # Plot the forecasted time series
 names(hts_fcast$labels) <- c("Total", "State", "City")
 plot(hts_fcast)
+```
 
 
-## ----------------- GENERATE LARGER DATA ----------------- #
+Let's generate larger data
 
+```{r Generating larger data}
 addNoise <- function(data) {
   
   data_dim <- dim(data)[1] * dim(data)[2]
@@ -179,7 +215,7 @@ addNoise <- function(data) {
 
 # Increase the number of time series by factor x
 # TRY increasing this number
-x = 5
+x = 2
 
 larger_data <- coredata(vn)[ ,  rep(seq(ncol(vn)), x)]
 larger_data <- addNoise(larger_data)
@@ -232,3 +268,4 @@ hts_fcast <- forecast(object  = htsdata,
                       fmethod = opt_params$ts_method)
 
 plot(hts_fcast)
+```
