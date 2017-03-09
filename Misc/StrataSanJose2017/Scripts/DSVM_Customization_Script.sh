@@ -79,7 +79,7 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/sparklyr/sparklyr_NYCTaxi_forDSVM.html
 
 cd /home/remoteuser
-cd CCode/bigmemory
+cd Code/bigmemory
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/bigmemory/bigmemory.R
 
 cd /home/remoteuser
@@ -103,7 +103,7 @@ wget http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/FareData2013DecP
 wget http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/TripData2013DecParquet.tar
 tar -xvf FareData2013DecParquet.tar
 tar -xvf TripData2013DecParquet.tar
-
+rm FareData2013DecParquet.tar TripData2013DecParquet.tar
 
 # Airline data
 wget http://cdspsparksamples.blob.core.windows.net/data/Airline/WeatherSubsetCsv.tar.gz
