@@ -28,7 +28,7 @@ Where necessary, small amounts of data is brought to the local data frames for p
 
 <br>
 
-#Creating spark connections, loading required packages
+#Creating spark connection, loading packages
 ```{r Load Packages, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
@@ -37,6 +37,8 @@ Sys.setenv(YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop", HADOOP_HOME="/opt/had
            JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
            SPARK_HOME = "/dsvm/tools/spark/current",
            PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin:/dsvm/tools/spark/current/bin"))
+## *** NOTE: SPARK PATH IS DIFFERENT IN DSVM AND HDI CLUSTER
+
 .libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
 library(rmarkdown)
 library(knitr)
@@ -55,6 +57,7 @@ sp <- spark_connect(master = "yarn-client")
 ## SPECIFY BASE HDFS DIRECTORY
 ###########################################
 fullDataDir <- "/user/RevoShare/remoteuser/Data"
+## *** NOTE: FILE PATH IS DIFFERENT IN DSVM AND HDI CLUSTER
 ```
 <hr>
 <br>
@@ -80,9 +83,12 @@ head(joinedDF, 3)
 count(joinedDF)
 
 ###########################################
-# SAMPLE TO A SMALLER DATAFRAME FOR FASTER MODEL BUILDING
+# FILTER AND SAMPLE TO A SMALLER DATAFRAME FOR FASTER MODEL BUILDING
 ###########################################
-joinedDFsmall <- sdf_sample(joinedDF, fraction = 0.5, replacement = FALSE, seed = 123)
+joinedDFsmall <- joinedDF %>% 
+            dplyr::filter(trip_distance > 1) %>%
+            sdf_sample(fraction = 0.1, 
+                       replacement = FALSE, seed = 123)
 
 endtime <- Sys.time();
 print (endtime - starttime);
@@ -98,8 +104,12 @@ Spark provides feature transformers, faciliating many common transformations of 
 starttime <- Sys.time();
 
 # Binarizer
-joinedDF2 <- joinedDFsmall %>% ft_string_indexer(input_col = 'payment_type', output_col = 'payment_ind') %>% 
-      ft_binarizer(input_col = 'payment_ind', output_col = 'pay_type_bin', threshold = 0.5)
+joinedDF2 <- joinedDFsmall %>% 
+  ft_string_indexer(input_col = 'payment_type', output_col = 'payment_ind') %>% 
+  ft_binarizer(input_col = 'payment_ind', output_col = 'pay_type_bin', threshold = 0.5)
+
+endtime <- Sys.time();
+print (endtime - starttime);
 ```
 
 <hr>
