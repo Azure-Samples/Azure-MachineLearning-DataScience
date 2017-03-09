@@ -1,8 +1,26 @@
-setwd("~/airline")
+# 
+# DESCRIPTION
+# 
+# This script shows an example of how to create and use big matrix objects
+# with the "bigmemory" and its related packages.
+#
 
+# install "bigmemory" and related packages:
+if(!require("bigmemory")) install.packages('bigmemory')
+if(!require("biganalytics")) install.packages('biganalytics')
+
+
+##### Example of "bigmemory"
+
+# change working directory
+setwd("/home/remoteuser/Data")
+
+# call the library
 library("bigmemory")
-# Read airline data into a big matrix object (20 million rows * 26 columns)
-backing.file    <- "airline_big.bin"
+
+# read airline data into a big matrix object (20 million rows * 26 columns; 1.5GB)
+# (it takes 2+ mins)
+backing.file <- "airline_big.bin"
 descriptor.file <- "airline_big.desc"
 airline_big <- read.big.matrix("airline_20MM.csv", 
                                header = TRUE,
@@ -11,33 +29,40 @@ airline_big <- read.big.matrix("airline_20MM.csv",
                                backingfile = backing.file,
                                descriptorfile = descriptor.file,
                                shared = TRUE)
+head(airline_big)
+
+# if descriptor.file is already exist, we can load the big matrix by attaching that file
+# airline_big <- attach.big.matrix(descriptor.file)
 
 # size of big matrix object = 664 bytes/0.6 KB
 object.size(airline_big)
-# size of R matrix object = 2080002048 bytes/2.08 GB
+
+# convert big matrix object ot R matrix object
 airline_matrix <- airline_big[,]
+
+# size of R matrix object = 2080002048 bytes/2.08 GB
 object.size(airline_matrix)
 
+# read same data into R Data Frame (it takes 3+ mins)
+airline_df <- read.csv("airline_20MM.csv", 
+                       header = TRUE,
+                       sep = ",")
 
-# comparing to read.csv()
-system.time(airline_df <- read.csv("airline_20MM.csv", 
-                                   header = TRUE,
-                                   sep = ","))
-
-
-
-
-# load big matrix from descriptor file
-airline_big <- attach.big.matrix(descriptor.file)
-
-# calculate the fraction of arrival delays = 46.92%
-length(mwhich(airline_big, cols = 25, 
-              vals = 1, comps = "eq"))/
-  nrow(airline_big)
+# size of R Data Frame object = 2080003456 bytes/2.08 GB
+object.size(airline_df)
 
 
+##### Example of "biganalytics"
+
+# call the library
 library("biganalytics")
-# fit a kmeans model with 2 centers 
-big_km <- bigkmeans(airline_big, centers = 2, 
-                    iter.max = 10, nstart = 1, 
-                    dist = "euclid")
+
+# perform simply data transformation on "CRSDepTime"
+# round "CRSDepTime" to the nearest hour
+airline_big[, "CRSDepTime"] <- floor(airline_big[, "CRSDepTime"] / 100)
+
+# fit a glm model
+# (it takes 1.5 mins)
+model_big <- bigglm.big.matrix(formula = IsArrDelayed ~ Month+DayofMonth+DayOfWeek+CRSDepTime+Distance, 
+                               data = airline_big, family = binomial())
+summary(model_big)
