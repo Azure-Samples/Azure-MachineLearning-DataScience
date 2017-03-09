@@ -132,7 +132,7 @@ print (endtime - starttime);
 Spark’s machine learning library can be accessed from sparklyr through the <a href="http://spark.rstudio.com/mllib.html#algorithms" target="_blank">ml_* family of functions</a>. Here we create ML models for the prediction of tip-amount for taxi trips.
 
 ##CreateElastic Net model
-Create a elastic net model using training data, and evaluate on test data-set
+Create elastic net model using training data, and evaluate on test data-set
 ```{r Elastic net modeo, message=FALSE, warning=FALSE, echo=TRUE, fig.width=5, fig.height=4}
 starttime <- Sys.time();
 
@@ -148,7 +148,8 @@ summary(fit)
 
 # Predict on test data and keep predictions in Spark context
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
-predictedDF <- as.data.frame(predictedVals)
+predictedValsSampled <- sdf_sample(predictedVals, fraction = 0.1, replacement = FALSE)
+predictedDF <- as.data.frame(predictedValsSampled)
 
 # Evaluate and plot predictions (R-sqr)
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
@@ -167,6 +168,7 @@ ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
 endtime <- Sys.time();
 print (endtime - starttime);
 ```
+
 ##Create Random Forest Model
 Create a random forest model using training data, and evaluate on test data-set
 ```{r Random forest model, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=5}
@@ -196,7 +198,8 @@ plot1 <- feature_importance %>%
 
 # Predict on test data and keep predictions in Spark context
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
-predictedDF <- as.data.frame(predictedVals)
+predictedValsSampled <- sdf_sample(predictedVals, fraction = 0.1, replacement = FALSE)
+predictedDF <- as.data.frame(predictedValsSampled)
 
 # Evaluate and plot predictions (R-sqr)
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
@@ -247,7 +250,8 @@ plot1 <- feature_importance %>%
 
 # Predict on test data and keep predictions in Spark context
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
-predictedDF <- as.data.frame(predictedVals)
+predictedValsSampled <- sdf_sample(predictedVals, fraction = 0.1, replacement = FALSE)
+predictedDF <- as.data.frame(predictedValsSampled)
 
 # Evaluate and plot predictions (R-sqr)
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
