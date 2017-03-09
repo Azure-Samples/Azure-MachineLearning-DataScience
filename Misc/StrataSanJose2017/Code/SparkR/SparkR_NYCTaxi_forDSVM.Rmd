@@ -49,16 +49,18 @@ library(ggplot2)
 sparkEnvir <- list(spark.executor.instance = '3', spark.executor.memory = '4096', spark.executor.cores = '1')
 sc <- sparkR.session(
   sparkEnvir = sparkEnvir,
+  spark.master = "local", 
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
 SparkR::setLogLevel("OFF")
+### *** NOTE: spark.master can be set to use "yarn" on HDInsight clusters *** ###
 
 ###########################################
 ## SPECIFY BASE HDFS DIRECTORY
 ###########################################
 fullDataDir <- "/user/RevoShare/remoteuser/Data"
 system("hadoop fs -ls /user/RevoShare/remoteuser/Data")
-### *** NOTE: HDFS file paths are different in DSVM and HDI cluster *** ###
+### *** NOTE: HDFS file paths are different in DSVM and HDInsight cluster *** ###
 
 ```
 <br>
