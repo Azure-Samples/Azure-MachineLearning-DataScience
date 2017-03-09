@@ -34,6 +34,7 @@ Sys.setenv(YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop",
            JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
            SPARK_HOME = "/dsvm/tools/spark/current",
            PATH=paste0(Sys.getenv("PATH"),":/opt/hadoop/current/bin:/dsvm/tools/spark/current/bin"))
+### *** NOTE: Spark paths are different in DSVM and HDI cluster *** ###
 
 .libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
 library(SparkR)
@@ -45,7 +46,7 @@ library(ggplot2)
 ###########################################
 # CREATE SPARK CONTEXT
 ###########################################
-sparkEnvir <- list(spark.executor.instance = '3', spark.yarn.executor.memory = '4096')
+sparkEnvir <- list(spark.executor.instance = '3', spark.executor.memory = '4096', spark.executor.cores = '1')
 sc <- sparkR.session(
   sparkEnvir = sparkEnvir,
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
@@ -56,12 +57,15 @@ SparkR::setLogLevel("OFF")
 ## SPECIFY BASE HDFS DIRECTORY
 ###########################################
 fullDataDir <- "/user/RevoShare/remoteuser/Data"
+system("hadoop fs -ls /user/RevoShare/remoteuser/Data")
+### *** NOTE: HDFS file paths are different in DSVM and HDI cluster *** ###
+
 ```
 <br>
 <hr>
 
 
-#Reading in files from HDFS (csv or parquet format)
+#Reading files from HDFS (csv or parquet format)
 Data for this exercise can be downloaded from the public blob locations below: 
 <br>
 1. Trip (Csv): http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/KDD2016/trip_data_12.csv
@@ -79,9 +83,8 @@ starttime <- Sys.time();
 system("hadoop fs -ls /user/RevoShare/remoteuser/Data")
 
 ###########################################
-# TRIP FILE (CSV format)
+# TRIP FILE (parquet format, CSV only shown for reference)
 ###########################################
-
 #tripPathCSV <- file.path(fullDataDir, "trip_data_12.csv")
 #tripDF <- read.df(tripPathCSV, source = "com.databricks.spark.csv", header = "true", inferSchema = "true")
 #SparkR::cache(tripDF); SparkR::count(tripDF)
@@ -90,6 +93,7 @@ tripPath <- file.path(fullDataDir, "TripData2013DecParquet")
 tripDF <- read.df (tripPath, source = "parquet")
 printSchema(tripDF)
 SparkR::cache(tripDF); SparkR::count(tripDF)
+head(tripDF, 3)
 
 ###########################################
 # FARE FILE (parquet format)
@@ -98,6 +102,7 @@ farePath <- file.path(fullDataDir, "FareData2013DecParquet")
 fareDF <- read.df (farePath, source = "parquet")
 printSchema(fareDF)
 SparkR::cache(fareDF); SparkR::count(fareDF)
+head(fareDF, 3)
 
 endtime <- Sys.time();
 print (endtime - starttime);
@@ -136,6 +141,10 @@ trip_fareDF <-  SparkR::sql("SELECT
   AND t.trip_time_in_secs >= 30 AND t.trip_time_in_secs <= 7200 
   AND t.rate_code <= 5 AND f.payment_type in ('CSH','CRD')")
 createOrReplaceTempView(trip_fareDF, "trip_fare")
+
+###########################################
+# Cache joined DF in memory
+###########################################
 SparkR::cache(trip_fareDF); SparkR::count(trip_fareDF);
 
 ###########################################
@@ -185,7 +194,7 @@ print (endtime - starttime);
 For visualization, a small portion data will have to be sampled and brought into local memory as a data.frame object. R's plotting functions (e.g. from those in ggplot package) can then be applied to the data.frame for visualization.
 ```{r Exploration and visualization, message=FALSE, warning=FALSE, echo=TRUE, fig.width=10, fig.height=4}
 ###########################################
-# SAMPLE SMALL PORTION OF DATA
+# SAMPLE SMALL PORTION OF DATA FOR VISUALIZATION
 ###########################################
 starttime <- Sys.time();
 
@@ -309,8 +318,9 @@ starttime <- Sys.time();
 predictions <- SparkR::predict(model, newData = testDF)
 predictions_sampled <- SparkR::sample(predictions, withReplacement=FALSE, 
                                 fraction=0.1, seed=123)
-predfilt <- SparkR::select(predictions, c("label","prediction"))
+predfilt <- SparkR::select(predictions_sampled, c("label","prediction"))
 predfilt_local <- SparkR::collect(predfilt)
+## We sample prediction DF, since the collect operation creates a regular DF in memory, and takes a long time
 
 # Evaluate and plot predictions (R-sqr)
 Rsqr = cor(predfilt_local$label, predfilt_local$prediction)^2; Rsqr;
@@ -336,8 +346,11 @@ print (endtime - starttime);
 Partition data into train/test, and train a glm model and evaluate it.
 ```{r Persist model, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
-## SAVE MODEL
+## SAVE MODEL [REMOVE FILE IF IT EXISTS]
 ###########################################
+if (length(system("hadoop fs -ls /user/RevoShare/remoteuser/Models/SparkGlmModel", intern=TRUE))>=1) {
+  system("hadoop fs -rm -r /user/RevoShare/remoteuser/Models/SparkGlmModel")
+}
 modelPath =  file.path("/user/RevoShare/remoteuser/Models", "SparkGlmModel");
 write.ml(model, modelPath) 
 
@@ -376,7 +389,6 @@ SparkR::unpersist(trip_fare_feat)
 SparkR::unpersist(trip_fare_featSampled)
 
 ###########################################
-system("hadoop fs -ls /user/RevoShare/remoteuser/Data")
 # LIST FILES FROM HDFS
 ###########################################
 system("hadoop fs -ls /user/RevoShare/remoteuser/Data/NYCjoinedParquetSubset")
