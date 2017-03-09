@@ -62,10 +62,11 @@ htsdata$labels$`Level 1` <- c("NSW", "VIC", "QLD", "Other")
 htsdata$labels$`Level 2` <- c("Sydney", "NSW-Other", "Melbourne", "VIC-Other", "BrisbaneGC", "QLD-Other", "Capitals", "Other")
 names(htsdata$labels) <- c("Total", "State", "City")
 
+# Let's look at the data
+htsdata
 
 # Plot the hierarchial time series data
 plot(htsdata)
-
 
 # Split data into train and test (leave out years 2010 and 2011 for testing)
 train_data <- window(htsdata,  end = c(2009, 4))
@@ -82,7 +83,7 @@ ts_method <- c("ets", "arima", "rw")
 hts_method <- c("bu", "comb", "tdgsa", "tdgsf", "tdfp") 
 
 # Vary forecast weights for the optimal cobination approach 
-comb_weights <- c("none", "sd", "nseries")
+comb_weights <- c("mint", "wls", "ols", "nseries")
 
 # Generate all possible combinations of the above parameters
 param_space <- expand.grid(hts_method, ts_method, comb_weights, stringsAsFactors = FALSE)
@@ -168,6 +169,11 @@ plot(hts_fcast)
 
 ## ----------------- GENERATE LARGER DATA ----------------- #
 
+# Increase the number of time series by factor x
+# TRY changing this variable
+x = 5
+
+# Function to add noise to a data set
 addNoise <- function(data) {
   
   data_dim <- dim(data)[1] * dim(data)[2]
@@ -176,10 +182,6 @@ addNoise <- function(data) {
   return(noisified)
   
 }
-
-# Increase the number of time series by factor x
-# TRY increasing this number
-x = 5
 
 larger_data <- coredata(vn)[ ,  rep(seq(ncol(vn)), x)]
 larger_data <- addNoise(larger_data)
@@ -190,6 +192,9 @@ vnx <- ts(larger_data, frequency = 4, start = c(1998, 1))
 # Create hierachical time series dataset
 htsdata <- hts(vnx, nodes=list(4*x, rep(c(2,2,2,2), x)))
 
+# Let's see what our data looks like
+print(htsdata)
+
 # Rename the nodes of the hierarchy
 htsdata$labels$`Level 1` <- paste0('State_', 1:length(htsdata$labels$`Level 1`))
 htsdata$labels$`Level 2` <- paste0('City_', 1:length(htsdata$labels$`Level 2`))
@@ -198,6 +203,7 @@ names(htsdata$labels) <- c("Total", "State", "City")
 # Split data into train and test (leave out years 2010 and 2011 for testing)
 train_data <- window(htsdata,  end = c(2009, 4))
 test_data <- window(htsdata, start = c(2010, 1))
+
 
 # TRY changing the compute context and see how it affects the execution time
 rxSetComputeContext(RxLocalParallel())

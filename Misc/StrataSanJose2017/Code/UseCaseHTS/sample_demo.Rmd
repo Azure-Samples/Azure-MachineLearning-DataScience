@@ -1,14 +1,26 @@
 ---
 title: "Parallel models: training many parallel models for hierarchical time series optimization"
 author: "Vanja Paunic"
-output:
-  html_document: default
-  html_notebook: default
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 5
+    highlight: haddock
+    keep_md: yes
+    number_sections: yes
+    theme: journal
+    toc: yes
+    toc_float: yes
+runtime: knit
 ---
 
-Training hierarchical time series forecasting models require searching through a large parameter space.
+## Hierarchical time series
 
-The model's performance greatly varies over the parameters we choose, some of which are: 
+Time series data can often be disaggregated by attributes of interest to form groups of time series or a hierarchy. For example, one might be interested in forecasting demand of all products in total, by location, by product category, by customer, etc. (see picture below). Forecasting hierarchical time series data is challenging because the generated forecasts need to satisfy the aggregate requirement, that is, lower-level forecasts need to sum up to the higher-level forecasts. There are many approaches that solve this problem, differing in the way they aggregate individual time series forecasts across the groups or the hierarchy: bottom-up, top-down, or middle-out.
+
+Training hierarchical time series forecasting models require searching through a large parameter space. The model's performance greatly varies over the parameters we choose, some of which are: 
 
 * univariate time series method for individual series prediction
 * method for reconciling forecasts across hierarchy
@@ -16,7 +28,7 @@ The model's performance greatly varies over the parameters we choose, some of wh
 * etc.
 
 
-This script uses Australian tourism data set from 'fpp' package as a sample data set. 
+In this tutorial, we will use Australian tourism data set from 'fpp' package as a sample data set. 
 
   Rob J Hyndman (2013). fpp: Data for "Forecasting: principles and practice". R package version 0.5.
   https://CRAN.R-project.org/package=fpp
@@ -29,20 +41,24 @@ This data set contains quarterly visitor nights spent by international tourists 
 
 This data can be represented as a hierarchy, as shown in the following picture:
 
-![Australia tourism hierarchy](./aust_hierarchy.png)
+![Australia tourism data set](./aust_hierarchy.png)
 
-The script:
+## Outline
+In this tutorial we will:
 
-1. creates hierarchical time series data set
-2. splits the data into training and testing
-3. generates a grid of input parameters for forecasting function
-4. calls rxExec() to run forecasting over the parameter space distributed
+1. create a hierarchical time series
+2. split the data into training and testing
+3. generate a grid of input parameters for forecasting function
+4. call rxExec() to run forecasting over the parameter space distributed
     accross local cores or cluster nodes
-5. finds optimal parameters based on all runs
-6. forecasts the next two years using the optimal parameters
+5. find optimal parameters based on all runs
+6. forecast the next two years using the optimal parameters
+7. try running the above for larger data size
 
 
-Let us first load necessary libraries
+## HTS Forecasting
+
+### Loading necessary libraries
 
 ```{r Installing libraries, message = FALSE}
 if(!require("hts")) install.packages('hts')
@@ -51,6 +67,8 @@ if(!require("fpp")) install.packages('fpp')
 library(hts)
 library(fpp)
 ```
+
+### Forecasting function
 
 We will use the following function for time series forecasting. The function runs hierarchical forecast on training data set
 and returns evaluation metrics on test data set
@@ -75,6 +93,8 @@ forecast_hts <- function (traindata, testdata, htsmethod, tsmethod, combweights)
 }
 ```
 
+### Hierarchical time series data set
+
 Let's process the data
 
 ```{r Processing the data}
@@ -87,11 +107,16 @@ htsdata$labels$`Level 1` <- c("NSW", "VIC", "QLD", "Other")
 htsdata$labels$`Level 2` <- c("Sydney", "NSW-Other", "Melbourne", "VIC-Other", "BrisbaneGC", "QLD-Other", "Capitals", "Other")
 names(htsdata$labels) <- c("Total", "State", "City")
 
+# Let's look at the data
+htsdata
+
 # Split data into train and test (leave out years 2010 and 2011 for testing)
 train_data <- window(htsdata,  end = c(2009, 4))
 test_data <- window(htsdata, start = c(2010, 1))
 
 ```
+
+### Visualizing hierarchy
 
 Let's see what the hierarchical time series data looks like.
 
@@ -100,6 +125,7 @@ Let's see what the hierarchical time series data looks like.
 plot(htsdata)
 ```
 
+### Parameter space
 
 Let's generate the parameter space
 
@@ -111,7 +137,7 @@ ts_method <- c("ets", "arima", "rw")
 hts_method <- c("bu", "comb", "tdgsa", "tdgsf", "tdfp") 
 
 # Vary forecast weights for the optimal cobination approach 
-comb_weights <- c("none", "sd", "nseries")
+comb_weights <- c("mint", "wls", "ols", "nseries")
 
 # Generate all possible combinations of the above parameters
 param_space <- expand.grid(hts_method, ts_method, comb_weights, stringsAsFactors = FALSE)
@@ -126,21 +152,25 @@ param_space <- param_space[!duplicated.data.frame(param_space),]
 
 ```
 
-Setting up compute context
+### Compute contexts
 
-rxSetComputeContext("local") - sets compute context to "local" and causes rxExec() 
+Using Microsoft R Server's _rxSetComputeContext()_ function we can easily switch between different compute platforms, 
+and run the same piece of code on those different platforms. _rxExec()_ function then distributes the execution of
+the forecasting function we defined above onto the specified compute context.
+
+* rxSetComputeContext("local") - sets compute context to "local" and causes rxExec() 
 to execute runs locally in a serial manner.
 
-rxSetComputeContext(RxLocalParallel()) - causes rxExec() to run multiple tasks 
+* rxSetComputeContext(RxLocalParallel()) - causes rxExec() to run multiple tasks 
 in parallel, thereby using the multiple cores on your local machine. 
 The downside is that this will use more memory and will slow down your computer 
 for other work you may be trying to do at the same time.
 
-rxSetComputeContext(RxSpark()) - for parallelized distributed execution via Spark 
+* rxSetComputeContext(RxSpark()) - for parallelized distributed execution via Spark 
 across the nodes of a cluster
 
 ```{r Running distributed computation}
-rxSetComputeContext(RxLocalParallel())
+rxSetComputeContext('local')
 
 # Measure execution time
 et <- system.time(
@@ -161,7 +191,8 @@ cat(paste("Elapsed time: ", format(et['elapsed'], digits = 4), "seconds. \n"))
 ```
 
 
-Collect the results of the rxExec(), and find the result with the bestevaluation metric (smallest MAPE)
+### Gather the results
+Collect the results of the rxExec(), and find the result with the best evaluation metric (smallest MAPE)
 
 ```{r Getting optimal parameters}
 all_mape <- sapply( rxResult, function(x) x["MAPE",] )
@@ -180,10 +211,10 @@ hts_fcast <- forecast(object  = htsdata,
 ```
 
 
-Print out the optimal results
+### Print out the optimal results
 
 ```{r Printing the results, echo=FALSE}
-output <- paste("\n OPTIMAL RESULTS \n\n",
+output <- paste("OPTIMAL RESULTS \n\n",
                 "Minimum obtained MAPE: ", format(min(all_mape), digits = 4), "\n",
                 "Optimal method for distributing forecasts within the hierarchy: ", opt_params$hts_method, "\n",
                 "Optimal forecasting method: ", opt_params$ts_method, "\n")
@@ -200,10 +231,20 @@ names(hts_fcast$labels) <- c("Total", "State", "City")
 plot(hts_fcast)
 ```
 
+## Hands-on exercise
 
-Let's generate larger data
+In this part, we will try to run the above parameter sweep on a larger data set. Forecasting hierarchical time series takes more time for deeper and wider hierarchies, which are very common in real life applications. For example, if we were to forecast company sales by state, city, store, product category, and product, we would end up with hundreds of thousands of time series. Forecasting this time series hierarchy for just one parameter set may take hours. Doing a parameter sweep in such a scenario would be prohibitive. Being able to distribute that computation to a Spark cluster (by switching to _RxSpark()_ compute context) with hundreds of cores reduces that time drastically.
+
+Here, we will generate a larger time series data set. We will do that by replicating the existing data set, and adding a little bit of noise to it. To increase the data set we will multiply the number of time series with a factor _x_.
+
+### Generating larger data
 
 ```{r Generating larger data}
+# Increase the number of time series by factor x
+# TRY changing this variable
+x = 5
+
+# Function to add noise to a data set
 addNoise <- function(data) {
   
   data_dim <- dim(data)[1] * dim(data)[2]
@@ -212,10 +253,6 @@ addNoise <- function(data) {
   return(noisified)
   
 }
-
-# Increase the number of time series by factor x
-# TRY increasing this number
-x = 2
 
 larger_data <- coredata(vn)[ ,  rep(seq(ncol(vn)), x)]
 larger_data <- addNoise(larger_data)
@@ -226,6 +263,9 @@ vnx <- ts(larger_data, frequency = 4, start = c(1998, 1))
 # Create hierachical time series dataset
 htsdata <- hts(vnx, nodes=list(4*x, rep(c(2,2,2,2), x)))
 
+# Let's see what our data looks like
+print(htsdata)
+
 # Rename the nodes of the hierarchy
 htsdata$labels$`Level 1` <- paste0('State_', 1:length(htsdata$labels$`Level 1`))
 htsdata$labels$`Level 2` <- paste0('City_', 1:length(htsdata$labels$`Level 2`))
@@ -234,6 +274,7 @@ names(htsdata$labels) <- c("Total", "State", "City")
 # Split data into train and test (leave out years 2010 and 2011 for testing)
 train_data <- window(htsdata,  end = c(2009, 4))
 test_data <- window(htsdata, start = c(2010, 1))
+
 
 # TRY changing the compute context and see how it affects the execution time
 rxSetComputeContext(RxLocalParallel())
