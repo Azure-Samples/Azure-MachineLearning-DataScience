@@ -59,6 +59,19 @@ In this tutorial we will:
 ## HTS Forecasting
 
 ### Loading necessary libraries
+```{r}
+
+# Setting the environment
+if(Sys.getenv("SPARK_HOME")==""){
+  Sys.setenv(SPARK_HOME="/dsvm/tools/spark/current")
+}
+
+Sys.setenv(YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop", 
+           JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64")
+Sys.setenv(PATH="/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin:/home/remoteuser/.local/bin:/home/remoteuser/bin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin")
+
+```
+
 
 ```{r Installing libraries, message = FALSE}
 if(!require("hts")) install.packages('hts')
@@ -170,11 +183,11 @@ for other work you may be trying to do at the same time.
 across the nodes of a cluster
 
 ```{r Running distributed computation}
-rxSetComputeContext('local')
+rxSetComputeContext(RxSpark(consoleOutput=TRUE, numExecutors = 1, executorCores=2, executorMem="1g"))
 
 # Measure execution time
 et <- system.time(
-  
+    
 # Run many distributed jobs
 rxResult <- rxExec(FUN            = forecast_hts,  
                    traindata      = train_data, 
@@ -254,10 +267,11 @@ addNoise <- function(data) {
   
 }
 
+# Replicate time series x times
 larger_data <- coredata(vn)[ ,  rep(seq(ncol(vn)), x)]
 larger_data <- addNoise(larger_data)
 
-
+# Create a time series object
 vnx <- ts(larger_data, frequency = 4, start = c(1998, 1))
 
 # Create hierachical time series dataset
@@ -277,7 +291,7 @@ test_data <- window(htsdata, start = c(2010, 1))
 
 
 # TRY changing the compute context and see how it affects the execution time
-rxSetComputeContext(RxLocalParallel())
+rxSetComputeContext(RxSpark(consoleOutput=TRUE, numExecutors = 1, executorCores=2, executorMem="1g"))
 
 # Measure execution time
 et <- system.time(
