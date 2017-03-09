@@ -10,4 +10,7 @@ install.packages("biganalytics", repos='http://cran.us.r-project.org')
 install.packages("ff", repos='http://cran.us.r-project.org')
 install.packages("ffbase", repos='http://cran.us.r-project.org')
 install.packages("biglm", repos='http://cran.us.r-project.org')
+install.packages("hts", repos='https://mran.revolutionanalytics.com/snapshot/2016-11-01')
+install.packages("fpp", repos='https://mran.revolutionanalytics.com/snapshot/2016-11-01')
 #install.packages("ggmap", repos='http://cran.us.r-project.org', dependencies=TRUE)
+
