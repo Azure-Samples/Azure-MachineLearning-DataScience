@@ -1,7 +1,13 @@
-isLinux <- Sys.info()["sysname"] == "Linux"
+if(file.exists("/dsvm"))
+{
+  Sys.setenv(SPARK_HOME="/dsvm/tools/spark/current",
+    YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop", 
+    JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
+    PATH="/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin:/home/remoteuser/.local/bin:/home/remoteuser/bin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin"
+  )
+}
 
-useHDFS <- isLinux
-useRxSpark <- isLinux
+useHDFS <- TRUE
 
 if(useHDFS) {
 
@@ -33,42 +39,23 @@ if(useHDFS) {
   ################################################
 }
 
-if(useRxSpark) {
-  
-  ################################################
-  # Distributed computing using Spark
-  ################################################
+################################################
+# Distributed computing using Spark
+################################################
 
-  computeContext <- RxSpark(consoleOutput=TRUE, numExecutors = 1, executorCores=2, executorMem="1g")
-  
-  ################################################
-
-} else {
-  
-  ################################################
-  # Single-node Computing
-  ################################################
-
-  computeContext <- RxLocalSeq()
-  
-  ################################################
+startRxSpark <- function() {
+  rxSparkConnect(reset = T,
+    consoleOutput=TRUE, numExecutors = 1, executorCores=2, 
+    executorMem="1g")
 }
-
-rxSetComputeContext(computeContext)
-
-
-if(Sys.getenv("R_ZIPCMD")=="")
-{
-  Sys.setenv(R_ZIPCMD="zip") # needed by AzureML::publishWebService
-}
-
 
 rxRoc <- function(...){
-  rxSetComputeContext(RxLocalSeq())
+  previousContext <- rxSetComputeContext(RxLocalSeq())
 
+  # rxRoc requires local compute context
   roc <- RevoScaleR::rxRoc(...)
 
-  rxSetComputeContext(computeContext)
+  rxSetComputeContext(previousContext)
 
   return(roc)
 }
