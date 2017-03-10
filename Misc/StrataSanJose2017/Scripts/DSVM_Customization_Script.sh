@@ -55,7 +55,7 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 ## DOWNLOAD ALL CODE FILES
 cd /home/remoteuser
 mkdir  Data Code
-mkdir Code/MRS Code/sparklyr Code/SparkR Code/bigmemory Code/ff
+mkdir Code/MRS Code/sparklyr Code/SparkR Code/bigmemory Code/ff Code/UseCaseHTS
 
 cd /home/remoteuser
 cd Code/MRS
@@ -63,7 +63,7 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/MRS/2-Train-Test-Subset.r
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/MRS/3-Deploy-Score-mrsdeploy.r
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/MRS/SetComputeContext.r
-wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/MRS/logitModelSubset.RData
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/MRS/azureml-settings.json
 
 cd /home/remoteuser
 cd Code/SparkR
@@ -86,6 +86,11 @@ cd /home/remoteuser
 cd Code/ff
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/ff/ff.R
 
+cd /home/remoteuser
+cd Code/UseCaseHTS
+wget hhttps://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/sample_demo.R
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/sample_demo.Rmd
+
 
 ## DOWNLOAD ALL DATA FILES
 # NYC Taxi data
@@ -98,12 +103,6 @@ gunzip JoinedParquetSampledFile.tar.gz
 tar -xvf JoinedParquetSampledFile.tar
 mv JoinedParquetSampledFile NYCjoinedParquetSubset
 rm JoinedParquetSampledFile.tar
-
-wget http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/FareData2013DecParquet.tar
-wget http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/TripData2013DecParquet.tar
-tar -xvf FareData2013DecParquet.tar
-tar -xvf TripData2013DecParquet.tar
-rm FareData2013DecParquet.tar TripData2013DecParquet.tar
 
 # Airline data
 wget http://cdspsparksamples.blob.core.windows.net/data/Airline/WeatherSubsetCsv.tar.gz
