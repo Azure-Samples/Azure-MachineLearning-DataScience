@@ -13,7 +13,6 @@ list.files(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"))
 library(SparkR)
 
 sc <- sparkR.session(
-  spark.master = "local", 
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
 SparkR::setLogLevel("OFF")
@@ -22,11 +21,10 @@ SparkR::setLogLevel("OFF")
 ## LOGIN TO OPERATIONALIZATION SERVICE ON VM AND LIST ANY EXISTING WEB SERVICES
 ################################################################
 library(mrsdeploy)
-#ssh -L localhost:12800:localhost:12800 remoteuser@<vm-name>.westus.cloudapp.azure.com:12800
 remoteLogin(
-  "http://127.0.0.1:12800",
-  username = "***",
-  password = "******",
+  "http://localhost:12800",
+  username = "admin",
+  password = "Strata2017@SJC",
   session = FALSE
 )
 listServices()
@@ -47,7 +45,6 @@ web_scoring <- function(modelfile, input, output) {
   library(SparkR)
 
   sc <- sparkR.session(
-    spark.master = "local", 
     sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
   )
   SparkR::setLogLevel("OFF")
@@ -84,7 +81,6 @@ web_scoring (modelfile, input, output)
 ## CREATE A WEB SERVICE WTIH VERSION NUMBER
 ################################################################
 version <- "v0.0.1"
-#deleteService("scoring_input_files", version);
 api_string <- publishService(
   "scoring_input_files",
   code = web_scoring,
@@ -94,6 +90,7 @@ api_string <- publishService(
   v = version
 )
 listServices()
+#deleteService("scoring_input_files", version);
 
 ################################################################
 ## CALL WEB SERVICE
