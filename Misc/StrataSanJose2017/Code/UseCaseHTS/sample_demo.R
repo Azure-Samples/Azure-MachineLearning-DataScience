@@ -152,7 +152,8 @@ param_space <- param_space[!duplicated.data.frame(param_space),]
 # * rxSetComputeContext(RxSpark()) - for parallelized distributed execution via Spark 
 # across the nodes of a cluster
 
-rxSetComputeContext(RxSpark(consoleOutput=TRUE, numExecutors = 1, executorCores=2, executorMem="1g"))
+rxSetComputeContext(RxLocalParallel())
+# rxSetComputeContext(RxSpark(consoleOutput=TRUE, numExecutors = 1, executorCores=2, executorMem="1g"))
 
 # Measure execution time
 et <- system.time(
@@ -253,7 +254,8 @@ test_data <- window(htsdata, start = c(2010, 1))
 
 
 # TRY changing the compute context and see how it affects the execution time
-rxSetComputeContext(RxSpark(consoleOutput=TRUE, numExecutors = 1, executorCores=2, executorMem="1g"))
+rxSetComputeContext(RxLocalParallel())
+# rxSetComputeContext(RxSpark(consoleOutput=TRUE, numExecutors = 1, executorCores=2, executorMem="1g"))
 
 # Measure execution time
 et <- system.time(
