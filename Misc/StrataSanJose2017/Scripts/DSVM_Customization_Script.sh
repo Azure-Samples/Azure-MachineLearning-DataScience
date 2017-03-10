@@ -104,6 +104,14 @@ tar -xvf JoinedParquetSampledFile.tar
 mv JoinedParquetSampledFile NYCjoinedParquetSubset
 rm JoinedParquetSampledFile.tar
 
+wget http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/FareData2013DecParquet.tar
+wget http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/TripData2013DecParquet.tar
+tar -xvf FareData2013DecParquet.tar
+tar -xvf TripData2013DecParquet.tar
+rm FareData2013DecParquet.tar
+rm TripData2013DecParquet.tar
+
+
 # Airline data
 wget http://cdspsparksamples.blob.core.windows.net/data/Airline/WeatherSubsetCsv.tar.gz
 wget http://cdspsparksamples.blob.core.windows.net/data/Airline/AirlineSubsetCsv.tar.gz
