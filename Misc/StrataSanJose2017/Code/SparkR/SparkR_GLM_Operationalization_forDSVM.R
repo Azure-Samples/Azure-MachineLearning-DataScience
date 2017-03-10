@@ -23,8 +23,8 @@ SparkR::setLogLevel("OFF")
 library(mrsdeploy)
 remoteLogin(
   "http://localhost:12800",
-  username = "***",
-  password = "******",
+  username = "admin",
+  password = "INSERT PASSWORD HERE",
   session = FALSE
 )
 listServices()
