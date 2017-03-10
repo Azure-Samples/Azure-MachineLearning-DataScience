@@ -55,7 +55,7 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 ## DOWNLOAD ALL CODE FILES
 cd /home/remoteuser
 mkdir  Data Code
-mkdir Code/MRS Code/sparklyr Code/SparkR Code/bigmemory Code/ff Code/UseCaseHTS
+mkdir Code/MRS Code/sparklyr Code/SparkR Code/bigmemory Code/ff Code/UseCaseHTS Code/UseCaseLearningCurves
 
 cd /home/remoteuser
 cd Code/MRS
@@ -90,6 +90,11 @@ cd /home/remoteuser
 cd Code/UseCaseHTS
 wget hhttps://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/sample_demo.R
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/sample_demo.Rmd
+
+cd /home/remoteuser
+cd Code/UseCaseLearningCurves
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseLearningCurves/high_cardinality_learning_curves_demo.Rmd
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseLearningCurves/learning_curve_lib.R
 
 
 ## DOWNLOAD ALL DATA FILES
