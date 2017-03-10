@@ -1,0 +1,206 @@
+---
+title: "Learning Curves on High-Cardinality Inputs"
+author: "Bob Horton"
+date: "March 6, 2017"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+t0 <- Sys.time()
+knitr::opts_chunk$set(echo=TRUE, cache=TRUE, message=FALSE)
+rxOptions(reportProgress=0)
+if(file.exists("/dsvm"))
+{
+  Sys.setenv(SPARK_HOME="/dsvm/tools/spark/current",
+    YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop", 
+    JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
+    PATH="/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin:/home/remoteuser/.local/bin:/home/remoteuser/bin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin"
+  )
+}
+
+# Sys.setenv(PATH="/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin:/home/remoteuser/.local/bin:/home/remoteuser/bin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin")
+```
+
+## Simulating data
+
+This data set has a variety of effect sizes associated with variables covering a wide range of cardinalities. 
+
+```{r simdata}
+N <- 1e6 # 5e7
+NUM_VARS <- 10
+NOISE <- 20
+SIMULATE_DATA <- TRUE
+RUN_LOCAL <- FALSE
+HDINSIGHT <- FALSE
+
+generating_coefficients <- lapply(1:NUM_VARS, function(i){
+  cardinality <- 2^(i)
+  gc <- rnorm(cardinality)
+  names(gc) <- sprintf("%s%05d", letters[i], 1:cardinality)
+  gc
+})
+names(generating_coefficients) <- LETTERS[1:NUM_VARS]
+
+simulate_data <- function(N, gencoef, noise=10){
+  sd <- data.frame(lapply(gencoef, function(gc){
+    v <- base::sample(names(gc), N, replace=TRUE, prob=length(gc):1)
+    factor(v, levels=names(gc))
+  }))
+  col_weights <- lapply(seq_along(sd), function(i){gencoef[[i]][sd[[i]]]})
+  sd$y <- Reduce("+", col_weights) + rnorm(N, sd=noise)
+  sd
+}
+
+```
+
+### Simulate data:
+
+```{r simulate_data}
+
+if (HDINSIGHT){
+  dataDir <- "/user/RevoShare/sshuser" # HDInsight
+} else {
+  dataDir <- "/user/RevoShare/remoteuser/Data"  # single node 
+}
+
+data_table <- RxXdfData(file.path(dataDir, "simdata"), fileSystem=RxHdfsFileSystem())
+
+if (SIMULATE_DATA){
+  write.csv(simulate_data(N, generating_coefficients, noise=NOISE), file="simdata.csv", row.names=FALSE)
+  simdata_hdfs_path <- file.path(dataDir, "simdata.csv")
+  if (rxHadoopFileExists(simdata_hdfs_path)) rxHadoopRemove(simdata_hdfs_path)
+  rxHadoopCopyFromLocal("simdata.csv", simdata_hdfs_path)
+  cclass <- c(A="factor", B="factor", C="factor", D="factor",
+              E="factor", F="factor", G="factor", H="factor",
+              I="factor", J="factor", y="numeric")
+  inDataCsv <- RxTextData(file.path(dataDir, "simdata.csv"), 
+                          colClasses=cclass, fileSystem=RxHdfsFileSystem())
+  rxImport(inDataCsv, outFile=data_table, overwrite=TRUE)
+}
+
+# data_table <- rxImport(simulate_data(N, generating_coefficients, noise=NOISE), 
+#                        outFile="simdata.xdf", overwrite=TRUE)
+
+```
+
+## Examine simulated data
+
+```{r examine_simdata}
+
+outcome <- "y"
+var_names <- setdiff(names(rxGetVarInfo(data_table)), outcome)
+names(var_names) <- var_names
+
+var_names
+
+knitr::kable(head(data_table, n=15))
+
+```
+
+## Learning curve with linear models
+
+Define functions and set various parameters.
+
+```{r global_parameters}
+source("learning_curve_lib.R")
+
+K_FOLDS <- 3
+SALT <- 1
+NUM_TSS <- 12 # 16
+data_info <- rxGetInfo(data_table, getVarInfo=TRUE)
+N <- data_info$numRows
+MAX_TSS <- (1 - 1/K_FOLDS) * N # approximate number of cases available for training.
+training_fractions <- get_training_set_fractions(10000, MAX_TSS, NUM_TSS)
+```
+
+
+## Building a family of linear models with rxLinMod
+
+```{r build_parameter_table}
+
+formula_vec <- sapply(1:length(var_names), function(j){
+  vars <- var_names[j:1]
+  paste(outcome, paste(vars, collapse="+"), sep=" ~ ")
+})
+grid_dimensions <- list( model_class="rxLinMod",
+                         training_fraction=training_fractions,
+                         with_formula=formula_vec[4:8],
+                         test_set_kfold_id=1, # 1:K_FOLDS,
+                         KFOLDS=K_FOLDS,
+                         cube=TRUE)
+
+parameter_table <- do.call(expand.grid, c(grid_dimensions, stringsAsFactors=FALSE))
+dim(parameter_table)
+knitr::kable(head(parameter_table, n=15))
+```
+
+```{r fit_and_evaluate_models}
+parameter_list <- lapply(1:nrow(parameter_table), function(i) parameter_table[i,])
+
+if (RUN_LOCAL){
+  rxSetComputeContext("localpar")
+} else {
+  rxSetComputeContext(RxSpark(
+    consoleOutput=TRUE, 
+    numExecutors = 1, 
+    executorCores=2, 
+    executorMem="1g"))
+}
+
+
+t1 <- Sys.time()
+training_results <- rxExec(run_training_fraction,
+                           elemArgs = parameter_list,
+                           execObjects = c("data_table", "SALT"))
+
+t2 <- Sys.time()
+
+sprint_difftime <- function(x){
+  paste0(format(unclass(x), digits=3), 
+        " ", attr(x, "units"))
+}
+  
+print(sprintf("Elapsed time for evaluating all parameter combinations: %s",
+              sprint_difftime(t2 - t1)))
+```
+
+```{r save_training_results}
+saveRDS(training_results, "training_results.Rds")
+saveRDS(parameter_table, "parameter_table.Rds")
+```
+
+```{r plot_learning_curves}
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+training_results_df <- do.call("rbind", training_results)
+
+training_results_df %>%
+  gather(error_type, error_value, training:test) %>%
+  # filter(error_type=="test" & kfold==1) %>%
+  mutate(fek_grp=factor(paste0(formula, error_type, kfold))) %>%
+  ggplot(aes(x=log10(tss), y=error_value, linetype=error_type,
+             group=fek_grp, 
+             col=formula)) +
+  geom_line(size=1.2) + 
+  geom_hline(aes(yintercept=NOISE), linetype=2, size=1.5) + 
+  ylab("RMSE") + 
+  coord_cartesian(ylim=c(0.99, 1.02)*NOISE) +
+  ggtitle("Simulated data")
+
+```
+
+```{r save_results}
+results_file <- sprintf("training_results_N_%s_NOISE_%s.Rds", N, NOISE)
+saveRDS(training_results, file=results_file)
+```
+
+```{r total_time}
+t_final <- Sys.time()
+print(sprintf("Total elapsed time : %s",
+              sprint_difftime(t_final - t0)))
+
+```
