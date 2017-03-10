@@ -1,14 +1,6 @@
 setwd("/home/remoteuser/Code/MRS")
 source("SetComputeContext.r")
 
-if(Sys.getenv("SPARK_HOME")=="")
-{
-  Sys.setenv(SPARK_HOME="/dsvm/tools/spark/current")
-}
-
-Sys.setenv(YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop", 
-           JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64") 
-
 .libPaths(c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"), .libPaths()))
 
 library(SparkR)
@@ -189,31 +181,33 @@ joinedDF5Txt <- RxTextData(file.path(dataDir, "joined5CsvSubset"),
 
 destData <- RxXdfData(file.path(dataDir, "joined5XDFSubset"))
 
+startRxSpark()
+
 rxImport(inData = joinedDF5Txt, destData, overwrite = TRUE)
 
 rxGetInfo(destData, getVarInfo = T)
-# File name: /user/RevoShare/dev/delayDataLarge/joined5XDFSubset 
-# Number of composite data files: 16 
+# File name: /user/RevoShare/remoteuser/Data/joined5XDFSubset 
+# Number of composite data files: 2 
 # Number of observations: 1900875 
 # Number of variables: 22 
-# Number of blocks: 16 
+# Number of blocks: 4 
 # Compression type: zlib 
 # Variable information: 
 #   Var 1: ArrDel15, Type: numeric, Low/High: (0.0000, 1.0000)
 # Var 2: Year
-# 2 factor levels: 2012 2011
+# 2 factor levels: 2011 2012
 # Var 3: Month
-# 2 factor levels: 1 2
+# 2 factor levels: 2 1
 # Var 4: DayofMonth
-# 31 factor levels: 20 27 9 16 23 ... 13 17 4 10 30
+# 31 factor levels: 1 10 18 2 8 ... 12 4 7 29 5
 # Var 5: DayOfWeek
-# 7 factor levels: 5 4 1 3 7 6 2
+# 7 factor levels: 2 4 3 7 6 5 1
 # Var 6: Carrier
-# 17 factor levels: EV AA WN AS OO ... UA F9 XE HA VX
+# 17 factor levels: EV FL MQ OO WN ... CO F9 B6 VX HA
 # Var 7: OriginAirportID
-# 295 factor levels: 10397 11298 14107 13232 12266 ... 13139 15048 14955 11699 10728
+# 295 factor levels: 10397 11697 11298 14869 11292 ... 10165 13139 11699 14955 10728
 # Var 8: DestAirportID
-# 295 factor levels: 10135 10140 10146 10208 10257 ... 13139 14512 14955 10728 10577
+# 295 factor levels: 10135 10136 10140 10146 10157 ... 13139 11699 10728 14955 10577
 # Var 9: CRSDepTime, Type: integer, Low/High: (0, 23)
 # Var 10: CRSArrTime, Type: integer, Low/High: (1, 2400)
 # Var 11: RelativeHumidityOrigin, Type: numeric, Low/High: (2.0000, 100.0000)
