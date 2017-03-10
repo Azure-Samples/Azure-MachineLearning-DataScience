@@ -1,5 +1,7 @@
 setwd("/home/remoteuser/Code/MRS")
 source("SetComputeContext.r")
+
+# For local compute context, skip the following line
 startRxSpark()
 
 finalData <- RxXdfData(file.path(dataDir, "joined5XDFSubset"))
@@ -61,4 +63,5 @@ plot(logitRoc)
 
 save(logitModel, file = "logitModelSubset.RData")
 
+# For local compute context, skip the following line
 rxSparkDisconnect(rxGetComputeContext())
