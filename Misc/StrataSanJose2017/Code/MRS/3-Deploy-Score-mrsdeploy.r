@@ -1,4 +1,9 @@
 # Use R Server Operationalization to deploy the logistic regression model as a scalable web service.
+
+# To enable Microsoft R Server Operationalization on an HDInsight cluster,
+# follow these instructions:
+# https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-r-server-get-started#using-microsoft-r-server-operationalization
+
 setwd("/home/remoteuser/Code/MRS")
 source("SetComputeContext.r")
 
