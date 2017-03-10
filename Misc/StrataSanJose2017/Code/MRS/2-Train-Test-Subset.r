@@ -1,5 +1,6 @@
 setwd("/home/remoteuser/Code/MRS")
 source("SetComputeContext.r")
+startRxSpark()
 
 finalData <- RxXdfData(file.path(dataDir, "joined5XDFSubset"))
 
@@ -38,6 +39,7 @@ formula <- as.formula(ArrDel15 ~ Month + DayofMonth + DayOfWeek + Carrier + Orig
 
 logitModel <- rxLogit(formula, data = trainDS)
 
+options(max.print = 10000)
 base::summary(logitModel)
 
 # Predict over test data (Logistic Regression).
@@ -57,28 +59,6 @@ logitAuc <- rxAuc(logitRoc)
 
 plot(logitRoc)
 
+save(logitModel, file = "logitModelSubset.RData")
 
-##############################################
-# Train and Test a Decision Tree model
-##############################################
-
-# Train using the scalable rxDTree function
-
-dTreeModel <- rxDTree(formula, data = trainDS,
-                      maxDepth = 6, pruneCp = "auto")
-
-# Test using the scalable rxPredict function
-
-treePredict <- RxXdfData(file.path(dataDir, "treePredictSubset"))
-
-rxPredict(dTreeModel, data = testDS, outData = treePredict, 
-          extraVarsToWrite = c("ArrDel15"), overwrite = TRUE)
-
-# Calculate ROC and Area Under the Curve (AUC)
-
-treeRoc <- rxRoc("ArrDel15", "ArrDel15_Pred", treePredict)
-treeAuc <- rxAuc(treeRoc)
-
-plot(treeRoc)
-
-save(dTreeModel, file = "dTreeModelSubset.RData")
+rxSparkDisconnect(rxGetComputeContext())
