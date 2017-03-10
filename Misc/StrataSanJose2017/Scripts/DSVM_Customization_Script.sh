@@ -12,9 +12,15 @@ source /etc/profile.d/hadoop.sh
 #######################################################################################################################################
 ## Setup autossh for hadoop service account
 #######################################################################################################################################
-cat /opt/hadoop/.ssh/id_rsa.pub >> /opt/hadoop/.ssh/authorized_keys
-chmod 0600 /opt/hadoop/.ssh/authorized_keys
-chown hadoop /opt/hadoop/.ssh/authorized_keys
+#cat /opt/hadoop/.ssh/id_rsa.pub >> /opt/hadoop/.ssh/authorized_keys
+#chmod 0600 /opt/hadoop/.ssh/authorized_keys
+#chown hadoop /opt/hadoop/.ssh/authorized_keys
+echo -e 'y\n' | ssh-keygen -t rsa -P '' -f ~hadoop/.ssh/id_rsa
+cat ~hadoop/.ssh/id_rsa.pub >> ~hadoop/.ssh/authorized_keys
+chmod 0600 ~hadoop/.ssh/authorized_keys
+chown hadoop:hadoop ~hadoop/.ssh/id_rsa
+chown hadoop:hadoop ~hadoop/.ssh/id_rsa.pub
+chown hadoop:hadoop ~hadoop/.ssh/authorized_keys
 
 #######################################################################################################################################
 ## Start up several services, yarn, hadoop, rstudio server
@@ -88,8 +94,10 @@ wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/m
 
 cd /home/remoteuser
 cd Code/UseCaseHTS
-wget hhttps://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/sample_demo.R
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/sample_demo.R
 wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/sample_demo.Rmd
+wget https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Code/UseCaseHTS/aust_hierarchy.png
+
 
 cd /home/remoteuser
 cd Code/UseCaseLearningCurves
