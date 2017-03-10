@@ -13,13 +13,13 @@ rxSetComputeContext("local")
 
 load("logitModelSubset.RData") # loads logitModel
 
-# Load some data to be scored
+# Reference the test data to be scored
 testDS <- RxXdfData( file.path(dataDir, "finalDataTestSubset") )
 
-# Remove the ArrDel15 column 
+# Read the first 6 rows and remove the ArrDel15 column
 dataToBeScored <- base::subset(head(testDS), select = -ArrDel15)
 
-# Record the factor levels for factor columns
+# Record the levels of the factor variables
 colInfo <- rxCreateColInfo(dataToBeScored)
 
 modelInfo <- list(predictiveModel = logitModel, colInfo = colInfo)
