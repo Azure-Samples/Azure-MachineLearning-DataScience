@@ -181,6 +181,7 @@ joinedDF5Txt <- RxTextData(file.path(dataDir, "joined5CsvSubset"),
 
 destData <- RxXdfData(file.path(dataDir, "joined5XDFSubset"))
 
+# For local compute context, skip the following line
 startRxSpark()
 
 rxImport(inData = joinedDF5Txt, destData, overwrite = TRUE)
