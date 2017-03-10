@@ -13,6 +13,7 @@ list.files(file.path(Sys.getenv("SPARK_HOME"), "R", "lib"))
 library(SparkR)
 
 sc <- sparkR.session(
+  spark.master = "local", 
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
 SparkR::setLogLevel("OFF")
@@ -24,7 +25,6 @@ library(mrsdeploy)
 #ssh -L localhost:12800:localhost:12800 remoteuser@<vm-name>.westus.cloudapp.azure.com:12800
 remoteLogin(
   "http://127.0.0.1:12800",
-  #"http://<vm-name>.westus.cloudapp.azure.com:12800",
   username = "***",
   password = "******",
   session = FALSE
@@ -47,6 +47,7 @@ web_scoring <- function(modelfile, input, output) {
   library(SparkR)
 
   sc <- sparkR.session(
+    spark.master = "local", 
     sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
   )
   SparkR::setLogLevel("OFF")
