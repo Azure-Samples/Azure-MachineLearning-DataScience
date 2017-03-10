@@ -3,8 +3,7 @@
 ######################################################################
 library(mrsdeploy)
 remoteLogin(
-  #"http://127.0.0.1:12800",
-  "http://<vm-name>.westus.cloudapp.azure.com:12800",
+  "http://localhost:12800",
   username = "****",
   password = "******",
   session = FALSE
