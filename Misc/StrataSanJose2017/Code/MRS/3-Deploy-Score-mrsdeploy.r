@@ -1,27 +1,31 @@
-# Use R Server Operationalization to deploy the tree-based model as a scalable web service.
+# Use R Server Operationalization to deploy the logistic regression model as a scalable web service.
 setwd("/home/remoteuser/Code/MRS")
 source("SetComputeContext.r")
 
 rxSetComputeContext("local")
 
-# Load our rxDTree Decision Tree model
+# Load our logistic regression model
 
-load("dTreeModelSubset.RData") # loads dTreeModel
+load("logitModelSubset.RData") # loads logitModel
+
+# Load some data to be scored
+testDS <- RxXdfData( file.path(dataDir, "finalDataTestSubset") )
+
+# Remove the ArrDel15 column 
+dataToBeScored <- base::subset(head(testDS), select = -ArrDel15)
+
+# Record the factor levels for factor columns
+colInfo <- rxCreateColInfo(dataToBeScored)
+
+modelInfo <- list(predictiveModel = logitModel, colInfo = colInfo)
 
 # Define a scoring function to be published as a web service
 
 scoringFn <- function(newdata){
   library(RevoScaleR)
-  rxPredict(dTreeModel, newdata)
+  data <- rxImport(newdata, colInfo = modelInfo$colInfo)
+  rxPredict(modelInfo$predictiveModel, data)
 }
-
-testDS <- RxXdfData( file.path(dataDir, "finalDataTestSubset") )
-
-dataToBeScored <- base::subset(head(testDS), select = -ArrDel15)
-
-# Test the scoring function locally
-
-scoringFn(dataToBeScored)
 
 ######################################################
 #   Authenticate with the Operationalization service    
@@ -45,13 +49,13 @@ remoteLogin(
 ################################################
 
 # specify the version
-version <- "v1.1.0"
+version <- "v1.0.0"
 
 # publish the scoring function web service
 api_frame <- publishService(
   name = "Delay_Prediction_Service", # name must not contain spaces
   code = scoringFn,
-  model = "dTreeModelSubset.RData",
+  model = modelInfo,
   inputs = list(newdata = "data.frame"),
   outputs = list(answer = "data.frame"),
   v = version
