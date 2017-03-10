@@ -13,6 +13,7 @@ if(useHDFS) {
 
   ################################################
   # Use Hadoop-compatible Distributed File System
+  # N.B. Can be used with local or RxSpark compute contexts
   ################################################
   
   rxOptions(fileSystem = RxHdfsFileSystem())
@@ -30,11 +31,13 @@ if(useHDFS) {
   
   ################################################
   # Use Native, Local File System
+  # N.B. Can only be used with local compute context
   ################################################
 
   rxOptions(fileSystem = RxNativeFileSystem())
   
   dataDir <- file.path(getwd(), "delayDataLarge")
+  fullDataDir <- paste0("file://", dataDir)
   
   ################################################
 }
