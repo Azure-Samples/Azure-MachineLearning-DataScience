@@ -131,7 +131,10 @@ joinedDF5 <- SparkR::rename(joinedDF4,
 # Output to CSV
 ################################################
 
-joinedDF5 <- repartition(joinedDF5, 2) # write.df below will produce this many CSVs
+# Increase numCSVs when working with larger data
+# on a larger cluster
+numCSVs <- 2 # write.df below will produce this many CSV files
+joinedDF5 <- repartition(joinedDF5, numCSVs)
 
 # write result to directory of CSVs
 write.df(joinedDF5, file.path(fullDataDir, "joined5CsvSubset"), "com.databricks.spark.csv", "overwrite", header = "true")
@@ -179,14 +182,14 @@ colInfo <- list(
 joinedDF5Txt <- RxTextData(file.path(dataDir, "joined5CsvSubset"),
                            colInfo = colInfo)
 
-destData <- RxXdfData(file.path(dataDir, "joined5XDFSubset"))
+finalData <- RxXdfData(file.path(dataDir, "joined5XDFSubset"))
 
 # For local compute context, skip the following line
 startRxSpark()
 
-rxImport(inData = joinedDF5Txt, destData, overwrite = TRUE)
+rxImport(inData = joinedDF5Txt, finalData, overwrite = TRUE)
 
-rxGetInfo(destData, getVarInfo = T)
+rxGetInfo(finalData, getVarInfo = T)
 # File name: /user/RevoShare/remoteuser/Data/joined5XDFSubset 
 # Number of composite data files: 2 
 # Number of observations: 1900875 
