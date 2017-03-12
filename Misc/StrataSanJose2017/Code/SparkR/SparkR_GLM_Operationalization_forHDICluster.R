@@ -42,10 +42,12 @@ web_scoring <- function(modelfile, input, output) {
   
   sampledpredfilt <- head(SparkR::sample(predfilt, FALSE, 0.01, 1234), 10)
   
+
+  sparkR.stop()
+  
   # Return sampled 10 rows of the prediction data-frame
   return(sampledpredfilt)
 
-  sparkR.stop()
 }
 
 ###############################################################
@@ -63,8 +65,8 @@ library(mrsdeploy)
 #ssh -L localhost:12800:localhost:12800 remoteuser@DebrajSpark2-ed-ssh.azurehdinsight.net
 remoteLogin(
   "http://127.0.0.1:12800",
-  username = "***",
-  password = "********",
+  username = "admin",
+  password = "",
   session = FALSE
 )
 listServices()
@@ -73,9 +75,9 @@ listServices()
 ## CREATE A WEB SERVICE WTIH VERSION NUMBER
 ################################################################
 version <- "v0.0.1"
-#deleteService("scoring_input_files", version);
+#deleteService("scoring_input_files2", version);
 api_string <- publishService(
-  "scoring_input_files",
+  "scoring_input_files2",
   code = web_scoring,
   inputs = list(modelfile = "character",
                 input = "character",
@@ -88,7 +90,7 @@ listServices()
 ## CALL WEB SERVICE
 ################################################################
 version <- "v0.0.1"
-api_1 <- getService("scoring_input_files", version)
+api_1 <- getService("scoring_input_files2", version)
 
 modelfile <- "/HdiSamples/HdiSamples/NYCTaxi/SparkGlmModel"
 input <- "/HdiSamples/HdiSamples/NYCTaxi/NYCjoinedParquetSubsetSampled"
@@ -99,12 +101,21 @@ result_1 <- api_1$web_scoring(
   input = input,
   output = output
 )
+
+result_1$success
+
+system("hadoop fs -ls /HdiSamples/HdiSamples/NYCTaxi/SparkRGLMPredictions")
+
 ################################################################
 ## END
 ################################################################
 
-sparkR.stop()
+sparkR.stop()data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAMElEQVR42mNgIAXY2Nj8x8cHC8AwMl9XVxe3QqwKcJmIVwFWhehW4LQSXQCnm3ABAHD6MDrmRgfrAAAAAElFTkSuQmCC
 #deleteService("scoring_input_files", version)
+
+
+
+
 
 
 
