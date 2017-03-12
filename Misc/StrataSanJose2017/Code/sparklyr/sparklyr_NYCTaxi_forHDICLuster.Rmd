@@ -28,7 +28,7 @@ Where necessary, small amounts of data is brought to the local data frames for p
 
 <br>
 
-#Creating spark context / connections and loading required packages
+#Creating spark connection and loading packages
 ```{r Load Packages, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
@@ -57,7 +57,7 @@ fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi"
 <br>
 <br>
 
-#Load trip-fare data and cache sample in memory
+#Read joined trip-fare data and cache in memory
 The taxi and fare files were previously joined using SparkR SQL and down-sampled to about 10% of the full dataset.
 ```{r Load data in sparklyr dataframe, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
@@ -75,7 +75,7 @@ head(joinedDF, 3)
 ###########################################
 # SAMPLE AND CACHE IN MEMORY
 ###########################################
-joinedDFSampl <- sdf_sample(joinedDF, fraction = 1)
+joinedDFSampl <- sdf_sample(joinedDF, fraction = 0.1)
 
 ###########################################
 # SHOW THE NUMBER OF OBSERVATIONS IN DATA 
@@ -124,7 +124,7 @@ print (endtime - starttime)
 ```
 <hr>
 
-#Using sparklyr for creating ML models
+#Create ML models
 Spark’s machine learning library can be accessed from sparklyr through the <a href="http://spark.rstudio.com/mllib.html#algorithms" target="_blank">ml_* family of functions</a>. Here we create ML models for the prediction of tip-amount for taxi trips.
 
 ##Creating Elastic Net model
@@ -151,7 +151,7 @@ summary(fit)
 ###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
 predictedValsSampled <- sdf_sample(x=predictedVals, 
-                                   fraction=0.0001, replacement=FALSE, seed=123)
+                                   fraction=0.01, replacement=FALSE, seed=123)
 predictedDF <- as.data.frame(predictedValsSampled)
 
 Rsqr = cor(predictedDF$tip_amount, predictedDF$prediction)^2; Rsqr;
@@ -170,8 +170,8 @@ ggplot(predictedDFSampled, aes(tip_amount, prediction)) +
 ###########################################
 # SAVE PREDICTIONS TO A CSV FILE IN HDFS
 ###########################################
-sparklyRPredictionsPath <- file.path(fullDataDir, "sparklyRElasticNetPredictions")
-spark_write_csv(predictedVals, sparklyRPredictionsPath)
+#sparklyRPredictionsPath <- file.path(fullDataDir, "sparklyRElasticNetPredictions")
+#spark_write_csv(predictedVals, sparklyRPredictionsPath)
 
 endtime <- Sys.time()
 print (endtime - starttime)
@@ -215,7 +215,7 @@ plot1 <- feature_importance %>%
 ###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
 predictedValsSampled <- sdf_sample(x=predictedVals, 
-                                   fraction=0.0001, replacement=FALSE, seed=123)
+                                   fraction=0.01, replacement=FALSE, seed=123)
 predictedDF <- as.data.frame(predictedValsSampled)
 
 # Evaluate and plot predictions (R-sqr)
@@ -274,7 +274,7 @@ plot1 <- feature_importance %>%
 ###########################################
 predictedVals <- sdf_predict(fit, newdata =  partitions$test)
 predictedValsSampled <- sdf_sample(x=predictedVals, 
-                                   fraction=0.0001, replacement=FALSE, seed=123)
+                                   fraction=0.01, replacement=FALSE, seed=123)
 predictedDF <- as.data.frame(predictedValsSampled)
 
 # Evaluate and plot predictions (R-sqr)
