@@ -24,7 +24,7 @@ We use Spark SQL for many of the data wrangling tasks. For plotting and visualiz
 <hr>
 <br>
 
-#Creating spark context / connections and loading required packages
+#Creating spark context and loading packages
 ```{r Load Packages, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
@@ -40,9 +40,7 @@ library(ggmap)
 ###########################################
 # CREATE SPARK CONTEXT
 ###########################################
-#sparkEnvir <- list(spark.executor.instance = '12', spark.yarn.executor.memoryOverhead = '2048', spark.driver.memory = '12g')
 sc <- sparkR.session(
-  #sparkEnvir = sparkEnvir,
   sparkPackages = "com.databricks:spark-csv_2.10:1.3.0"
 )
 SparkR::setLogLevel("OFF")
@@ -54,11 +52,8 @@ fullDataDir <- "/HdiSamples/HdiSamples/NYCTaxi"
 ```
 <hr>
 
-#Using SparkR for data wrangling & manipulation
-SparkR is an R package that provides a light-weight frontend to use Apache Spark from R. In Spark 2.0, SparkR provides a distributed data frame implementation that supports operations like selection, filtering, aggregation etc. (similar to R data frames, dplyr) but on large datasets. SparkR also provides support for distributed machine learning using MLlib.
-<br>
 
-##Reading in files from HDFS (csv or parquet)
+#Reading in files from HDFS (csv or parquet)
 Data for this exercise can be downloaded from the public blob locations below: 
 <br>
 1. Trip (Csv): http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/combined_taxi_trip_w_header.csv (~19 Gb)
@@ -66,8 +61,6 @@ Data for this exercise can be downloaded from the public blob locations below:
 2. Fare (Csv): http://cdspsparksamples.blob.core.windows.net/data/NYCTaxi/combined_taxi_fare_w_header.csv (~28 Gb)
 <br>
 The data can be uploaded to the blob (or other storage) attached to your HDInsight cluster (HDFS) and used as input into the scripts shown here. The csv files can be read into Spark context and saved in parquet format. Once saved in parquet format, data can be read in much more quickly than csv files.
-
-###You can read in raw files in csv.
 ```{r Read in files, message=FALSE, warning=FALSE, echo=TRUE}
 ###########################################
 # TRIP FILE (CSV format, or PARQUET format)
@@ -77,9 +70,6 @@ starttime <- Sys.time();
 #tripPath <- file.path(fullDataDir, "combined_taxi_trip_w_header.csv")
 #tripDF <- read.df(tripPath, source = "com.databricks.spark.csv", 
 #                  header = "true", inferSchema = "true")
-#head(tripDF, 3)
-#printSchema(tripDF)
-
 #tripPathParquet <- file.path(fullDataDir, "CombinedTaxiTripParquet2013")
 #tripDFRepartitioned <- repartition(tripDF, 20) # write.df below will produce this many files
 #write.parquet(tripDFRepartitioned, tripPathParquet)
@@ -95,9 +85,6 @@ printSchema(tripDF)
 #farePath <- file.path(fullDataDir, "combined_taxi_fare_w_header.csv")
 #fareDF <- read.df(farePath, source = "com.databricks.spark.csv", 
 #                  header = "true", inferSchema = "true")
-#head(fareDF, 3)
-#printSchema(fareDF)
-
 #farePathParquet <- file.path(fullDataDir, "CombinedTaxiFareParquet2013")
 #fareDFRepartitioned <- repartition(fareDF, 20) # write.df below will produce this many files
 #write.parquet(fareDFRepartitioned, farePathParquet)
@@ -112,6 +99,10 @@ endtime <- Sys.time();
 print (endtime-starttime);
 ```
 
+
+#Using SparkR for data wrangling & manipulation
+SparkR is an R package that provides a light-weight frontend to use Apache Spark from R. In Spark 2.0, SparkR provides a distributed data frame implementation that supports operations like selection, filtering, aggregation etc. (similar to R data frames, dplyr) but on large datasets. SparkR also provides support for distributed machine learning using MLlib.
+<br>
 
 ##Join datasets using SQL 
 You can register dataframes as tables in SQLContext and join using multiple columns. The following SQL also filters the data for some outliers.
@@ -172,7 +163,7 @@ print (endtime-starttime);
 ```
 
 
-##Feature engineering using SQL 
+#Feature engineering using SQL 
 You can create new features using sQL statements. For example, you can use case statements to generate categorical features from coneunuous (numerical) ones.
 ```{r Feature engineering, message=FALSE, warning=FALSE, echo=TRUE}
 starttime <- Sys.time();
@@ -369,7 +360,7 @@ starttime <- Sys.time();
 # SAMPLE DATA FOR MODELING
 ###########################################
 trip_fare_featSampled <- sample(trip_fare_feat, withReplacement=FALSE, 
-                                fraction=0.5, seed=123)
+                                fraction=1, seed=123)
 SparkR::cache(trip_fare_featSampled); SparkR::count(trip_fare_featSampled);
 createOrReplaceTempView(trip_fare_featSampled, "trip_fare_featSampled")
 
@@ -432,7 +423,7 @@ predictedSampled <- predfilt_local[base::sample(1:nrow(predfilt_local), 1000),]
 
 # Plot predicted vs. actual values
 lm_model <- lm(prediction ~ label, data = predictedSampled)
-ggplot(predictedSampled, aes(label, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=1)   + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
+ggplot(predictedSampled, aes(label, prediction)) + geom_point(col='darkgreen', alpha=0.3, pch=19, cex=1.5)   + geom_abline(aes(slope = summary(lm_model)$coefficients[2,1], intercept = summary(lm_model)$coefficients[1,1]), color = "red")
 
 endtime <- Sys.time();
 print (endtime-starttime);
@@ -446,8 +437,11 @@ Partition data into train/test, and train a glm model and evaluate it.
 starttime <- Sys.time();
 
 ###########################################
-## SAVE MODEL
+## SAVE MODEL [REMOVE FILE IF IT EXISTS]
 ###########################################
+if (length(system("hadoop fs -ls /HdiSamples/HdiSamples/NYCTaxi/SparkGlmModel", intern=TRUE))>=1) {
+  system("hadoop fs -rm -r /HdiSamples/HdiSamples/NYCTaxi/SparkGlmModel")
+}
 modelPath =  file.path(fullDataDir, "SparkGlmModel");
 write.ml(model, modelPath) 
 ```
