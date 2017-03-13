@@ -12,11 +12,11 @@ from http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 ## Connecting to the Data Science Virtual Machine (with Spark 2.0.2) on Microsoft Azure
 We will provide Azure Data Science Virtual Machines (running Spark 2.0.2) for attendees to use during the tutorial. You will use your laptop to connect to your allocated virtual machine.
 
-* Command line to connect with ssh (Linux, Mac) - replace XXX with the DNS address of your Data Science Virtual Machine
+* Command line to connect with ssh (Linux, Mac) - replace XXX with the DNS address of your Data Science Virtual Machine [e.g. strataABC.westus.cloudapp.azure.com]
 ```bash
 ssh -L localhost:8787:localhost:8787 -L localhost:8088:localhost:8088 remoteuser@XXX
 ```
-* Command line to connect with plink.exe (Windows) - run the following commands in a Windows command prompt window - replace XXX with the DNS address of your Data Science Virtual Machine
+* Command line to connect with plink.exe (Windows) - run the following commands in a Windows command prompt window - replace XXX with the DNS address of your Data Science Virtual Machine [e.g. strataABC.westus.cloudapp.azure.com]
 ```bash
 cd directory-containing-plink.exe
 .\plink.exe -L localhost:8787:localhost:8787 -L localhost:8088:localhost:8088 remoteuser@XXX
