@@ -27,7 +27,7 @@ cd directory-containing-plink.exe
 <hr>
 ## Tutorial slides (not final until 03/14/2017) 
 Slide deck: <br>
-https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/StrataSanJose2017/Presentations_and_Docs/Using%20R%20for%20scalable%20data%20analytics-From%20single%20machines%20to%20Hadoop%20Spark%20clusters.pptx
+https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/StrataSanJose2017/Presentations_and_Docs/Using%20R%20for%20scalable%20data%20analytics-From%20single%20machines%20to%20Hadoop%20Spark%20clusters.pdf
 
 ## Suggested Reading prior to tutorial date
 
