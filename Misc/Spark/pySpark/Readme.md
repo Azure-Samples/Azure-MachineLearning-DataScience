@@ -81,7 +81,7 @@ See the following links for information about airline on-time departure dataset 
 
 > **[Spark2.0-pySpark3-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/Spark2.0/Spark2.0-pySpark3-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb)**
 
-The Spark 2.0 notebooks on the NYC taxi and airline flight delay data-sets can take 10 minutes or more to run (depending on the size of your HDI cluster). We have created this notebook which shows many aspects of the data exploration, visualization and ML model training in a notebook that takes less time to run with a down-sampled NYC data set, where the taxi and fare files have been pre-joined. This notebook takes a much shorter time to finish (typically 2-3 mins), and may be a good starting point for quickly exploring the code we have provided for Spark 2.0.
+The Spark 2.0 notebooks on the NYC taxi and airline flight delay data-sets can take 10 minutes or more to run (depending on the size of your HDI cluster). We have created this notebook which shows many aspects of the data exploration, visualization and ML model training in a notebook that takes less time to run with a down-sampled NYC data set, where the taxi and fare files have been pre-joined. This notebook takes a much shorter time to finish (typically 2-3 minutes), and may be a good starting point for quickly exploring the code we have provided for Spark 2.0.
 
 
 ### Operationalization of a model and model consumption for scoring
