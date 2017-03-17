@@ -35,7 +35,7 @@ Provides information on how to perform data exploration, modeling, and scoring w
 <br>
 
 
-> **[pySpark-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/Spark1.6/pySpark/pySpark-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb)**
+> **[pySpark-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb](https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Spark/pySpark/Spark1.6/pySpark-machine-learning-data-science-spark-advanced-data-exploration-modeling.ipynb)**
 
 Adds model development using hyperparameter tuning and cross-validation to the topics covered in the first notebook
 <br>
