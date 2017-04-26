@@ -1,6 +1,6 @@
 import pyodbc
 import pickle
-cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER=IAAS16165370.redmond.corp.microsoft.com;DATABASE=nyctaxi1;UID=Xibin;PWD=TDSP@RedB24.,')
+cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER={SERVER_NAME};DATABASE={DB_NAME};UID={USER_NAME};PWD={PASSWORD}')
 cursor = cnxn.cursor()
 cursor.execute("EXECUTE [nyctaxi1].[dbo].[SerializePlots]")
 tables = cursor.fetchall()

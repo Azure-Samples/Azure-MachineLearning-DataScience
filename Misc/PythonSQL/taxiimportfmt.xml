@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <RECORD>
+  <FIELD ID="1" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="50" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="2" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="50" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="3" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="3" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="4" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="3" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="5" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="3" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="6" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="24"/>
+  <FIELD ID="7" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="24"/>
+  <FIELD ID="8" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="12"/>
+  <FIELD ID="9" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="21"/>
+  <FIELD ID="10" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="11" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="12" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="13" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="14" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="15" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="3" COLLATION="SQL_Latin1_General_CP1_CI_AS"/>
+  <FIELD ID="16" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="17" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="18" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="19" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="20" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="21" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="22" xsi:type="CharTerm" TERMINATOR="," MAX_LENGTH="30"/>
+  <FIELD ID="23" xsi:type="CharTerm" TERMINATOR="\r\n" MAX_LENGTH="30"/>
+ </RECORD>
+ <ROW>
+  <COLUMN SOURCE="1" NAME="medallion" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="2" NAME="hack_license" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="3" NAME="vendor_id" xsi:type="SQLCHAR"/>
+  <COLUMN SOURCE="4" NAME="rate_code" xsi:type="SQLCHAR"/>
+  <COLUMN SOURCE="5" NAME="store_and_fwd_flag" xsi:type="SQLCHAR"/>
+  <COLUMN SOURCE="6" NAME="pickup_datetime" xsi:type="SQLDATETIME"/>
+  <COLUMN SOURCE="7" NAME="dropoff_datetime" xsi:type="SQLDATETIME"/>
+  <COLUMN SOURCE="8" NAME="passenger_count" xsi:type="SQLINT"/>
+  <COLUMN SOURCE="9" NAME="trip_time_in_secs" xsi:type="SQLBIGINT"/>
+  <COLUMN SOURCE="10" NAME="trip_distance" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="11" NAME="pickup_longitude" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="12" NAME="pickup_latitude" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="13" NAME="dropoff_longitude" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="14" NAME="dropoff_latitude" xsi:type="SQLVARYCHAR"/>
+  <COLUMN SOURCE="15" NAME="payment_type" xsi:type="SQLCHAR"/>
+  <COLUMN SOURCE="16" NAME="fare_amount" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="17" NAME="surcharge" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="18" NAME="mta_tax" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="19" NAME="tolls_amount" xsi:type="SQLFLT8"/>
+  <COLUMN SOURCE="20" NAME="total_amount" xsi:type="SQLFLT8"/>
+    <COLUMN SOURCE="21" NAME="tip_amount" xsi:type="SQLFLT8"/>
+	  <COLUMN SOURCE="22" NAME="tipped" xsi:type="SQLINT"/>
+	    <COLUMN SOURCE="23" NAME="tip_class" xsi:type="SQLINT"/>
+ </ROW>
+</BCPFORMAT>

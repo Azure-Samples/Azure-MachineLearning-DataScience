@@ -1,0 +1,12 @@
+PredictTipSciKitPy.sql
+PredictTipSingleModeSciKitPy.sql 
+TrainTipPredictionModelSciKitPy.sql
+create-db-tb-upload-data.sql
+fnCalculateDistance.sql
+fnEngineerFeatures.sql
+SerializePlots.sql
+ExcelPowerQueryConsumePredict.xlsx
+RunSQL_SQL_Walkthrough.ps1
+varbinplot.fmt
+taxiimportfmt.xml
+DeserializeSavePlots.py
