@@ -60,7 +60,7 @@ $file_url = "http://getgoing.blob.core.windows.net/public/nyctaxi1pct.csv"
 $file_dest = Join-Path $DestDir "nyctaxi1pct.csv"
 $web_client.DownloadFile($file_url, $file_dest)
 Write-Output "Fetching the sample script files to $DestDir..."
-GetSampleFilesFromGit "RSQL" "FilestoDownload_SQL_Walkthrough.txt" $DestDir
+GetSampleFilesFromGit "PythonSQL" "FilestoDownload_SQL_Walkthrough.txt" $DestDir
 Write-Output "Fetching the sample script files completed."
 Write-Output "Now entering the destination directory $DestDir."
 cd $DestDir
