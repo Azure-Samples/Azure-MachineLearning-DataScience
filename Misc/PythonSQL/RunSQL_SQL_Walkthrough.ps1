@@ -235,7 +235,15 @@ $db_tb = $dbname + ".dbo.nyctaxi_sample"
 Write-host "start loading the data to SQL Server table..." -Foregroundcolor "Yellow"
 try
 {
+	if($u -and $p)
+	{
     bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -U $u -P $p
+	}
+	#The MS SQL Server user and password is not specified - using the Windows user credentials 
+	else 
+	{
+	bcp $db_tb in $csvfilepath -t ',' -S $server -f taxiimportfmt.xml -F 2 -C "RAW" -b 200000 -T
+	}
 }
 catch
 {
