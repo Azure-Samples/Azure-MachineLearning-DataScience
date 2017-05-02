@@ -1,3 +1,4 @@
+
 USE [TaxiNYC_Sample]
 GO
 
@@ -26,6 +27,7 @@ BEGIN
 from sklearn.linear_model import LogisticRegression
 import numpy
 import pickle
+import pandas
 
 ## Create model
 X = InputDataSet[["passenger_count", "trip_distance", "trip_time_in_secs", "direct_distance"]]
