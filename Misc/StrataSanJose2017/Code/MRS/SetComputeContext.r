@@ -1,10 +1,32 @@
 if(file.exists("/dsvm"))
 {
+  # Get existing PATH, to merge with new
+  the.path <- Sys.getenv("PATH")
+  the.path <- strsplit(the.path, ':')
+  new.path <- c("/anaconda/envs/py35/bin",
+    "/dsvm/tools/cntk/cntk/bin",
+    "/usr/local/mpi/bin",
+    "/dsvm/tools/spark/current/bin",
+    "/anaconda/envs/py35/bin",
+    "/dsvm/tools/cntk/cntk/bin",
+    "/usr/local/mpi/bin",
+    "/dsvm/tools/spark/current/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/usr/local/sbin",
+    "/usr/sbin",
+    "/opt/hadoop/current/sbin",
+    "/opt/hadoop/current/bin",
+    "/home/remoteuser/.local/bin",
+    "/home/remoteuser/bin",
+    "/opt/hadoop/current/sbin",
+    "/opt/hadoop/current/bin")
+  new.path <- paste(union(the.path[[1]], new.path), collapse=':')
   # Set environment variables for the Data Science VM
-  Sys.setenv(SPARK_HOME="/dsvm/tools/spark/current",
-             YARN_CONF_DIR="/opt/hadoop/current/etc/hadoop", 
+  Sys.setenv(SPARK_HOME = "/dsvm/tools/spark/current",
+             YARN_CONF_DIR = "/opt/hadoop/current/etc/hadoop", 
              JAVA_HOME = "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64",
-             PATH="/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/anaconda/envs/py35/bin:/dsvm/tools/cntk/cntk/bin:/usr/local/mpi/bin:/dsvm/tools/spark/current/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin:/home/remoteuser/.local/bin:/home/remoteuser/bin:/opt/hadoop/current/sbin:/opt/hadoop/current/bin"
+             PATH = new.path
   )
 }
 
