@@ -40,7 +40,7 @@ use {db_name}
 CREATE TABLE nyc_taxi_models
 (
   name varchar(50), 
-  model varbinary(max) not null,
+  model varbinary(max) not null
 )
 '
 
