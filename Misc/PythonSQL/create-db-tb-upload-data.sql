@@ -39,7 +39,8 @@ SET @create_tb_template2 = '
 use {db_name}
 CREATE TABLE nyc_taxi_models
 (
-	model varbinary(max) not null
+  name varchar(50), 
+  model varbinary(max) not null,
 )
 '
 
