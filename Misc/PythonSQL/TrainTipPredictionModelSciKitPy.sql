@@ -1,30 +1,18 @@
+/****** Object:  StoredProcedure [dbo].[TrainTipPredictionModelSciKitPy]    Script Date: 5/17/2017 11:36:11 PM ******/
 
 USE [TaxiNYC_Sample]
 GO
 
-/****** Object:  StoredProcedure [dbo].[TrainTipPredictionModelSciKitPy]    Script Date: 4/25/2017 11:36:11 PM ******/
 SET ANSI_NULLS ON
 GO
 
 SET QUOTED_IDENTIFIER ON
 GO
 
---Split whole data into 60% training and 40% testing
-DROP TABLE IF EXISTS dbo.nyctaxi_sample_training
-SELECT * into nyctaxi_sample_training 
-FROM nyctaxi_sample
-  WHERE (ABS(CAST((BINARY_CHECKSUM(*) *RAND(98052)) as int)) % 100) < 60
-
-DROP TABLE IF EXISTS dbo.nyctaxi_sample_testing
-SELECT * into nyctaxi_sample_testing 
-FROM nyctaxi_sample
-WHERE (ABS(CAST((BINARY_CHECKSUM(*) *RAND(98052)) as int)) % 100) > 60
-
-
-DROP PROCEDURE IF EXISTS TrainTipPredictionModelRxPy;
+DROP PROCEDURE IF EXISTS TrainTipPredictionModelSciKitPy;
 GO
 
-CREATE PROCEDURE [dbo].[TrainTipPredictionModelRxPy] (@trained_model varbinary(max) OUTPUT)
+CREATE PROCEDURE [dbo].[TrainTipPredictionModelSciKitPy] (@trained_model varbinary(max) OUTPUT)
 AS
 BEGIN
   EXEC sp_execute_external_script 
@@ -33,10 +21,14 @@ BEGIN
 import numpy
 import pickle
 import pandas
-from revoscalepy.functions.RxLogit import rx_logit_ex;
-from revoscalepy.functions.RxPredict import rx_predict_ex;
+from sklearn.linear_model import LogisticRegression
 
-logitObj = rx_logit_ex("tipped ~ passenger_count + trip_distance + trip_time_in_secs + direct_distance", data = InputDataSet);
+## Create model
+X = InputDataSet[["passenger_count", "trip_distance", "trip_time_in_secs", "direct_distance"]]
+y = numpy.ravel(InputDataSet[["tipped"]])
+
+SKLalgo = LogisticRegression()
+logitObj = SKLalgo.fit(X, y)
 
 ## Serialize model
 trained_model = pickle.dumps(logitObj)
@@ -65,6 +57,6 @@ GO
 TRUNCATE TABLE nyc_taxi_models;
 
 DECLARE @model VARBINARY(MAX);
-EXEC TrainTipPredictionModelRxPy @model OUTPUT;
+EXEC TrainTipPredictionModelSciKitPy @model OUTPUT;
 
-INSERT INTO nyc_taxi_models (name, model) VALUES('rx_model', @model);
+INSERT INTO nyc_taxi_models (name, model) VALUES('linear_model', @model);
