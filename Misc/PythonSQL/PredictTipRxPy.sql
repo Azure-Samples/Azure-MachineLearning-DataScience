@@ -1,7 +1,8 @@
+/****** Object:  StoredProcedure [dbo].[PredictTipSciKitPy]    Script Date: 5/17/2017 11:37:50 PM ******/
+
 USE [TaxiNYC_Sample]
 GO
 
-/****** Object:  StoredProcedure [dbo].[PredictTipSciKitPy]    Script Date: 4/25/2017 11:37:50 PM ******/
 SET ANSI_NULLS ON
 GO
 
