@@ -1,7 +1,7 @@
 PredictTipSciKitPy.sql
 PredictTipSingleModeSciKitPy.sql
 TrainTipPredictionModelSciKitPy.sql
-PredictRxPy.sql
+PredictTipRxPy.sql
 PredictTipSingleModeRxPy.sql
 TrainTipPredictionModelRxPy.sql
 TrainingTestingSplit.sql
