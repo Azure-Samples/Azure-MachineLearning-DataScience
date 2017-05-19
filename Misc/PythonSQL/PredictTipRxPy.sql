@@ -12,10 +12,10 @@ GO
 DROP PROCEDURE IF EXISTS PredictTipRxPy;
 GO
 
-CREATE PROCEDURE [dbo].[PredictTipRxPy] (@model varchar(100))
+CREATE PROCEDURE [dbo].[PredictTipRxPy] (@model varchar(50), @inquery nvarchar(max))
 AS
 BEGIN
-  DECLARE @lmodel2 varbinary(max) = (select model from nyc_taxi_models where name = @model);
+  DECLARE @lmodel2 varbinary(max) = (select model from nyc_taxi_models2 where name = @model);
 
   EXEC sp_execute_external_script 
 	@language = N'Python',
@@ -41,10 +41,7 @@ aucResult = metrics.auc(fpr, tpr)
 print ("AUC on testing data is: " + str(aucResult))
 OutputDataSet = pandas.DataFrame(data = probList, columns = ["predictions"])
 ',	
-	@input_data_1 = N'select tipped, fare_amount, passenger_count, trip_time_in_secs, trip_distance,
-					dbo.fnCalculateDistance(pickup_latitude, pickup_longitude, dropoff_latitude, dropoff_longitude) as direct_distance
-					from nyctaxi_sample_testing
-					',
+	@input_data_1 = @inquery,
 	@input_data_1_name = N'InputDataSet',
 	@params = N'@lmodel2 varbinary(max)',
 	@lmodel2 = @lmodel2
@@ -52,6 +49,3 @@ OutputDataSet = pandas.DataFrame(data = probList, columns = ["predictions"])
 
 END
 GO
-
---Call stored procedure
-EXEC [dbo].[PredictTipRxPy] 'rx_model';  
