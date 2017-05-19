@@ -259,10 +259,14 @@ $start_time = Get-Date
 
 ExecuteSQLFile $PWD"\fnCalculateDistance.sql" 1
 ExecuteSQLFile $PWD"\fnEngineerFeatures.sql" 1
+ExecuteSQLFile $PWD"\TrainingTestingSplit.sql" 1
 ExecuteSQLFile $PWD"\TrainTipPredictionModelSciKitPy.sql" 1
+ExecuteSQLFile $PWD"\TrainTipPredictionModelRxPy.sql" 1
 ExecuteSQLFile $PWD"\SerializePlots.sql" 1
 ExecuteSQLFile $PWD"\PredictTipSciKitPy.sql" 1
 ExecuteSQLFile $PWD"\PredictTipSingleModeSciKitPy.sql" 1
+ExecuteSQLFile $PWD"\PredictTipRxPy.sql" 1
+ExecuteSQLFile $PWD"\PredictTipSingleModeRxPy.sql" 1
 Write-Host "Completed registering all functions and stored procedures used in this walkthrough."
 $end_time = Get-Date
 $time_span = $end_time - $start_time
