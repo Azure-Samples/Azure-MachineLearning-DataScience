@@ -45,17 +45,6 @@ trained_model = pickle.dumps(logitObj)
 END;
 GO
 
---Save model to table
-DROP TABLE IF EXISTS nyc_taxi_models;
-GO
-CREATE TABLE nyc_taxi_models (
-	name VARCHAR(30) NOT NULL DEFAULT('default model') PRIMARY KEY,
-	model VARBINARY(MAX) NOT NULL
-);
-GO
-
-TRUNCATE TABLE nyc_taxi_models;
-
 DECLARE @model VARBINARY(MAX);
 EXEC TrainTipPredictionModelSciKitPy @model OUTPUT;
 
