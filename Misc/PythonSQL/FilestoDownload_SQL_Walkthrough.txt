@@ -1,8 +1,8 @@
 PredictTipSciKitPy.sql
-PredictTipSingleModeSciKitPy.sql 
+PredictTipSingleModeSciKitPy.sql
 TrainTipPredictionModelSciKitPy.sql
 PredictRxPy.sql
-PredictTipSingleModeRxPy.sql 
+PredictTipSingleModeRxPy.sql
 TrainTipPredictionModelRxPy.sql
 TrainingTestingSplit.sql
 create-db-tb-upload-data.sql
