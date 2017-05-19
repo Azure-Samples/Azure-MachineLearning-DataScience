@@ -1,3 +1,13 @@
+USE [TaxiNYC_Sample]
+GO
+
+/****** Object:  StoredProcedure [dbo].[PredictTipSingleModeRxPy]    Script Date: 5/17/2017 3:09:40 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
 CREATE PROCEDURE [dbo].[PredictTipSingleModeRxPy] (@model varchar(50), @passenger_count int = 0,
 @trip_distance float = 0,
 @trip_time_in_secs int = 0,
