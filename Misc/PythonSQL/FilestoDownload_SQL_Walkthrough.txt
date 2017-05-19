@@ -1,6 +1,9 @@
 PredictTipSciKitPy.sql
 PredictTipSingleModeSciKitPy.sql 
 TrainTipPredictionModelSciKitPy.sql
+PredictRxPy.sql
+PredictTipSingleModeRxPy.sql 
+TrainTipPredictionModelRxPy.sql
 create-db-tb-upload-data.sql
 fnCalculateDistance.sql
 fnEngineerFeatures.sql
