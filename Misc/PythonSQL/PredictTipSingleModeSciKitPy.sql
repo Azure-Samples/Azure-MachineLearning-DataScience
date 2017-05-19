@@ -8,7 +8,6 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 CREATE PROCEDURE [dbo].[PredictTipSingleModeSciKitPy] (@model varchar(50), @passenger_count int = 0,
 @trip_distance float = 0,
 @trip_time_in_secs int = 0,
