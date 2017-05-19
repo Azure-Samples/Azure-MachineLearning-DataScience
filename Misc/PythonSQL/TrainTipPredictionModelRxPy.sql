@@ -40,11 +40,3 @@ trained_model = pickle.dumps(logitObj)
   ;
 END;
 GO
-
---Save model to table
-
-DECLARE @model VARBINARY(MAX);
-EXEC TrainTipPredictionModelRxPy @model OUTPUT;
-
-INSERT INTO nyc_taxi_models (name, model) VALUES('rx_model', @model);
-
