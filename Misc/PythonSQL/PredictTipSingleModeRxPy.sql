@@ -27,7 +27,7 @@ BEGIN
 	@dropoff_latitude,
 	@dropoff_longitude)
 	'
-	DECLARE @lmodel2 varbinary(max) = (select model from nyc_taxi_models2 where name = @model);
+	DECLARE @lmodel2 varbinary(max) = (select model from nyc_taxi_models where name = @model);
 	EXEC sp_execute_external_script 
 		@language = N'Python',
 		@script = N'
