@@ -1,4 +1,4 @@
-###########################################
+##########################################
 # LOAD LIBRARIES FROM SPECIFIED PATH
 ###########################################
 Sys.setenv(SPARK_HOME = "/usr/hdp/current/spark2-client")
@@ -42,9 +42,7 @@ web_scoring <- function(modelfile, input, output) {
   
   sampledpredfilt <- head(SparkR::sample(predfilt, FALSE, 0.01, 1234), 10)
   
-
   sparkR.stop()
-  
   # Return sampled 10 rows of the prediction data-frame
   return(sampledpredfilt)
 
