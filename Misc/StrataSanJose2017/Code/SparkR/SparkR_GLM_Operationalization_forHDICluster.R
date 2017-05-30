@@ -74,6 +74,7 @@ listServices()
 ################################################################
 ## CREATE A WEB SERVICE WTIH VERSION NUMBER
 ################################################################
+
 version <- "v0.0.1"
 #deleteService("scoring_input_files2", version);
 api_string <- publishService(
@@ -110,15 +111,8 @@ system("hadoop fs -ls /HdiSamples/HdiSamples/NYCTaxi/SparkRGLMPredictions")
 ## END
 ################################################################
 
-sparkR.stop()data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAMElEQVR42mNgIAXY2Nj8x8cHC8AwMl9XVxe3QqwKcJmIVwFWhehW4LQSXQCnm3ABAHD6MDrmRgfrAAAAAElFTkSuQmCC
+sparkR.stop()
 #deleteService("scoring_input_files", version)
-
-
-
-
-
-
-
 
 
 
