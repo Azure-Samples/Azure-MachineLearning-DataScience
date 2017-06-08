@@ -1,0 +1,347 @@
+---
+title: "Setting up R Server"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Outline
+
+- Running R on the Data Science Virtual Machine 
+  - What is where - Config script/ DSVM unix shell/ R server/ admin tool / hdfs file system w/ data
+  - admin config & test. 
+- R Client on your local machine. And Rstudio, an IDE for running it. 
+- Remoting into RServer
+  - The remote envir.  Note it's not the same as the DSVM envir. 
+  - Running remote scripts.
+  - Moving objects back and forth. 
+
+
+# Running _R server_ on the Data Science VM
+
+The Data Science VM comes with _R server_ preinstalled.  
+
+## Check if _R server_ runs. 
+
+The R server interpreter is aliased to _R_.
+
+    $ R
+
+<font face="courier"> R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"</br>
+Copyright (C) 2016 The R Foundation for Statistical Computing</br>
+Platform: x86_64-pc-linux-gnu (64-bit)
+[...]
+</font>
+
+_Note the version in the banner.  It should be 9.0.1 or later._
+
+Here's a simple test that MRS library is pre-loaded and runs:
+
+```{r}
+    rxSummary(formula = ~., data = iris)
+```
+
+## Configuring the Server
+
+See [Configuring R Server Operationalization](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial)
+_Note:  Libraries as required in the operationalization online documentation are already configured on the VM_ 
+
+Launch administration utility script that comes with Microsoft R Server, that will take you through the configuration.
+
+```bash
+cd /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Utils.AdminUtil/
+sudo /usr/local/bin/dotnet Microsoft.DeployR.Utils.AdminUtil.dll
+```
+
+Or use the link `radmin`, created for the admin tool. 
+
+
+
+This utility brings up a menu
+
+```
+    *************************************
+    Administration Utility (v9.0.1)
+    *************************************
+
+    1. Configure R Server for Operationalization
+    2. Set a local admin password
+    3. Stop and start services
+    4. Change service ports
+    5. Encrypt credentials
+    6. Run diagnostic tests
+    7. Evaluate capacity
+    8. Exit
+
+Web node endpoint: **http://localhost:12800/**
+
+Please enter an option:
+1
+
+Configuration for Operationalization:
+
+    A. One-box (web + compute nodes)
+    B. Web node
+    C. Compute node
+    D. Reset machine to default install state
+    E. Return to main menu
+
+    Please enter an option:
+    A
+
+    Set the admin password:
+    *************
+
+    Confirm this password:
+    *************
+    
+    Success! Web node running (PID: 4172)
+
+    Success! Compute node running (PID: 4172)
+```
+At this point the setup should be complete. 
+Running diagnostics with the admin tool can check that it is.
+
+### Diagnostic Tests A. Test Configuration  
+```
+Please enter an option:
+6
+ 
+Preparing to run diagnostics...
+
+***********************
+DIAGNOSTIC RESULTS:
+***********************
+Overall Health: pass
+
+Web Node Details:
+  Logs: /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.WebAPI/logs
+  Available compute nodes: 1
+
+Compute Node Details:
+  Health of 'http://localhost:12805/': pass
+  Logs: /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.BackEnd/logs
+
+
+Authentication Details:
+  A local admin account was found. No other form of authentication is configured.
+
+Database Details:
+  Health: pass
+  Type: sqlite
+
+Code Execution Test: PASS
+  Code: 'y <- cumprod(c(1500, 1+(rnorm(n=25,mean=.05, sd = 1.4)/100)))'
+```
+### Run Diagnostic Tests: B. Raw Server Status
+```
+**********************
+SERVICE STATE (raw):
+**********************
+
+Please authenticate...
+
+Username:
+admin
+
+Password:
+*************
+Server:
+Health: pass
+Details:
+    logPath: /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.WebAPI/logs
+backends:
+    Health: pass
+    http://localhost:12805/:
+    Health: pass
+    Details:
+        maxPoolSize: 80
+        activeShellCount: 1
+        currentPoolSize: 5
+        logPath: /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.BackEnd/logs
+database:
+    Health: pass
+    Details:
+    type: sqlite
+    name: main
+    state: Open
+```
+----
+## Verify that R server is running back at the linux prompt
+
+This command reveals ports the linux machine is listening on:
+```
+    netstat -tupln
+```
+
+    Active Internet connections (only servers)
+    Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+    tcp        0      0 127.0.0.1:29130         0.0.0.0:*               LISTEN      42527/mdsd
+    tcp        0      0 127.0.0.1:29131         0.0.0.0:*               LISTEN      2001/mdsd
+    tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1265/sshd
+    tcp        0      0 0.0.0.0:9054            0.0.0.0:*               LISTEN      55348/Rserve
+    tcp        0      0 0.0.0.0:9055            0.0.0.0:*               LISTEN      55348/Rserve
+    tcp6       0      0 :::12805                :::*                    LISTEN      55327/dotnet
+    tcp6       0      0 :::22                   :::*                    LISTEN      1265/sshd
+    tcp6       0      0 :::12800                :::*                    LISTEN      55285/dotnet
+    udp        0      0 0.0.0.0:68              0.0.0.0:*                           1064/dhclient
+
+We can see that port 12800 is active for the web service.  12805 is the compute server, running here on the same machine as the web service. Next thing you should do is see if you can connect to the service with R server running locally, and load mrsdeploy.
+
+
+### Check the Server web service by logging-in from the server itself.
+
+Do this by running a remote mrsdeploy session from the server to itself.  Running MRS as both a client and a server on the same machine is possible, but has no purpose other than to test that the server can be accessed. The sequence of steps is:
+
+```
+        endpoint <- "localhost:12800"   # The forum shows this format for logins.
+        library(mrsdeploy)
+        remoteLogin(endpoint)
+
+```
+
+It will respond with
+
+        Username: admin
+        Password: *************           # The password you set in the admin tool. 
+        
+
+If as shown, you do not include the admin account and passwords as arguments to `remoteLogin` the command will bring up a modal dialog asking you for them.  Be advised that this dialog may be hidden behind the front window, and you'll have to look for it.
+If it succeeds, you'll see a different `R` prompt, for a different session:
+
+    REMOTE> 
+
+If authentication is failing, you can look at the tail of the system log file for the error, like this
+
+    cd /usr/lib64/microsoft-deployr/9.0.1/Microsoft.DeployR.Server.WebAPI/logs
+    sudo tail $(ls -t1 | head -1)   # Look at the end of the most recent logfile
+    ... "Message":"The username doesn't belong to the admin user",...
+
+Then, to end the remote session, the command is exit:
+
+    REMOTE> exit
+
+
+## Complete the Server configuration for remote access
+
+Another two steps are needed before you can use the server over the network. You should set the public DNS (e.g. domain) address since the VM's public IP address is dynamic and may change when the machine is restarted. And as a matter of security, the Azure firewall (the network security gateway resource) needs to be configured.
+
+Go back to  portal.azure.com and find these resources associated with the VM: 
+
+- Public DNS address 
+- Open incoming service ports
+
+### Public IP
+
+To set the public DNS name, go to the portal's VM overview pane and click on the public-IP item
+to get to the blade to enter a custom DNS name, e.g. `myrserver`.
+
+### Network Security Group
+
+The DSVM comes with port 8787 unprotected so that Rstudio remote can be run, but you have to 
+open 12800 if you want to run remote R sessions. 
+If you don't do this, a remote `mrsdeploy` login attempt will fail with a message 
+
+    Error: Couldn't connect to server
+
+To configure remote access you'll need to open the port the admin tool reported as the web endpoint, typically 12800. The inbound security rules' blade is buried in the VM choices -> Network Interfaces -> Network Security Group -> Inbound Security Rules, then click "Inbound
+Security Rules" in the left pane.  Choose "Add" to create a custom inbound rule for TCP port 12800; the name is unimportant. 
+
+### Check that the server is running from another machine
+
+You will need a local copy of R with the `mrsdeploy` library, called _R Client_, which, is _not_ part of the open source R distribution.  You can get it from
+
+-  a free download on MSDN. 
+- _Microsoft SQL Server_ comes with _R Server_ as an option.
+- If you have installed _R Tools for Visual Studio_ (RTVS), the _R Tools_ menu has an item to install _R Client_. 
+
+It will be installed as
+
+`/c/Program Files/Microsoft/R Client/R_SERVER/bin/x64/R`
+
+
+The commands are the same as before except use the domain name of the server:
+
+    endpoint <- "myrserver.southcentralus.azure.com:12800'
+
+
+The server will kindly return a banner with the differences between your client and the server MRS environments.
+Here's what a proper remote session returns on initiation:
+
+```
+remote: R version 3.2.3 (2015-12-10)
+
+These R packages installed on the local machine are not on the remote R instance:
+
+   Missing Packages
+1        checkpoint
+2  CompatibilityAPI
+3              curl
+4     deployrRserve
+5        doParallel
+6             doRSR
+7           foreach
+8         iterators
+9          jsonlite
+10       MicrosoftR
+11        mrsdeploy
+12         mrupdate
+13              png
+14               R6
+15          RevoIOQ
+16         RevoMods
+17        RevoPemaR
+18       RevoScaleR
+19      RevoTDUtils
+20     RevoTreeView
+21        RevoUtils
+22    RevoUtilsMath
+23            RUnit
+
+The versions of these installed R packages differ:
+
+     Package   Local  Remote
+1       base   3.3.2   3.2.3
+2       boot  1.3-18  1.3-17
+3    cluster   2.0.5   2.0.3
+4  codetools  0.2-15  0.2-14
+5   compiler   3.3.2   3.2.3
+6   datasets   3.3.2   3.2.3
+7    foreign  0.8-67  0.8-66
+8   graphics   3.3.2   3.2.3
+9  grDevices   3.3.2   3.2.3
+10      grid   3.3.2   3.2.3
+11   lattice 0.20-34 0.20-33
+12    Matrix 1.2-7.1   1.2-3
+13   methods   3.3.2   3.2.3
+14      mgcv  1.8-15  1.8-11
+15      nlme 3.1-128 3.1-124
+16  parallel   3.3.2   3.2.3
+17   splines   3.3.2   3.2.3
+18     stats   3.3.2   3.2.3
+19    stats4   3.3.2   3.2.3
+20  survival  2.39-5  2.38-3
+21     tcltk   3.3.2   3.2.3
+22     tools   3.3.2   3.2.3
+23     utils   3.3.2   3.2.3
+
+
+Your REMOTE R session is now active.
+Commands:
+        - pause() to switch to local session & leave remote session on hold.
+        - resume() to return to remote session.
+        - exit to leave (and terminate) remote session.
+```
+-----
+These handy R functions let you explore the remote environment further:
+
+    Sys.getenv()    # will show the machine's environment variables on the server.
+    Sys.info()      # returns a character string with machine and user descriptions.
+    SessionInfo()   # Shows R environment, and packages already loaded.
+
+
+
+
+
