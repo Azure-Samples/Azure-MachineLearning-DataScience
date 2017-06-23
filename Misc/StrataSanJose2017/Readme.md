@@ -11,7 +11,9 @@ chmod +x DSVM_Customization_Script.sh
 
 The above steps will setup your DSVM. After which you can following the remaining steps of the tutorial. 
 
-As explained below, you can login to the R-studio server on the DSVM and run the R scripts below.
+#### Running R scripts on Linux DSVM
+As explained below, you can login (using web-browser) to the R-studio server on the DSVM and run the R scripts which are provided [here](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/StrataSanJose2017/Code). These R-scripts, along with the necessary data will be already loaded on your machine by running the setup shell script above. If R scripts are in markdown files, then you can click on "Knit" near the top of your R-studio browser window.
+
 
 ## REQUIRED - Tutorial Prerequisites
 * Please bring a wireless enabled laptop.
