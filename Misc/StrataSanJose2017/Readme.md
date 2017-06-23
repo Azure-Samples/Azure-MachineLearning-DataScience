@@ -3,6 +3,16 @@
 ## Tutorial link (Strata San Jose, March 2017)
 https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/55806
 
+## General Instructions
+#### Setup
+You will need to provision a [Linux data science virtual machine (DSVM)](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/microsoft-ads.linux-data-science-vm?tab=Overview). After the machine is provisioned, you will need to login (ssh) into your machine using a client software such as Plink (see below), download the [setup shell script](https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/DSVM_Customization_Script.sh), and run it using the following commands:
+chmod +x DSVM_Customization_Script.sh
+./DSVM_Customization_Script.sh
+
+The above steps will setup your DSVM. After which you can following the remaining steps of the tutorial. 
+
+As explained below, you can login to the R-studio server on the DSVM and run the R scripts below.
+
 ## REQUIRED - Tutorial Prerequisites
 * Please bring a wireless enabled laptop.
 * Make sure your machine has an ssh client with port-forwarding capability. On Mac or Linux, simply run the ssh command in a terminal window.
