@@ -1,4 +1,4 @@
-# PreRequisites: You have installed Revolution R Enterprise 7.5.0 or higher on the machine and SQL Server 2016 CTP3 or higher on the database server
+# Prerequisites: You have installed SQL Server 2016 R Services or SQL Server 2017 Machine Learning Services with the R language
 # Install required R libraries for this walkthrough if they are not installed. 
 
 if (!('ggmap' %in% rownames(installed.packages()))){
