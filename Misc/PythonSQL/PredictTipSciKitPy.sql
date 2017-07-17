@@ -21,9 +21,9 @@ BEGIN
   EXEC sp_execute_external_script 
 	@language = N'Python',
     @script = N'
-import pickle;
-import numpy;
-import pandas;
+import pickle
+import numpy
+import pandas
 from sklearn import metrics
 
 mod = pickle.loads(lmodel2)
@@ -39,7 +39,7 @@ for i in range(len(probArray)):
 probArray = numpy.asarray(probList)
 fpr, tpr, thresholds = metrics.roc_curve(y, probArray)
 aucResult = metrics.auc(fpr, tpr)
-print ("AUC on testing data is: " + str(aucResult))
+print ("AUC on testing data is:", aucResult)
 
 OutputDataSet = pandas.DataFrame(data = probList, columns = ["predictions"])
 ',	
