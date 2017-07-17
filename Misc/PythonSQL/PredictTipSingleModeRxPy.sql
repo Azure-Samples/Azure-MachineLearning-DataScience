@@ -31,10 +31,10 @@ BEGIN
 	EXEC sp_execute_external_script 
 		@language = N'Python',
 		@script = N'
-import pickle;
-import numpy;
-import pandas;
-from revoscalepy.functions.RxPredict import rx_predict_ex;
+import pickle
+import numpy
+import pandas
+from revoscalepy.functions.RxPredict import rx_predict_ex
 
 # Load model and unserialize
 mod = pickle.loads(model)
@@ -50,7 +50,7 @@ probList = []
 probList.append(probArray._results["tipped_Pred"])
 
 # Create output data frame
-OutputDataSet = pandas.DataFrame(data = probList, columns = ["predictions"])
+OutputDataSet = pandas.DataFrame(data=probList, columns=["predictions"])
 	',
 	@input_data_1 = @inquery,
 	@params = N'@model varbinary(max),@passenger_count int,@trip_distance float,
