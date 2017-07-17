@@ -21,10 +21,10 @@ BEGIN
 import numpy
 import pickle
 import pandas
-from revoscalepy.functions.RxLogit import rx_logit_ex;
-from revoscalepy.functions.RxPredict import rx_predict_ex;
+from revoscalepy.functions.RxLogit import rx_logit_ex
+from revoscalepy.functions.RxPredict import rx_predict_ex
 
-logitObj = rx_logit_ex("tipped ~ passenger_count + trip_distance + trip_time_in_secs + direct_distance", data = InputDataSet);
+logitObj = rx_logit_ex("tipped ~ passenger_count + trip_distance + trip_time_in_secs + direct_distance", data=InputDataSet);
 
 ## Serialize model
 trained_model = pickle.dumps(logitObj)
