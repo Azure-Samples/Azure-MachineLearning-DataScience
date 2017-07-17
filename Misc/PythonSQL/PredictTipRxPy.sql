@@ -20,11 +20,11 @@ BEGIN
   EXEC sp_execute_external_script 
 	@language = N'Python',
     @script = N'
-import pickle;
-import numpy;
-import pandas;
+import pickle
+import numpy
+import pandas
 from sklearn import metrics
-from revoscalepy.functions.RxPredict import rx_predict_ex;
+from revoscalepy.functions.RxPredict import rx_predict_ex
 
 mod = pickle.loads(lmodel2)
 X = InputDataSet[["passenger_count", "trip_distance", "trip_time_in_secs", "direct_distance"]]
@@ -38,7 +38,7 @@ for i in range(len(probArray._results["tipped_Pred"])):
 probArray = numpy.asarray(probList)
 fpr, tpr, thresholds = metrics.roc_curve(y, probArray)
 aucResult = metrics.auc(fpr, tpr)
-print ("AUC on testing data is: " + str(aucResult))
+print("AUC on testing data is:", aucResult)
 OutputDataSet = pandas.DataFrame(data = probList, columns = ["predictions"])
 ',	
 	@input_data_1 = @inquery,
