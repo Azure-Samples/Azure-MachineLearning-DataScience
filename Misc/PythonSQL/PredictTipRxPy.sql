@@ -39,7 +39,7 @@ probArray = numpy.asarray(probList)
 fpr, tpr, thresholds = metrics.roc_curve(y, probArray)
 aucResult = metrics.auc(fpr, tpr)
 print("AUC on testing data is:", aucResult)
-OutputDataSet = pandas.DataFrame(data = probList, columns = ["predictions"])
+OutputDataSet = pandas.DataFrame(data=probList, columns=["predictions"])
 ',	
 	@input_data_1 = @inquery,
 	@input_data_1_name = N'InputDataSet',
