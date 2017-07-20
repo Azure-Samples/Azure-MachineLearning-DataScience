@@ -20,26 +20,24 @@ BEGIN
   EXEC sp_execute_external_script 
 	@language = N'Python',
     @script = N'
-import pickle;
-import numpy;
-import pandas;
+import pickle
+import numpy
+import pandas
 from sklearn import metrics
-from revoscalepy.functions.RxPredict import rx_predict_ex;
+from revoscalepy.functions.RxPredict import rx_predict_ex
 
 mod = pickle.loads(lmodel2)
 X = InputDataSet[["passenger_count", "trip_distance", "trip_time_in_secs", "direct_distance"]]
 y = numpy.ravel(InputDataSet[["tipped"]])
 
-probArray = rx_predict_ex(mod, X)
-probList = []
-for i in range(len(probArray._results["tipped_Pred"])):
-	probList.append((probArray._results["tipped_Pred"][i]))
+prob_array = rx_predict_ex(mod, X)
+prob_list = list(prob_rrray._results["tipped_Pred"])
 
-probArray = numpy.asarray(probList)
-fpr, tpr, thresholds = metrics.roc_curve(y, probArray)
-aucResult = metrics.auc(fpr, tpr)
-print ("AUC on testing data is: " + str(aucResult))
-OutputDataSet = pandas.DataFrame(data = probList, columns = ["predictions"])
+prob_array = numpy.asarray(prob_list)
+fpr, tpr, thresholds = metrics.roc_curve(y, prob_array)
+auc_result = metrics.auc(fpr, tpr)
+print("AUC on testing data is:", auc_result)
+OutputDataSet = pandas.DataFrame(data=prob_list, columns=["predictions"])
 ',	
 	@input_data_1 = @inquery,
 	@input_data_1_name = N'InputDataSet',
