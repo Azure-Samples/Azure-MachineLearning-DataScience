@@ -3,6 +3,18 @@
 ## Tutorial link (Strata San Jose, March 2017)
 https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/55806
 
+## General Instructions
+#### Setup
+You will need to provision a [Linux data science virtual machine (DSVM)](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/microsoft-ads.linux-data-science-vm?tab=Overview). After the machine is provisioned, you will need to login (ssh) into your machine using a client software such as Plink (see below), download the [setup shell script](https://raw.githubusercontent.com/Azure/Azure-MachineLearning-DataScience/master/Misc/StrataSanJose2017/Scripts/DSVM_Customization_Script.sh), and run it using the following commands:
+chmod +x DSVM_Customization_Script.sh
+./DSVM_Customization_Script.sh
+
+The above steps will setup your DSVM. After which you can following the remaining steps of the tutorial. 
+
+#### Running R scripts on Linux DSVM
+As explained below, you can login (using web-browser) to the R-studio server on the DSVM and run the R scripts which are provided [here](https://github.com/Azure/Azure-MachineLearning-DataScience/tree/master/Misc/StrataSanJose2017/Code). These R-scripts, along with the necessary data will be already loaded on your machine by running the setup shell script above. If R scripts are in markdown files, then you can click on "Knit" near the top of your R-studio browser window.
+
+
 ## REQUIRED - Tutorial Prerequisites
 * Please bring a wireless enabled laptop.
 * Make sure your machine has an ssh client with port-forwarding capability. On Mac or Linux, simply run the ssh command in a terminal window.
@@ -25,7 +37,10 @@ cd directory-containing-plink.exe
 <b>NOTE: During the tutorial, all attendees will use RStudio Server on their Data Science Virtual Machines.</b>
 
 <hr>
-## Tutorial slides (not final until 03/14/2017) 
+
+
+## Tutorial slides
+
 Slide deck: <br>
 https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/StrataSanJose2017/Presentations_and_Docs/Using%20R%20for%20scalable%20data%20analytics-From%20single%20machines%20to%20Hadoop%20Spark%20clusters.pdf
 
@@ -35,6 +50,8 @@ https://github.com/Azure/Azure-MachineLearning-DataScience/blob/master/Misc/Stra
 SparkR general information: http://spark.apache.org/docs/latest/sparkr.html
 <br>
 SparkR 2.0.2 functions: https://spark.apache.org/docs/2.0.2/api/R/index.html
+
+
 
 ### sparklyr: <br>
 sparklyr general information: http://spark.rstudio.com/
@@ -55,7 +72,9 @@ Configuring operationalization: https://msdn.microsoft.com/en-us/microsoft-r/ope
 
 <br>
 <hr>
+
 ## Datasets used in this tutorial
+
 ### The 2013 New York City Taxi and Fare dataset (used in SparkR and sparklyr samples)
 The NYC Taxi Trip data is about 20 GB of compressed comma-separated values (CSV) files (~48 GB uncompressed), comprising more than 173 million individual trips and the fares paid for each trip. Each trip record includes the pick up and drop-off location and time, anonymized hack (driver's) license number and medallion (taxi’s unique id) number. The data covers all trips in the year 2013 and is provided in the following two datasets for each month: 
 * The 'trip_data' CSV files contain trip details, such as number of passengers, pick up and dropoff points, trip duration, and trip length.
