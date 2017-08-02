@@ -4,8 +4,8 @@
 Login-AzureRmAccount
 
 $SubscriptionName = "Microsoft Azure Internal - Vanja"
-$SubscriptionID = "b7db02d0-93ab-4fda-8e83-e47195ecb0fc"
-$TenantID = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+$SubscriptionID = "<subscription id>"
+$TenantID = "<tenant id>"
 $resourcegroup = "KDDHalifax2017";
 $location = "West US"
 #$sourceStorageName = "scaler";
