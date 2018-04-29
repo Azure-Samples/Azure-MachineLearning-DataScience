@@ -5,7 +5,8 @@ http://www.globalbigdataconference.com/seattle/global-artificial-intelligence-co
 
 
 ## Related information
-### Biomedical Entity Extractor on Azure
+
+### Biomedical Entity Extractor demo web-service on Azure
 http://medicalentitydetector.azurewebsites.net/
 
 ### Team Data Science Process (TDSP) Information
